@@ -67,8 +67,6 @@ jobs:
                 image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_FE_TAGNAME }}
                 networks:
                   - proxy-network
-                env_file:
-                  - .env
                 restart: unless-stopped
             networks:
               proxy-network:
@@ -78,17 +76,3 @@ jobs:
 
             echo "Start updated service"
             docker compose up -d
-
-# secrets
-# - DOCKER_HUB_TOKEN
-# - SSH_PRIVATE_KEY
-# - ENV_FILE
-
-# vars
-# - SSH_HOST
-# - SSH_PORT
-# - SSH_USERNAME
-# - DOCKER_HUB_USERNAME
-# - DOCKER_HUB_REPOSITORY
-# - DOCKER_HUB_TAGNAME
-# - PROJECT_DIRECTORY
