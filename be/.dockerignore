@@ -3,3 +3,4 @@ __pycache__
 .git
 jeju_translator.py
 venv
+docker-compose.yml
