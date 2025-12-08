@@ -1,0 +1,13 @@
+services:
+  jeju-gtp-be:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jeju-gtp-be
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface # Temporary cache — to be removed
+    restart: unless-stopped
