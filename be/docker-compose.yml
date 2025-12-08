@@ -8,6 +8,6 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
-    volumes:
-      - ~/.cache/huggingface:/root/.cache/huggingface # Temporary cache — to be removed
+    env_file:
+      - .env
     restart: unless-stopped

@@ -1,6 +1,0 @@
-__pycache__
-*.pyc
-.git
-jeju_translator.py
-venv
-docker-compose.yml
