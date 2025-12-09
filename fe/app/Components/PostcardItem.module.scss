@@ -1,0 +1,18 @@
+.postcardItem{
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  margin: 0 auto;
+  border: 1px solid #000;
+  border-radius: 6px;
+  padding: 10px;
+  .postcardDate{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .reservDate{
+      display: flex;
+      align-items: center;
+    }
+  }
+}

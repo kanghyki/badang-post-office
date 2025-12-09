@@ -1,8 +1,18 @@
-.container{
-  width: 100%;
-  height: 100%;
-  background-color: pink;
-  .mnView{
-    font-size: 30px;
+@import "../mixin";
+
+.homeMain{
+  .logoImg{
+    background-color: #fc0;
+    width: 40vw;
+    height: 40vw;
+    margin: 0 auto;
+  }
+  .logoTitle{
+    font-size: 24px;
+    line-height: 30px;
+    text-align: center;
+  }
+  .headCopy{
+    text-align: center;
   }
 }
