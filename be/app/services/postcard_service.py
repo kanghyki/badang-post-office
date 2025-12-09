@@ -184,6 +184,7 @@ class PostcardService:
                     y=photo_cfg.y,
                     max_width=photo_cfg.max_width,
                     max_height=photo_cfg.max_height,
+                    effects=photo_cfg.effects,  # 템플릿에 정의된 효과 적용
                 )
 
         # 6. 텍스트 영역 추가 (반복문)
@@ -202,11 +203,15 @@ class PostcardService:
 
             # 텍스트 줄바꿈 (실제 픽셀 너비 및 높이 기반)
             if text_cfg.max_width:
+                # line_height 비율 계산
+                line_height_ratio = getattr(text_cfg, 'line_height', 1.2)
+                actual_line_height = int(text_cfg.font_size * line_height_ratio)
+                
                 wrapper = TextWrapper(
                     font=font,
                     max_width=text_cfg.max_width,
                     max_height=text_cfg.max_height,
-                    line_spacing=text_cfg.line_spacing
+                    line_height=actual_line_height
                 )
                 wrapped_text = wrapper.wrap(text_content)
             else:
@@ -214,6 +219,10 @@ class PostcardService:
 
             # 각 줄 그리기
             y_offset = text_cfg.y
+            # line_height 비율 계산 (기본값 1.2)
+            line_height_ratio = getattr(text_cfg, 'line_height', 1.2)
+            actual_line_height = int(text_cfg.font_size * line_height_ratio)
+            
             for line in wrapped_text.split("\n"):
                 maker.add_text(
                     line,
@@ -226,7 +235,7 @@ class PostcardService:
                     max_width=text_cfg.max_width,
                     max_height=text_cfg.max_height,
                 )
-                y_offset += text_cfg.font_size + text_cfg.line_spacing
+                y_offset += actual_line_height
 
         # 7. 엽서 저장
         postcard_image = maker.get_canvas()

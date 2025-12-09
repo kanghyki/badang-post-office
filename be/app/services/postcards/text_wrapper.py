@@ -16,7 +16,7 @@ class TextWrapper:
         font: ImageFont.FreeTypeFont,
         max_width: int,
         max_height: Optional[int] = None,
-        line_spacing: int = 10
+        line_height: int = 34  # 실제 줄 높이 (픽셀)
     ):
         """
         TextWrapper 초기화
@@ -25,12 +25,12 @@ class TextWrapper:
             font: PIL ImageFont 객체
             max_width: 최대 너비 (픽셀)
             max_height: 최대 높이 (픽셀, 선택)
-            line_spacing: 줄 간격 (픽셀)
+            line_height: 줄 높이 (픽셀)
         """
         self.font = font
         self.max_width = max_width
         self.max_height = max_height
-        self.line_spacing = line_spacing
+        self.line_height = line_height
         self.font_size = font.size if hasattr(font, 'size') else 28
 
     def wrap(self, text: str) -> str:
@@ -114,8 +114,7 @@ class TextWrapper:
         if not lines:
             return lines
 
-        line_height = self.font_size + self.line_spacing
-        max_lines = max(1, self.max_height // line_height)
+        max_lines = max(1, self.max_height // self.line_height)
 
         if len(lines) > max_lines:
             # 마지막 줄에 '...' 추가

@@ -55,14 +55,17 @@ def save_template_to_disk(template_data: Template) -> Template:
         raise ValueError("Photo config IDs must be unique within the template.")
     
     try:
-        # Convert Pydantic model to JSON string with indentation for readability
-        json_data = template_data.model_dump_json(indent=4)
-
+        # Ensure directory exists
+        os.makedirs(TEMPLATE_DIR, exist_ok=True)
+        
+        # Convert Pydantic model to dict, then to JSON with indentation
+        template_dict = template_data.model_dump(exclude_none=True)
+        
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(json_data)
+            json.dump(template_dict, f, indent=4, ensure_ascii=False)
 
-        # Return the saved template (will be loaded dynamically on next request)
-        return get_template_by_id(template_data.id)
+        # Return the template data itself (already validated)
+        return template_data
 
     except Exception as e:
         raise

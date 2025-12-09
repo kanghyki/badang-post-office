@@ -6,7 +6,7 @@
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import uuid as uuid_lib
 
 
@@ -18,7 +18,7 @@ class TextConfig(BaseModel):
     font_size: int = 28
     color: str = "black"
     align: str = "center"
-    line_spacing: int = 10
+    line_height: float = 1.2  # 줄 높이 비율 (1.0 = 100%, 1.5 = 150%)
     max_width: Optional[int] = None
     max_height: Optional[int] = None
     font_id: Optional[str] = None
@@ -31,6 +31,7 @@ class PhotoConfig(BaseModel):
     y: int
     max_width: Optional[int] = None
     max_height: Optional[int] = None
+    effects: Optional[Dict[str, Any]] = None  # 이미지 효과 설정 (grayscale, sepia, blur, brightness, contrast 등)
 
 
 class Template(BaseModel):

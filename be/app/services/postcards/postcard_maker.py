@@ -4,9 +4,10 @@
 사진, 텍스트, 테두리를 조합하여 엽서를 만드는 PostcardMaker 클래스를 제공합니다.
 """
 
-from typing import Optional
+from typing import Optional, Dict, Any
 from PIL import Image, ImageDraw
 from app.services.postcards.font_manager import FontManager
+from app.services.postcards.image_effects import apply_effects
 
 
 class PostcardMaker:
@@ -38,7 +39,8 @@ class PostcardMaker:
         x: int,
         y: int,
         max_width: Optional[int] = None,
-        max_height: Optional[int] = None
+        max_height: Optional[int] = None,
+        effects: Optional[Dict[str, Any]] = None
     ) -> 'PostcardMaker':
         """
         사진을 엽서에 추가합니다 (contain 방식으로 리사이징하고 중앙 정렬).
@@ -49,6 +51,7 @@ class PostcardMaker:
             y: 배치 영역 시작 Y 좌표
             max_width: 최대 너비 (None이면 원본 크기 유지)
             max_height: 최대 높이 (None이면 원본 크기 유지)
+            effects: 이미지 효과 설정 (grayscale, sepia, blur, brightness, contrast 등)
 
         Returns:
             self (메서드 체이닝 가능)
@@ -62,7 +65,11 @@ class PostcardMaker:
             image = Image.open(image_path)
             original_width, original_height = image.size
 
-            # 2단계: Contain 방식 크기 조정
+            # 2단계: 이미지 효과 적용
+            if effects:
+                image = apply_effects(image, effects)
+
+            # 3단계: Contain 방식 크기 조정
             # max_width/max_height 값 검증 및 기본값 설정
             if max_width is None:
                 max_width = original_width
@@ -84,7 +91,7 @@ class PostcardMaker:
                 Image.Resampling.LANCZOS
             )
 
-            # 3단계: 중앙 정렬 좌표 계산
+            # 4단계: 중앙 정렬 좌표 계산
             # 배치 영역(x, y, max_width, max_height)의 중앙에 이미지를 배치
             area_center_x = x + max_width / 2
             area_center_y = y + max_height / 2
@@ -92,8 +99,11 @@ class PostcardMaker:
             final_x = int(area_center_x - new_width / 2)
             final_y = int(area_center_y - new_height / 2)
 
-            # 4단계: 캔버스에 붙여넣기
-            self.canvas.paste(resized_image, (final_x, final_y))
+            # 5단계: 캔버스에 붙여넣기 (알파 채널 고려)
+            if resized_image.mode == 'RGBA':
+                self.canvas.paste(resized_image, (final_x, final_y), resized_image)
+            else:
+                self.canvas.paste(resized_image, (final_x, final_y))
 
             return self
 
