@@ -65,6 +65,7 @@ class TextWrapper:
     def _wrap_line(self, line: str) -> List[str]:
         """
         한 줄을 max_width에 맞춰 여러 줄로 나눕니다.
+        단어가 잘리지 않도록 단어 단위로 개행합니다.
 
         Args:
             line: 개행되지 않은 한 줄
@@ -74,21 +75,26 @@ class TextWrapper:
         """
         lines = []
         current_line = ""
+        words = line.split(' ')  # 공백 기준으로 단어 분리
 
-        for char in line:
-            test_line = current_line + char
+        for i, word in enumerate(words):
+            # 단어 앞에 공백 추가 (첫 단어 제외)
+            test_word = word if i == 0 or not current_line else ' ' + word
+            test_line = current_line + test_word
+            
             bbox = self.font.getbbox(test_line)
             text_width = bbox[2] - bbox[0]
 
             if text_width <= self.max_width:
                 current_line = test_line
             else:
-                if current_line:
-                    lines.append(current_line)
-                    current_line = char
+                # 현재 줄에 아무것도 없으면 단어가 너무 긴 경우 -> 강제로 추가
+                if not current_line:
+                    current_line = word
                 else:
-                    lines.append(char)
-                    current_line = ""
+                    # 현재 줄을 저장하고 다음 줄 시작
+                    lines.append(current_line)
+                    current_line = word
 
         if current_line:
             lines.append(current_line)
