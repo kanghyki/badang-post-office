@@ -10,4 +10,7 @@ services:
       - PYTHONUNBUFFERED=1
     env_file:
       - .env
+    volumes:
+      - ./static:/app/static
+      - ./data:/app/data
     restart: unless-stopped
