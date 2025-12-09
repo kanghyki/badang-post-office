@@ -8,8 +8,6 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.routes import postcards, templates, templates_public, fonts
 from app.database.database import init_db, get_db
-from app.template_store import load_templates
-from app.font_store import load_fonts
 
 # 로거 설정
 logger = logging.getLogger(__name__)
@@ -27,20 +25,15 @@ os.makedirs("data", exist_ok=True)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    앱 시작/종료 시 실행되는 lifespan 이벤트
+    Application startup/shutdown lifespan events
 
-    시작 시:
-    - 필요한 디렉토리 생성
-    - JSON 템플릿/폰트 파일 메모리 로드
-    - 데이터베이스 테이블 생성
+    On startup:
+    - Create necessary directories
+    - Initialize database tables
     """
     logger.info("Starting application initialization...")
 
-    # JSON 템플릿 및 폰트 로드
-    load_templates()
-    load_fonts()
-
-    # 데이터베이스 초기화 (Postcard 테이블)
+    # Initialize database (Postcard table)
     await init_db()
     logger.info("Database tables created successfully")
 
