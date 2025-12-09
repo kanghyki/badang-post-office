@@ -3,3 +3,6 @@ run: setup
 
 setup:
 	./setup.sh
+
+upload_static:
+	./upload_static.sh
