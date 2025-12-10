@@ -25,45 +25,24 @@ router = APIRouter(prefix="/v1/postcards", tags=["Postcards"])
 logger = logging.getLogger(__name__)
 
 
-@router.post("/send", response_model=PostcardResponse)
-async def create_and_send_postcard(
+@router.post("/create", response_model=PostcardResponse)
+async def create_postcard_draft(
     template_id: str = Form(..., description="사용할 템플릿 ID"),
     text: str = Form(..., description="엽서에 들어갈 본문 텍스트"),
     recipient_email: str = Form(..., description="수신자 이메일 (필수)"),
     sender_name: Optional[str] = Form(None, description="발신자 이름 (선택)"),
     recipient_name: Optional[str] = Form(None, description="수신자 이름 (선택)"),
-    scheduled_at: Optional[str] = Form(None, description="발송 예정 시간 (ISO 8601 형식, 없으면 즉시 발송, ex: 2025-12-10T16:08:30+09:00)"),
     image: Optional[UploadFile] = File(None, description="사용자 사진 (선택)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    포스트카드 생성 및 발송 (즉시/예약)
+    엽서 생성 (작성 중 상태로 저장)
 
-    - scheduled_at이 없으면: 즉시 발송 (엽서 생성 → 이메일 발송)
-    - scheduled_at이 있으면: 예약 발송 (예약 등록 → 시간 되면 자동 발송)
+    엽서를 작성하고 writing 상태로 저장합니다.
+    나중에 /v1/postcards/{id}/send 엔드포인트로 발송할 수 있습니다.
     """
     try:
-        # scheduled_at 파싱
-        scheduled_datetime = None
-        if scheduled_at:
-            try:
-                scheduled_datetime = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
-            except ValueError:
-                raise HTTPException(
-                    status_code=400,
-                    detail="scheduled_at은 ISO 8601 형식이어야 합니다 (예: 2025-12-15T14:00:00+09:00)"
-                )
-        
-        # 검증
-        request_data = PostcardCreateRequest(
-            template_id=template_id,
-            text=text,
-            recipient_email=recipient_email,
-            recipient_name=recipient_name,
-            sender_name=sender_name,
-            scheduled_at=scheduled_datetime
-        )
         # 발신자 이름 기본값: 사용자 이름
         if not sender_name:
             sender_name = current_user.name
@@ -79,9 +58,8 @@ async def create_and_send_postcard(
         # 2. 텍스트 매핑 (자동 생성 + 사용자 입력)
         texts = PostcardService._map_simple_text(template, text)
 
-        # 2-1. 발신자 이름 추가 (sender 영역이 있고 sender_name이 제공된 경우)
+        # 2-1. 발신자 이름 추가
         if sender_name:
-            # "sender" 또는 "from" ID를 가진 text_config가 있으면 자동 매핑
             sender_config = next(
                 (cfg for cfg in template.text_configs if cfg.id in ["sender"]),
                 None
@@ -91,7 +69,6 @@ async def create_and_send_postcard(
 
         # 3. 이미지 매핑
         user_photo_paths = {}
-        photos = None
 
         if image:
             logger.info(f"User uploaded image: filename={image.filename}, content_type={image.content_type}")
@@ -111,120 +88,33 @@ async def create_and_send_postcard(
                 storage = LocalStorageService()
                 saved_path = await storage.save_user_photo(photo_bytes, "jpg")
                 user_photo_paths[target_photo_id] = saved_path
-                photos = {target_photo_id: photo_bytes}
                 logger.info(f"Mapped user photo: photo_id={target_photo_id}, saved_path={saved_path}")
             else:
                 logger.warning(f"Template {template_id} has no photo_configs to map user image to")
         else:
             logger.info("No image uploaded by user")
 
-        # 즉시 발송
-        if not scheduled_datetime:
-            # 엽서 이미지 생성 및 DB 저장
-            service = PostcardService(db)
-            postcard_result = await service.create_postcard(
-                template_id=template_id,
-                texts=texts,
-                photos=photos,
-                sender_name=sender_name,
-                user_id=current_user.id,
-                recipient_email=recipient_email,
-            )
-            
-            # 생성된 Postcard 조회
-            stmt = select(Postcard).where(Postcard.id == postcard_result.id)
-            result = await db.execute(stmt)
-            postcard = result.scalar_one()
-            
-            # recipient_name 업데이트
-            if recipient_name:
-                stmt = (
-                    update(Postcard)
-                    .where(Postcard.id == postcard.id)
-                    .values(recipient_name=recipient_name)
-                )
-                await db.execute(stmt)
-                await db.commit()
-                await db.refresh(postcard)
+        # 4. DB에 writing 상태로 저장
+        postcard = Postcard(
+            user_id=current_user.id,
+            template_id=template_id,
+            text_contents=texts,
+            user_photo_paths=user_photo_paths if user_photo_paths else None,
+            recipient_email=recipient_email,
+            recipient_name=recipient_name,
+            sender_name=sender_name,
+            status="writing",
+            scheduled_at=None,
+            postcard_image_path=None  # 아직 생성 안됨
+        )
 
-            # 5. 이메일 발송
-            try:
-                email_service = EmailService()
-                await email_service.send_postcard_email(
-                    to_email=recipient_email,
-                    to_name=recipient_name,
-                    postcard_image_path=postcard.postcard_image_path,
-                    sender_name=sender_name
-                )
-                
-                # 상태 업데이트: sent
-                stmt = (
-                    update(Postcard)
-                    .where(Postcard.id == postcard.id)
-                    .values(status="sent", sent_at=datetime.utcnow())
-                )
-                await db.execute(stmt)
-                await db.commit()
-                await db.refresh(postcard)
-                
-                logger.info(f"Postcard {postcard.id} sent immediately to {recipient_email}")
-                
-            except Exception as e:
-                # 이메일 발송 실패
-                stmt = (
-                    update(Postcard)
-                    .where(Postcard.id == postcard.id)
-                    .values(status="failed", error_message=str(e))
-                )
-                await db.execute(stmt)
-                await db.commit()
-                await db.refresh(postcard)
-                
-                logger.error(f"Failed to send postcard {postcard.id}: {str(e)}")
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"엽서는 생성되었으나 이메일 발송에 실패했습니다: {str(e)}"
-                )
-        
-        # 예약 발송
-        else:
-            # DB에 예약 정보 저장 (pending 상태)
-            postcard = Postcard(
-                user_id=current_user.id,
-                template_id=template_id,
-                text_contents=texts,
-                user_photo_paths=user_photo_paths if user_photo_paths else None,
-                recipient_email=recipient_email,
-                recipient_name=recipient_name,
-                sender_name=sender_name,
-                status="pending",
-                scheduled_at=request_data.scheduled_at,
-                postcard_image_path=None  # 아직 생성 안됨
-            )
-            
-            db.add(postcard)
-            await db.commit()
-            await db.refresh(postcard)
-            
-            # 스케줄러에 등록
-            scheduler = get_scheduler()
-            success = await scheduler.schedule_postcard(
-                postcard.id,
-                request_data.scheduled_at
-            )
-            
-            if not success:
-                # 스케줄러 등록 실패 시 DB에서도 삭제
-                await db.delete(postcard)
-                await db.commit()
-                raise HTTPException(
-                    status_code=500,
-                    detail="스케줄러 등록에 실패했습니다."
-                )
-            
-            logger.info(f"Scheduled postcard {postcard.id} for {scheduled_at}")
+        db.add(postcard)
+        await db.commit()
+        await db.refresh(postcard)
 
-        # 6. 응답
+        logger.info(f"Created postcard draft {postcard.id} in writing state")
+
+        # 5. 응답
         display_text = postcard.text_contents.get("main_text", "")
         if not display_text and postcard.text_contents:
             display_text = next(iter(postcard.text_contents.values()), "")
@@ -252,13 +142,13 @@ async def create_and_send_postcard(
         traceback.print_exc()
         raise HTTPException(
             status_code=500,
-            detail=f"포스트카드 처리 중 오류가 발생했습니다: {str(e)}"
+            detail=f"엽서 생성 중 오류가 발생했습니다: {str(e)}"
         )
 
 
 @router.get("", response_model=List[PostcardResponse])
 async def list_postcards(
-    status: Optional[str] = Query(None, description="상태 필터 (pending, sent, failed, cancelled)"),
+    status: Optional[str] = Query(None, description="상태 필터 (writing, pending, sent, failed, cancelled)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -271,10 +161,10 @@ async def list_postcards(
         stmt = select(Postcard).where(Postcard.user_id == current_user.id)
         
         if status:
-            if status not in ["pending", "sent", "failed", "cancelled"]:
+            if status not in ["writing", "pending", "sent", "failed", "cancelled"]:
                 raise HTTPException(
                     status_code=400,
-                    detail="status는 pending, sent, failed, cancelled 중 하나여야 합니다."
+                    detail="status는 writing, pending, sent, failed, cancelled 중 하나여야 합니다."
                 )
             stmt = stmt.where(Postcard.status == status)
         
@@ -379,7 +269,7 @@ async def update_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 수정 (pending 상태만 가능)
+    엽서 수정 (writing 또는 pending 상태만 가능)
     """
     try:
         stmt = select(Postcard).where(
@@ -393,11 +283,11 @@ async def update_postcard(
         
         if not postcard:
             raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
-        
-        if postcard.status != "pending":
+
+        if postcard.status not in ["writing", "pending"]:
             raise HTTPException(
                 status_code=400,
-                detail=f"pending 상태의 엽서만 수정 가능합니다. (현재 상태: {postcard.status})"
+                detail=f"writing 또는 pending 상태의 엽서만 수정 가능합니다. (현재 상태: {postcard.status})"
             )
         
         # 업데이트할 필드
@@ -499,7 +389,7 @@ async def cancel_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 취소 (pending 상태만 가능)
+    엽서 취소 또는 삭제 (writing 또는 pending 상태만 가능)
     """
     try:
         stmt = select(Postcard).where(
@@ -513,11 +403,11 @@ async def cancel_postcard(
         
         if not postcard:
             raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
-        
-        if postcard.status != "pending":
+
+        if postcard.status not in ["writing", "pending"]:
             raise HTTPException(
                 status_code=400,
-                detail=f"pending 상태의 엽서만 취소 가능합니다. (현재 상태: {postcard.status})"
+                detail=f"writing 또는 pending 상태의 엽서만 취소/삭제 가능합니다. (현재 상태: {postcard.status})"
             )
         
         # 스케줄러에서 제거 (예약된 경우)
@@ -535,9 +425,9 @@ async def cancel_postcard(
         await db.commit()
         
         logger.info(f"Cancelled postcard {postcard_id}")
-        
+
         return None
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -545,4 +435,195 @@ async def cancel_postcard(
         raise HTTPException(
             status_code=500,
             detail=f"엽서 취소 중 오류가 발생했습니다: {str(e)}"
+        )
+
+
+@router.post("/{postcard_id}/send", response_model=PostcardResponse)
+async def send_postcard(
+    postcard_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    엽서 발송 (writing 또는 pending 상태의 엽서만 가능)
+
+    - scheduled_at이 없으면: 즉시 발송 (엽서 생성 → 이메일 발송 → sent 상태)
+    - scheduled_at이 설정되어 있으면: pending 상태로 변경 → 스케줄러 등록
+
+    예약 시간을 설정하려면 먼저 PATCH /v1/postcards/{id}로 scheduled_at을 설정한 후 이 엔드포인트를 호출하세요.
+    """
+    try:
+        # 1. 엽서 조회
+        stmt = select(Postcard).where(
+            and_(
+                Postcard.id == postcard_id,
+                Postcard.user_id == current_user.id
+            )
+        )
+        result = await db.execute(stmt)
+        postcard = result.scalar_one_or_none()
+
+        if not postcard:
+            raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
+
+        if postcard.status not in ["writing", "pending"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"writing 또는 pending 상태의 엽서만 발송 가능합니다. (현재 상태: {postcard.status})"
+            )
+
+        # 2. 템플릿 조회
+        template = template_service.get_template_by_id(postcard.template_id)
+        if not template:
+            raise HTTPException(
+                status_code=404,
+                detail=f"템플릿 '{postcard.template_id}'를 찾을 수 없습니다."
+            )
+
+        # 3-1. 즉시 발송 (scheduled_at이 없는 경우)
+        if not postcard.scheduled_at:
+            # 사진 데이터 로드 (저장된 경로에서)
+            photos = {}
+            if postcard.user_photo_paths:
+                storage = LocalStorageService()
+                for photo_id, photo_path in postcard.user_photo_paths.items():
+                    photo_bytes = await storage.read_file(photo_path)
+                    if photo_bytes:
+                        photos[photo_id] = photo_bytes
+                        logger.info(f"Loaded photo {photo_id} from {photo_path}")
+
+            # 엽서 이미지 생성
+            service = PostcardService(db)
+            postcard_result = await service.create_postcard(
+                template_id=postcard.template_id,
+                texts=postcard.text_contents,
+                photos=photos if photos else None,
+                sender_name=postcard.sender_name,
+                user_id=current_user.id,
+                recipient_email=postcard.recipient_email,
+            )
+
+            # 기존 엽서 레코드 업데이트 (새로 생성된 이미지 경로 복사)
+            stmt = (
+                update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(
+                    postcard_image_path=postcard_result.postcard_image_path,
+                    updated_at=datetime.utcnow()
+                )
+            )
+            await db.execute(stmt)
+            await db.commit()
+            await db.refresh(postcard)
+
+            # 새로 생성된 임시 레코드 삭제
+            await db.delete(postcard_result)
+            await db.commit()
+
+            # 이메일 발송
+            try:
+                email_service = EmailService()
+                await email_service.send_postcard_email(
+                    to_email=postcard.recipient_email,
+                    to_name=postcard.recipient_name,
+                    postcard_image_path=postcard.postcard_image_path,
+                    sender_name=postcard.sender_name
+                )
+
+                # 상태 업데이트: sent
+                stmt = (
+                    update(Postcard)
+                    .where(Postcard.id == postcard_id)
+                    .values(status="sent", sent_at=datetime.utcnow())
+                )
+                await db.execute(stmt)
+                await db.commit()
+                await db.refresh(postcard)
+
+                logger.info(f"Postcard {postcard_id} sent immediately to {postcard.recipient_email}")
+
+            except Exception as e:
+                # 이메일 발송 실패
+                stmt = (
+                    update(Postcard)
+                    .where(Postcard.id == postcard_id)
+                    .values(status="failed", error_message=str(e))
+                )
+                await db.execute(stmt)
+                await db.commit()
+                await db.refresh(postcard)
+
+                logger.error(f"Failed to send postcard {postcard_id}: {str(e)}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"엽서는 생성되었으나 이메일 발송에 실패했습니다: {str(e)}"
+                )
+
+        # 3-2. 예약 발송 (scheduled_at이 설정되어 있는 경우)
+        else:
+            # pending 상태로 변경
+            stmt = (
+                update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(
+                    status="pending",
+                    updated_at=datetime.utcnow()
+                )
+            )
+            await db.execute(stmt)
+            await db.commit()
+            await db.refresh(postcard)
+
+            # 스케줄러에 등록
+            scheduler = get_scheduler()
+            success = await scheduler.schedule_postcard(
+                postcard_id,
+                postcard.scheduled_at
+            )
+
+            if not success:
+                # 스케줄러 등록 실패 시 상태를 다시 writing으로 되돌림
+                stmt = (
+                    update(Postcard)
+                    .where(Postcard.id == postcard_id)
+                    .values(status="writing")
+                )
+                await db.execute(stmt)
+                await db.commit()
+                raise HTTPException(
+                    status_code=500,
+                    detail="스케줄러 등록에 실패했습니다."
+                )
+
+            logger.info(f"Scheduled postcard {postcard_id} for {postcard.scheduled_at}")
+
+        # 5. 응답
+        display_text = postcard.text_contents.get("main_text", "")
+        if not display_text and postcard.text_contents:
+            display_text = next(iter(postcard.text_contents.values()), "")
+
+        return PostcardResponse(
+            id=postcard.id,
+            template_id=postcard.template_id,
+            text=display_text,
+            recipient_email=postcard.recipient_email,
+            recipient_name=postcard.recipient_name,
+            sender_name=postcard.sender_name,
+            status=postcard.status,
+            scheduled_at=postcard.scheduled_at,
+            sent_at=postcard.sent_at,
+            postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
+            error_message=postcard.error_message,
+            created_at=postcard.created_at,
+            updated_at=postcard.updated_at
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"엽서 발송 중 오류가 발생했습니다: {str(e)}"
         )

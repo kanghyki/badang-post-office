@@ -95,3 +95,22 @@ class LocalStorageService:
             # 'static/templates/ocean.jpg'
         """
         return template_path
+
+    async def read_file(self, file_path: str) -> bytes:
+        """
+        파일을 읽어서 바이트로 반환합니다.
+
+        Args:
+            file_path: 읽을 파일 경로
+
+        Returns:
+            bytes: 파일 내용
+
+        Example:
+            content = await storage.read_file("static/uploads/2025/12/08/uuid.jpg")
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"파일을 찾을 수 없습니다: {file_path}")
+
+        with open(file_path, "rb") as f:
+            return f.read()

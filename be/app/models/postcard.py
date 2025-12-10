@@ -67,7 +67,7 @@ class PostcardResponse(BaseModel):
     recipient_email: str
     recipient_name: Optional[str] = None
     sender_name: Optional[str] = None
-    status: Literal["pending", "sent", "failed", "cancelled"]
+    status: Literal["writing", "pending", "sent", "failed", "cancelled"]
     scheduled_at: Optional[datetime] = None  # NULL이면 즉시 발송
     sent_at: Optional[datetime] = None
     postcard_path: Optional[str] = None  # 생성된 엽서 이미지 경로

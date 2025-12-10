@@ -39,7 +39,7 @@ class Postcard(Base):
     sender_name = Column(String)
     
     # 발송 상태 및 스케줄링
-    status = Column(String, default="pending")  # pending, sent, failed, cancelled
+    status = Column(String, default="writing")  # writing, pending, sent, failed, cancelled
     scheduled_at = Column(DateTime)  # 발송 예정 시간 (NULL이면 즉시 발송)
     sent_at = Column(DateTime)  # 실제 발송 시간
     
