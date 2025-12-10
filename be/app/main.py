@@ -5,9 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
-from fastapi.staticfiles import StaticFiles
 from app.config import settings
-from app.routes import postcards, templates, templates_public, fonts, translation, auth
+from app.routes import postcards, templates, templates_public, fonts, translation, auth, files
 from app.database.database import init_db, get_db
 from app.scheduler_instance import init_scheduler, shutdown_scheduler
 
@@ -90,10 +89,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 정적 파일 서빙
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 # 라우터 등록
+app.include_router(files.router)  # 보안 파일 접근
 app.include_router(auth.router)  # 인증 (회원가입/로그인)
 app.include_router(postcards.router)  # 엽서 발송 (즉시/예약 통합)
 app.include_router(templates_public.router)  # 프로덕션: 템플릿 조회

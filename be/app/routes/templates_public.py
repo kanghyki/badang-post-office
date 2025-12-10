@@ -11,6 +11,7 @@ from app.models.template import (
     TemplateListResponse,
     TemplateResponse,
 )
+from app.utils.url import convert_static_path_to_url
 
 router = APIRouter(
     prefix="/v1/templates",
@@ -39,4 +40,9 @@ def get_template_detail(template_id: str):
     template = template_service.get_template_by_id(template_id)
     if not template:
         raise HTTPException(status_code=404, detail="템플릿을 찾을 수 없습니다.")
-    return template
+    
+    # template_image_path를 보안 URL로 변환
+    template_dict = template.model_dump()
+    template_dict["template_image_path"] = convert_static_path_to_url(template.template_image_path)
+    
+    return Template(**template_dict)

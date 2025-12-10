@@ -65,3 +65,39 @@ async def get_current_user(
         )
 
     return user
+
+
+async def get_optional_user(
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
+    db: AsyncSession = Depends(get_db)
+) -> User | None:
+    """
+    JWT 토큰에서 현재 사용자 추출 (선택적)
+    
+    토큰이 없거나 유효하지 않아도 에러를 발생시키지 않고 None을 반환합니다.
+    
+    Args:
+        credentials: HTTP Bearer 인증 정보 (선택)
+        db: 데이터베이스 세션
+        
+    Returns:
+        현재 사용자 또는 None
+    """
+    if not credentials:
+        return None
+    
+    token = credentials.credentials
+    payload = verify_token(token)
+    
+    if not payload:
+        return None
+    
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+    
+    # DB에서 사용자 조회
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    return user

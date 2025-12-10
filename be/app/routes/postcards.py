@@ -18,6 +18,7 @@ from app.models.postcard import PostcardResponse, PostcardCreateRequest, Postcar
 from app.services import template_service
 from app.dependencies.auth import get_current_user
 from app.scheduler_instance import get_scheduler
+from app.utils.url import convert_static_path_to_url
 import logging
 
 router = APIRouter(prefix="/v1/postcards", tags=["Postcards"])
@@ -230,7 +231,7 @@ async def create_and_send_postcard(
             status=postcard.status,
             scheduled_at=postcard.scheduled_at,
             sent_at=postcard.sent_at,
-            postcard_path=postcard.postcard_image_path,
+            postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
             error_message=postcard.error_message,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
@@ -290,7 +291,7 @@ async def list_postcards(
                 status=postcard.status,
                 scheduled_at=postcard.scheduled_at,
                 sent_at=postcard.sent_at,
-                postcard_path=postcard.postcard_image_path,
+                postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
                 error_message=postcard.error_message,
                 created_at=postcard.created_at,
                 updated_at=postcard.updated_at
@@ -342,7 +343,7 @@ async def get_postcard(
             status=postcard.status,
             scheduled_at=postcard.scheduled_at,
             sent_at=postcard.sent_at,
-            postcard_path=postcard.postcard_image_path,
+            postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
             error_message=postcard.error_message,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
@@ -466,7 +467,7 @@ async def update_postcard(
             status=postcard.status,
             scheduled_at=postcard.scheduled_at,
             sent_at=postcard.sent_at,
-            postcard_path=postcard.postcard_image_path,
+            postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
             error_message=postcard.error_message,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
