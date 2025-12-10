@@ -131,7 +131,7 @@ class EmailService:
                     <!-- 수신자 정보 (엽서 상단) -->
                     <div style="padding: 30px 40px 20px; background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%);">
                         <div style="display: inline-block; padding: 8px 20px; background: rgba(102, 126, 234, 0.1); border-left: 4px solid #667eea; border-radius: 0 8px 8px 0; margin-bottom: 10px;">
-                            <p style="margin: 0; color: #667eea; font-size: 12px; font-weight: bold; letter-spacing: 2px;">✉️ POST CARD</p>
+                            <p style="margin: 0; color: #667eea; font-size: 12px; font-weight: bold; letter-spacing: 2px;">제주바당우체국</p>
                         </div>
                         <h2 style="margin: 10px 0 5px; color: #2d3748; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">{greeting}</h2>
                         <p style="margin: 0; color: #718096; font-size: 14px; font-style: italic;">{subtitle_message}</p>
