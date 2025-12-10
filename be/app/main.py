@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from app.config import settings
-from app.routes import postcards, templates, templates_public, fonts, translation, auth, files
+from app.routes import postcards, templates_dev, templates_public, fonts, translation, auth, files, postcards_dev
 from app.database.database import init_db, get_db
 from app.scheduler_instance import init_scheduler, shutdown_scheduler
 
@@ -99,9 +99,10 @@ app.include_router(translation.router)  # 제주 방언 번역 테스트
 
 # 개발/운영용 관리 API (env=dev일 때만 활성화)
 if settings.env == "dev":
-    app.include_router(templates.router)  # 개발: 템플릿 생성/수정/삭제
+    app.include_router(templates_dev.router)  # 개발: 템플릿 생성/수정/삭제
     app.include_router(fonts.router)
-    logger.info("Development/Admin APIs (Template Management, Fonts, Translation) enabled")
+    app.include_router(postcards_dev.router)  # 개발: 엽서 스케줄러 모니터링
+    logger.info("Development/Admin APIs (Template Management, Fonts, Postcards Dev) enabled")
 
 
 @app.get("/")
