@@ -4,12 +4,23 @@ SQLAlchemy 데이터베이스 모델
 템플릿과 엽서 데이터를 저장하는 테이블 정의
 """
 
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, JSON
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, JSON, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import uuid
 
 Base = declarative_base()
+
+
+class User(Base):
+    """사용자 테이블"""
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = Column(String, unique=True, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class Postcard(Base):
@@ -22,7 +33,7 @@ class Postcard(Base):
     user_photo_paths = Column(JSON)  # {"photo_config_id": "path", ...}
     postcard_image_path = Column(String, nullable=False)  # 생성된 엽서 이미지 경로
     sender_name = Column(String)  # 발신자 이름
-    user_id = Column(String)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)  # 사용자 FK
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

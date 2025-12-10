@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from fastapi.staticfiles import StaticFiles
 from app.config import settings
-from app.routes import postcards, templates, templates_public, fonts, translation
+from app.routes import postcards, templates, templates_public, fonts, translation, auth
 from app.database.database import init_db, get_db
 
 # 로거 설정
@@ -67,6 +67,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 라우터 등록
+app.include_router(auth.router)  # 인증 (회원가입/로그인)
 app.include_router(postcards.router)
 app.include_router(templates_public.router)  # 프로덕션: 템플릿 조회
 app.include_router(translation.router)  # 제주 방언 번역 테스트

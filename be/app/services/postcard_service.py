@@ -140,6 +140,7 @@ class PostcardService:
         texts: Dict[str, str],  # {text_config_id: text}
         photos: Optional[Dict[str, bytes]] = None,  # {photo_config_id: bytes}
         sender_name: Optional[str] = None,  # 발신자 이름
+        user_id: Optional[str] = None,  # 사용자 ID
     ) -> PostcardResponse:
         """
         다중 텍스트/이미지를 지원하는 엽서 생성
@@ -248,6 +249,7 @@ class PostcardService:
             user_photo_paths=user_photo_paths,  # JSON으로 저장
             postcard_image_path=postcard_path,
             sender_name=sender_name,  # 발신자 이름
+            user_id=user_id,  # 사용자 ID
         )
         self.db.add(postcard)
         await self.db.commit()

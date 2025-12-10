@@ -8,9 +8,11 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.database import get_db
+from app.database.models import User
 from app.services.postcard_service import PostcardService
 from app.models.postcard import PostcardResponse
 from app.services import template_service
+from app.dependencies.auth import get_current_user
 
 router = APIRouter(prefix="/v1/postcards", tags=["Postcards"])
 
@@ -21,6 +23,7 @@ async def create_postcard(
     text: str = Form(..., description="엽서에 들어갈 본문 텍스트"),
     sender_name: Optional[str] = Form(None, description="발신자 이름 (선택)"),
     image: Optional[UploadFile] = File(None, description="사용자 사진 (선택)"),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -91,6 +94,7 @@ async def create_postcard(
             texts=texts,
             photos=photos,
             sender_name=sender_name,
+            user_id=current_user.id,
         )
 
         return postcard

@@ -4,9 +4,11 @@
 제주 방언 번역 기능을 테스트할 수 있는 엔드포인트를 제공합니다.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.services.translation_service import translate_to_jeju
 from app.models.translation import TranslationRequest, TranslationResponse
+from app.database.models import User
+from app.dependencies.auth import get_current_user
 
 router = APIRouter(
     prefix="/v1/translation",
@@ -15,7 +17,10 @@ router = APIRouter(
 
 
 @router.post("/jeju", response_model=TranslationResponse)
-async def translate_text_to_jeju(request: TranslationRequest):
+async def translate_text_to_jeju(
+    request: TranslationRequest,
+    current_user: User = Depends(get_current_user)
+):
     """
     표준어를 제주 방언으로 번역합니다.
 
