@@ -4,6 +4,7 @@
 SQLAlchemy 엔진과 세션을 설정하고 의존성 주입을 제공합니다.
 """
 
+from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.database.models import Base
 from app.config import settings
@@ -29,6 +30,21 @@ async def get_db():
         async def example(db: AsyncSession = Depends(get_db)):
             result = await db.execute(select(Template))
             return result.scalars().all()
+    """
+    async with async_session_maker() as session:
+        yield session
+
+
+@asynccontextmanager
+async def get_db_session():
+    """
+    독립 실행용 DB 세션 컨텍스트 매니저
+
+    스케줄러 등 FastAPI 요청 외부에서 DB 접근 시 사용합니다.
+
+    Example:
+        async with get_db_session() as db:
+            result = await db.execute(select(Postcard))
     """
     async with async_session_maker() as session:
         yield session

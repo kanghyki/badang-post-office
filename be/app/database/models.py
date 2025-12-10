@@ -24,16 +24,30 @@ class User(Base):
 
 
 class Postcard(Base):
-    """엽서 테이블"""
+    """엽서 테이블 (즉시 발송 및 예약 발송 통합)"""
     __tablename__ = "postcards"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    template_id = Column(String)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    template_id = Column(String, nullable=False)
     text_contents = Column(JSON, nullable=False)  # {"text_config_id": "text", ...}
     user_photo_paths = Column(JSON)  # {"photo_config_id": "path", ...}
-    postcard_image_path = Column(String, nullable=False)  # 생성된 엽서 이미지 경로
-    sender_name = Column(String)  # 발신자 이름
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)  # 사용자 FK
+    
+    # 수신자 정보
+    recipient_email = Column(String, nullable=False)
+    recipient_name = Column(String)
+    sender_name = Column(String)
+    
+    # 발송 상태 및 스케줄링
+    status = Column(String, default="pending")  # pending, sent, failed, cancelled
+    scheduled_at = Column(DateTime)  # 발송 예정 시간 (NULL이면 즉시 발송)
+    sent_at = Column(DateTime)  # 실제 발송 시간
+    
+    # 생성된 엽서 이미지 (발송 후 생성)
+    postcard_image_path = Column(String)  # NULL이면 아직 생성 안됨
+    error_message = Column(Text)  # 실패 시 오류 메시지
+    
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 

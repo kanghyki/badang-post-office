@@ -1,17 +1,17 @@
 """
 이메일 전송 서비스
 
-SMTP를 통해 엽서 이미지를 첨부한 이메일을 발송합니다.
+SMTP를 통해 이메일을 발송합니다.
 """
 
 import smtplib
 import logging
 import random
+from typing import Optional
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from pathlib import Path
-from typing import Optional
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -28,25 +28,23 @@ class EmailService:
         self.from_email = settings.smtp_from_email
         self.from_name = settings.smtp_from_name
 
-    async def send_postcard_email(
+    async def send_email(
         self,
         to_email: str,
-        to_name: Optional[str],
-        postcard_image_path: str,
-        sender_name: Optional[str] = None,
-        subject: Optional[str] = None,
-        custom_message: Optional[str] = None
+        subject: str,
+        html_body: str,
+        image_path: str,
+        image_filename: str = "image.png"
     ) -> bool:
         """
-        엽서 이메일 발송
+        이메일 발송 (이미지 첨부)
 
         Args:
             to_email: 수신자 이메일
-            to_name: 수신자 이름 (선택)
-            postcard_image_path: 엽서 이미지 파일 경로
-            sender_name: 발신자 이름 (선택)
-            subject: 이메일 제목 (선택, 기본값: "제주에서 온 엽서")
-            custom_message: 사용자 정의 메시지 (선택)
+            subject: 이메일 제목
+            html_body: HTML 본문 (cid:postcard_image로 이미지 참조)
+            image_path: 첨부할 이미지 파일 경로
+            image_filename: 첨부파일명
 
         Returns:
             발송 성공 여부
@@ -55,48 +53,29 @@ class EmailService:
             Exception: 이메일 발송 실패 시
         """
         try:
-            # 랜덤 제목 리스트
-            random_subjects = [
-                "혼저 옵서예, 제주에서 카드 하나 보냅니다게!",
-                "제주 바람이 살랑살랑~ 그 바람에 실려서 엽서 하나 날아갑주게!",
-                "오늘도 촘 이쁘게 지내라예? 제주서 정든 마음 보내봅디다~",
-                "하영 보고싶수다! 제주 하늘빛이랑 같이 보냅니다게.",
-                "귤향 폴폴~ 제주서 달큰한 소식 하나 들려줍써!"
-            ]
-            
-            # 이메일 제목 설정
-            email_subject = subject or random.choice(random_subjects)
-
             # MIMEMultipart 생성 (related: 인라인 이미지 지원)
             msg = MIMEMultipart('related')
-            msg['Subject'] = email_subject
+            msg['Subject'] = subject
             msg['From'] = f"{self.from_name} <{self.from_email}>"
             msg['To'] = to_email
-
-            # HTML 본문 생성
-            html_body = self._create_html_body(
-                to_name=to_name,
-                sender_name=sender_name,
-                custom_message=custom_message
-            )
 
             # HTML 파트 추가
             msg_alternative = MIMEMultipart('alternative')
             msg.attach(msg_alternative)
             msg_alternative.attach(MIMEText(html_body, 'html', 'utf-8'))
 
-            # 엽서 이미지 읽기
-            image_path = Path(postcard_image_path)
-            if not image_path.exists():
-                raise FileNotFoundError(f"엽서 이미지를 찾을 수 없습니다: {postcard_image_path}")
+            # 이미지 읽기
+            path = Path(image_path)
+            if not path.exists():
+                raise FileNotFoundError(f"이미지를 찾을 수 없습니다: {image_path}")
 
-            with open(image_path, 'rb') as f:
+            with open(path, 'rb') as f:
                 image_data = f.read()
 
             # 인라인 이미지 추가 (HTML에서 cid:postcard_image로 참조)
             image = MIMEImage(image_data)
             image.add_header('Content-ID', '<postcard_image>')
-            image.add_header('Content-Disposition', 'inline', filename=image_path.name)
+            image.add_header('Content-Disposition', 'inline', filename=path.name)
             msg.attach(image)
 
             # 첨부파일로도 추가 (다운로드 가능하도록)
@@ -104,12 +83,12 @@ class EmailService:
             image_attachment.add_header(
                 'Content-Disposition',
                 'attachment',
-                filename=f"jeju_postcard_{image_path.stem}.png"
+                filename=image_filename
             )
             msg.attach(image_attachment)
 
             # SMTP 서버 연결 및 전송
-            logger.info(f"Sending email to {to_email}")
+            logger.info(f"Sending email to {to_email} (Subject: {subject})")
             with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
                 server.starttls()  # TLS 암호화
                 server.login(self.smtp_username, self.smtp_password)
@@ -122,36 +101,8 @@ class EmailService:
             logger.error(f"Failed to send email to {to_email}: {str(e)}")
             raise
 
-    def _create_html_body(
-        self,
-        to_name: Optional[str],
-        sender_name: Optional[str],
-        custom_message: Optional[str]
-    ) -> str:
-        """
-        HTML 이메일 본문 생성
-
-        Args:
-            to_name: 수신자 이름
-            sender_name: 발신자 이름
-            custom_message: 사용자 정의 메시지
-
-        Returns:
-            HTML 본문
-        """
-        # 수신자 인사말
-        greeting = f"{to_name}님께" if to_name else "소중한 당신에게"
-        sender_text = f"From. {sender_name}" if sender_name else "From. 제주"
-        
-        # 랜덤 메시지 리스트
-        random_messages = [
-            "제주 바당바람에 마음 한 줌 싣어 보내드립주게!",
-            "제주서 건진 따순 마음, 바람 타고 살짝 보내봅디다.",
-            "바당 우체부가 챙겨온 설레는 마음 한 통, 혼저 받아주게!",
-            "제주 물빛처럼 고운 마음 실어 바당우체부가 배달합주게"
-        ]
-        subtitle_message = random.choice(random_messages)
-
+    def _get_postcard_email_html(self, greeting: str, subtitle_message: str) -> str:
+        """엽서 이메일 HTML 템플릿 생성"""
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -220,3 +171,65 @@ class EmailService:
         </html>
         """
         return html
+
+
+    async def send_postcard_email(
+        self,
+        to_email: str,
+        to_name: Optional[str],
+        postcard_image_path: str,
+        sender_name: Optional[str] = None,
+        subject: Optional[str] = None,
+        custom_message: Optional[str] = None
+    ) -> bool:
+        """
+        엽서 이메일 발송 (래퍼 메서드)
+        
+        Args:
+            to_email: 수신자 이메일
+            to_name: 수신자 이름
+            postcard_image_path: 엽서 이미지 경로
+            sender_name: 발신자 이름
+            subject: 이메일 제목 (기본값: "제주에서 온 엽서")
+            custom_message: 사용자 정의 메시지
+        
+        Returns:
+            발송 성공 여부
+        """
+        # 랜덤 제목 리스트
+        random_subjects = [
+            "혼저 옵서예, 제주에서 카드 하나 보냅니다게!",
+            "제주 바람이 살랑살랑~ 그 바람에 실려서 엽서 하나 날아갑주게!",
+            "오늘도 촘 이쁘게 지내라예? 제주서 정든 마음 보내봅디다~",
+            "하영 보고싶수다! 제주 하늘빛이랑 같이 보냅니다게.",
+            "귤향 폴폴~ 제주서 달큰한 소식 하나 들려줍써!"
+        ]
+        
+        # 랜덤 메시지 리스트
+        random_messages = [
+            "제주 바당바람에 마음 한 줌 싣어 보내드립주게!",
+            "제주서 건진 따순 마음, 바람 타고 살짝 보내봅디다.",
+            "바당 우체부가 챙겨온 설레는 마음 한 통, 혼저 받아주게!",
+            "제주 물빛처럼 고운 마음 실어 바당우체부가 배달합주게"
+        ]
+        
+        # 이메일 제목 설정 (랜덤 또는 사용자 지정)
+        if not subject:
+            subject = random.choice(random_subjects)
+        
+        logger.info(f"Preparing postcard email for {to_email} (to: {to_name or 'N/A'}, from: {sender_name or 'N/A'})")
+        
+        # HTML 생성
+        greeting = f"{to_name}님께" if to_name else "소중한 당신에게"
+        subtitle_message = custom_message or random.choice(random_messages)
+        
+        html_body = self._get_postcard_email_html(greeting, subtitle_message)
+        
+        # 이메일 발송
+        return await self.send_email(
+            to_email=to_email,
+            subject=subject,
+            html_body=html_body,
+            image_path=postcard_image_path,
+            image_filename="postcard.png"
+        )

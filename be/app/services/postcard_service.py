@@ -141,6 +141,7 @@ class PostcardService:
         photos: Optional[Dict[str, bytes]] = None,  # {photo_config_id: bytes}
         sender_name: Optional[str] = None,  # 발신자 이름
         user_id: Optional[str] = None,  # 사용자 ID
+        recipient_email: Optional[str] = None,  # 수신자 이메일 (새 스키마용)
     ) -> PostcardResponse:
         """
         다중 텍스트/이미지를 지원하는 엽서 생성
@@ -250,6 +251,8 @@ class PostcardService:
             postcard_image_path=postcard_path,
             sender_name=sender_name,  # 발신자 이름
             user_id=user_id,  # 사용자 ID
+            recipient_email=recipient_email or "unknown@example.com",  # 임시 기본값
+            status="pending",  # 기본 상태
         )
         self.db.add(postcard)
         await self.db.commit()
@@ -265,10 +268,17 @@ class PostcardService:
 
         # 10. 응답 반환
         return PostcardResponse(
-            postcard_id=postcard.id,
+            id=postcard.id,
             postcard_path=postcard_path,
             template_id=template_id,
             text=str(texts),  # Dict를 문자열로 변환 (임시)
+            recipient_email=postcard.recipient_email,
+            recipient_name=postcard.recipient_name,
             sender_name=sender_name,
+            status=postcard.status,
+            scheduled_at=postcard.scheduled_at,
+            sent_at=postcard.sent_at,
+            error_message=postcard.error_message,
             created_at=postcard.created_at,
+            updated_at=postcard.updated_at,
         )

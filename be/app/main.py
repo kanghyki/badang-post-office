@@ -1,5 +1,6 @@
 import os
 import logging
+from datetime import datetime
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,8 +9,26 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.routes import postcards, templates, templates_public, fonts, translation, auth
 from app.database.database import init_db, get_db
+from app.scheduler_instance import init_scheduler, shutdown_scheduler
 
-# 로거 설정
+# 로그 디렉토리 생성
+os.makedirs("logs", exist_ok=True)
+
+# 로깅 설정
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    handlers=[
+        # 콘솔 출력
+        logging.StreamHandler(),
+        # 파일 출력 (날짜별)
+        logging.FileHandler(
+            f"logs/app_{datetime.now().strftime('%Y%m%d')}.log",
+            encoding='utf-8'
+        )
+    ]
+)
+
 logger = logging.getLogger(__name__)
 
 # Bearer Token Security Scheme 정의 (Swagger UI용)
@@ -30,6 +49,7 @@ async def lifespan(app: FastAPI):
     On startup:
     - Create necessary directories
     - Initialize database tables
+    - Initialize scheduler and restore scheduled postcards
     """
     logger.info("Starting application initialization...")
 
@@ -37,11 +57,18 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database tables created successfully")
 
+    # Initialize scheduler
+    scheduler = init_scheduler()
+    await scheduler.start()
+    logger.info("Scheduler initialized and started")
+
     logger.info("Application initialization completed")
 
     yield
 
     # 종료 시
+    await shutdown_scheduler()
+    logger.info("Scheduler shutdown completed")
     logger.info("Application shutdown")
 
 
@@ -68,7 +95,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 라우터 등록
 app.include_router(auth.router)  # 인증 (회원가입/로그인)
-app.include_router(postcards.router)
+app.include_router(postcards.router)  # 엽서 발송 (즉시/예약 통합)
 app.include_router(templates_public.router)  # 프로덕션: 템플릿 조회
 app.include_router(translation.router)  # 제주 방언 번역 테스트
 
@@ -77,7 +104,7 @@ app.include_router(translation.router)  # 제주 방언 번역 테스트
 if settings.env == "dev":
     app.include_router(templates.router)  # 개발: 템플릿 생성/수정/삭제
     app.include_router(fonts.router)
-    logger.info("✅ Development/Admin APIs (Template Management, Fonts, Translation) enabled")
+    logger.info("Development/Admin APIs (Template Management, Fonts, Translation) enabled")
 
 
 @app.get("/")

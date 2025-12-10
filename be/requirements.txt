@@ -24,3 +24,7 @@ langchain-core>=0.2.0
 # JWT & 비밀번호 해싱
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
+
+# Task scheduling
+apscheduler>=3.10.0
+pytz>=2023.3
