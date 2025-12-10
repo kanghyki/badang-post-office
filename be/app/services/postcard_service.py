@@ -6,6 +6,7 @@
 
 import os
 import uuid as uuid_lib
+import logging
 from typing import Optional, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,6 +17,8 @@ from app.services.postcards.postcard_maker import PostcardMaker
 from app.services.postcards.text_wrapper import TextWrapper
 from app.models.postcard import PostcardResponse
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class PostcardService:
@@ -156,6 +159,7 @@ class PostcardService:
         user_photo_temp_paths = {}
 
         if photos:
+            logger.info(f"Processing {len(photos)} user photos for template {template_id}")
             for config_id, photo_bytes in photos.items():
                 # 영구 저장
                 saved_path = await self.storage.save_user_photo(photo_bytes, "jpg")
@@ -166,6 +170,9 @@ class PostcardService:
                 with open(temp_path, "wb") as f:
                     f.write(photo_bytes)
                 user_photo_temp_paths[config_id] = temp_path
+                logger.info(f"Saved user photo for config_id={config_id}: temp={temp_path}, saved={saved_path}")
+        else:
+            logger.warning(f"No photos provided for postcard creation")
 
         # 3. PostcardMaker 초기화
         template_path = self.storage.get_template_image_path(
@@ -177,9 +184,12 @@ class PostcardService:
         maker.add_background_image(template_path, opacity=1.0)
 
         # 5. 이미지 영역 추가 (반복문)
+        logger.info(f"Template has {len(template.photo_configs)} photo configs")
         for photo_cfg in template.photo_configs:
             config_id = photo_cfg.id
+            logger.info(f"Processing photo_cfg: id={config_id}, available photos={list(user_photo_temp_paths.keys())}")
             if config_id in user_photo_temp_paths:
+                logger.info(f"Adding user photo to postcard: config_id={config_id}, path={user_photo_temp_paths[config_id]}")
                 maker.add_photo(
                     user_photo_temp_paths[config_id],
                     x=photo_cfg.x,
@@ -188,6 +198,8 @@ class PostcardService:
                     max_height=photo_cfg.max_height,
                     effects=photo_cfg.effects,  # 템플릿에 정의된 효과 적용
                 )
+            else:
+                logger.warning(f"No user photo found for photo_cfg id={config_id}")
 
         # 6. 텍스트 영역 추가 (반복문)
         for text_cfg in template.text_configs:

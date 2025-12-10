@@ -4,10 +4,13 @@
 사진, 텍스트, 테두리를 조합하여 엽서를 만드는 PostcardMaker 클래스를 제공합니다.
 """
 
+import logging
 from typing import Optional, Dict, Any
 from PIL import Image, ImageDraw
 from app.services.postcards.font_manager import FontManager
 from app.services.postcards.image_effects import apply_effects
+
+logger = logging.getLogger(__name__)
 
 
 class PostcardMaker:
@@ -61,12 +64,16 @@ class PostcardMaker:
             PIL.UnidentifiedImageError: 이미지 형식이 잘못된 경우
         """
         try:
+            logger.info(f"Adding photo: path={image_path}, x={x}, y={y}, max_width={max_width}, max_height={max_height}")
+            
             # 1단계: 이미지 로드
             image = Image.open(image_path)
             original_width, original_height = image.size
+            logger.info(f"Loaded image: original_size=({original_width}, {original_height})")
 
             # 2단계: 이미지 효과 적용
             if effects:
+                logger.info(f"Applying effects: {effects}")
                 image = apply_effects(image, effects)
 
             # 3단계: Contain 방식 크기 조정
@@ -84,6 +91,7 @@ class PostcardMaker:
             # 최종 크기 계산
             new_width = int(original_width * scale)
             new_height = int(original_height * scale)
+            logger.info(f"Resizing: scale={scale:.2f}, new_size=({new_width}, {new_height})")
 
             # resize() 사용하여 리사이징 (LANCZOS 필터로 품질 보장)
             resized_image = image.resize(
@@ -98,6 +106,7 @@ class PostcardMaker:
 
             final_x = int(area_center_x - new_width / 2)
             final_y = int(area_center_y - new_height / 2)
+            logger.info(f"Final position: ({final_x}, {final_y})")
 
             # 5단계: 캔버스에 붙여넣기 (알파 채널 고려)
             if resized_image.mode == 'RGBA':
@@ -105,11 +114,14 @@ class PostcardMaker:
             else:
                 self.canvas.paste(resized_image, (final_x, final_y))
 
+            logger.info("Photo added successfully to canvas")
             return self
 
         except FileNotFoundError:
+            logger.error(f"Image file not found: {image_path}")
             raise FileNotFoundError(f"이미지 파일을 찾을 수 없습니다: {image_path}")
         except Exception as e:
+            logger.error(f"Error loading image: {e}")
             raise Exception(f"이미지 로드 중 오류 발생: {e}")
 
     def add_text(
@@ -212,6 +224,9 @@ class PostcardMaker:
     ) -> 'PostcardMaker':
         """
         배경 이미지를 설정합니다 (투명도 지원).
+        
+        주의: 이 메서드는 캔버스를 완전히 교체하므로, 
+        반드시 다른 요소(사진, 텍스트)를 추가하기 **전에** 호출해야 합니다.
 
         Args:
             image_path: 배경 이미지 파일 경로
@@ -224,9 +239,12 @@ class PostcardMaker:
             FileNotFoundError: 이미지 파일을 찾을 수 없는 경우
         """
         try:
+            logger.info(f"Adding background image: path={image_path}, opacity={opacity}")
+            
             # 배경 이미지 로드 및 리사이징
             background = Image.open(image_path)
             background = background.resize((self.width, self.height), Image.Resampling.LANCZOS)
+            logger.info(f"Background loaded and resized to ({self.width}, {self.height})")
 
             # 투명도 적용
             if opacity < 1.0:
@@ -236,12 +254,16 @@ class PostcardMaker:
                 alpha = alpha.point(lambda p: int(p * opacity))
                 background.putalpha(alpha)
 
-                # 기존 캔버스와 합성
-                temp_canvas = Image.new('RGBA', (self.width, self.height), (255, 255, 255, 255))
-                temp_canvas.paste(background, (0, 0), background)
-                self.canvas = temp_canvas.convert('RGB')
+                # 기존 캔버스 위에 배경을 합성
+                if self.canvas.mode != 'RGBA':
+                    self.canvas = self.canvas.convert('RGBA')
+                self.canvas.paste(background, (0, 0), background)
+                self.canvas = self.canvas.convert('RGB')
+                logger.info("Background applied with transparency")
             else:
+                # 완전 불투명인 경우, 캔버스를 배경으로 교체
                 self.canvas = background.convert('RGB')
+                logger.info("Background applied as opaque (canvas replaced)")
 
             # Draw 객체 재생성
             self.draw = ImageDraw.Draw(self.canvas)

@@ -94,6 +94,7 @@ async def create_and_send_postcard(
         photos = None
 
         if image:
+            logger.info(f"User uploaded image: filename={image.filename}, content_type={image.content_type}")
             # 이미지 형식 검증
             if image.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
                 raise HTTPException(
@@ -103,12 +104,19 @@ async def create_and_send_postcard(
 
             # "user_photo" ID 또는 첫 번째 photo_config에 매핑
             target_photo_id = PostcardService._map_simple_photo(template)
+            logger.info(f"Target photo_id for user image: {target_photo_id}")
             if target_photo_id:
                 photo_bytes = await image.read()
+                logger.info(f"Read {len(photo_bytes)} bytes from uploaded image")
                 storage = LocalStorageService()
                 saved_path = await storage.save_user_photo(photo_bytes, "jpg")
                 user_photo_paths[target_photo_id] = saved_path
                 photos = {target_photo_id: photo_bytes}
+                logger.info(f"Mapped user photo: photo_id={target_photo_id}, saved_path={saved_path}")
+            else:
+                logger.warning(f"Template {template_id} has no photo_configs to map user image to")
+        else:
+            logger.info("No image uploaded by user")
 
         # 즉시 발송
         if not scheduled_datetime:
