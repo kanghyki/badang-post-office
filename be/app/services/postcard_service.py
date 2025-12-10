@@ -112,6 +112,59 @@ class PostcardService:
         return result
 
     @staticmethod
+    async def _translate_user_text_to_jeju(
+        template,
+        original_texts: Dict[str, str]
+    ) -> Dict[str, str]:
+        """
+        사용자 입력 텍스트를 제주어로 번역
+
+        자동 생성 필드, 발신자 이름 등은 번역하지 않고,
+        오직 사용자가 입력한 본문만 번역합니다.
+
+        Args:
+            template: 템플릿 객체
+            original_texts: 원본 텍스트 딕셔너리 (config_id -> text)
+
+        Returns:
+            제주어로 번역된 텍스트 딕셔너리
+        """
+        from app.services.translation_service import translate_to_jeju_async
+        translated_texts = {}
+
+        for text_cfg in template.text_configs:
+            config_id = text_cfg.id
+            original_text = original_texts.get(config_id, "")
+
+            # 빈 텍스트는 그대로
+            if not original_text.strip():
+                translated_texts[config_id] = original_text
+                continue
+
+            # 자동 생성 필드는 번역하지 않음
+            if PostcardService._generate_auto_field(config_id) is not None:
+                translated_texts[config_id] = original_text
+                continue
+
+            # 발신자 이름은 번역하지 않음
+            if config_id == "sender":
+                translated_texts[config_id] = original_text
+                continue
+
+            # 사용자 입력 본문만 번역
+            try:
+                logger.info(f"Translating text for config_id={config_id}: {original_text[:50]}...")
+                translated_text = await translate_to_jeju_async(original_text)
+                translated_texts[config_id] = translated_text
+                logger.info(f"Translation success: {translated_text[:50]}...")
+            except Exception as e:
+                logger.error(f"Translation failed for config_id={config_id}: {str(e)}")
+                # Fallback: 원본 사용
+                translated_texts[config_id] = original_text
+
+        return translated_texts
+
+    @staticmethod
     def _map_simple_photo(template) -> Optional[str]:
         """
         사용자 이미지를 매핑할 photo_config의 ID 반환

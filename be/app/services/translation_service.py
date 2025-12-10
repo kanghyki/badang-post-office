@@ -40,3 +40,20 @@ Sentence: "{text}" """
     jeju_chain = prompt_template | llm | StrOutputParser()
 
     return jeju_chain.invoke({"text": text})
+
+
+async def translate_to_jeju_async(text: str) -> str:
+    """
+    제주어 번역 (비동기 래퍼)
+
+    동기 함수인 translate_to_jeju()를 asyncio.to_thread()로 래핑하여
+    async 컨텍스트에서 안전하게 호출할 수 있도록 합니다.
+
+    Args:
+        text: 번역할 문장
+
+    Returns:
+        str: 제주어로 번역된 문장
+    """
+    import asyncio
+    return await asyncio.to_thread(translate_to_jeju, text)

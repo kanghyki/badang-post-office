@@ -63,8 +63,9 @@ class PostcardResponse(BaseModel):
     """
     id: str
     template_id: str
-    text: str
-    recipient_email: str
+    text: Optional[str] = None  # 제주어 번역본 (빈 엽서 시 None)
+    original_text: Optional[str] = None  # 원본 (표준어)
+    recipient_email: Optional[str] = None  # 빈 엽서 시 None
     recipient_name: Optional[str] = None
     sender_name: Optional[str] = None
     status: Literal["writing", "pending", "sent", "failed", "cancelled"]
