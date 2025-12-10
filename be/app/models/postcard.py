@@ -40,6 +40,8 @@ class PostcardResponse(BaseModel):
     text: str
     sender_name: Optional[str] = None
     created_at: datetime
+    email_sent: bool = False
+    recipient_email: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     allowed_origins: str = ""
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///./data/jeju.db"
+    database_url: str = ""
 
     # OpenAI
     openai_api_key: str = ""
@@ -17,8 +17,16 @@ class Settings(BaseSettings):
 
     # JWT
     jwt_secret_key: str = ""
-    jwt_algorithm: str = "HS256"
+    jwt_algorithm: str = ""
     jwt_access_token_expire_minutes: int = 60 * 24  # 24시간
+
+    # SMTP Email
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_from_name: str = "제주 엽서"
 
     @property
     def origins_list(self) -> List[str]:

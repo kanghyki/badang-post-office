@@ -10,27 +10,33 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.database import get_db
 from app.database.models import User
 from app.services.postcard_service import PostcardService
+from app.services.email_service import EmailService
 from app.models.postcard import PostcardResponse
 from app.services import template_service
 from app.dependencies.auth import get_current_user
+import logging
 
 router = APIRouter(prefix="/v1/postcards", tags=["Postcards"])
+logger = logging.getLogger(__name__)
 
 
-@router.post("/create", response_model=PostcardResponse)
-async def create_postcard(
+@router.post("/send", response_model=PostcardResponse)
+async def create_and_send_postcard(
     template_id: str = Form(..., description="사용할 템플릿 ID"),
     text: str = Form(..., description="엽서에 들어갈 본문 텍스트"),
+    recipient_email: str = Form(..., description="수신자 이메일 (필수)"),
     sender_name: Optional[str] = Form(None, description="발신자 이름 (선택)"),
+    recipient_name: Optional[str] = Form(None, description="수신자 이름 (선택)"),
     image: Optional[UploadFile] = File(None, description="사용자 사진 (선택)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    포스트카드 생성 API
+    포스트카드 생성 및 이메일 발송 API
 
     사용자가 텍스트 하나와 이미지 하나만 제공하면,
-    자동으로 템플릿의 적절한 영역에 매핑하여 엽서를 생성합니다.
+    자동으로 템플릿의 적절한 영역에 매핑하여 엽서를 생성하고
+    지정된 이메일 주소로 발송합니다.
 
     매핑 규칙:
     - 텍스트: "main_text" ID 또는 첫 번째 일반 영역에 본문 배치
@@ -41,14 +47,20 @@ async def create_postcard(
     Args:
         template_id: 템플릿 ID (예: "jeju_sea")
         text: 본문 텍스트
+        recipient_email: 수신자 이메일 (필수)
         sender_name: 발신자 이름 (선택)
+        recipient_name: 수신자 이름 (선택)
         image: 사용자 사진 파일 (선택)
         db: 데이터베이스 세션
 
     Returns:
-        생성된 엽서 정보 (PostcardResponse)
+        생성된 엽서 정보 및 이메일 발송 결과 (PostcardResponse)
     """
     try:
+        # 발신자 이름 기본값: 사용자 이름
+        if not sender_name:
+            sender_name = current_user.name
+
         # 1. 템플릿 조회
         template = template_service.get_template_by_id(template_id)
         if not template:
@@ -96,6 +108,29 @@ async def create_postcard(
             sender_name=sender_name,
             user_id=current_user.id,
         )
+
+        # 5. 이메일 발송 (필수)
+        try:
+            email_service = EmailService()
+            await email_service.send_postcard_email(
+                to_email=recipient_email,
+                to_name=recipient_name,
+                postcard_image_path=postcard.postcard_path,
+                sender_name=sender_name
+            )
+            email_sent = True
+            logger.info(f"Postcard {postcard.postcard_id} sent to {recipient_email}")
+        except Exception as e:
+            # 이메일 발송 실패 시 오류 발생
+            logger.error(f"Failed to send email for postcard {postcard.postcard_id}: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"엽서는 생성되었으나 이메일 발송에 실패했습니다: {str(e)}"
+            )
+
+        # 6. 응답에 이메일 발송 정보 추가
+        postcard.email_sent = email_sent
+        postcard.recipient_email = recipient_email
 
         return postcard
 
