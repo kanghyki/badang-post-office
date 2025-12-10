@@ -1,27 +1,25 @@
-# !pip install --upgrade openai langchain
-
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from pydantic import SecretStr
+from app.config import settings
 
-def translate_to_jeju(text, model_name="gpt-5-nano", temperature=0.7):
+def translate_to_jeju(text):
     """
-    제주 할머니 느낌의 방언 번역기 (올인원 함수)
+    제주 방언 번역기
 
-    text: 번역할 문장
-    model_name: 기본 gpt-5-nano
+    Args:
+        text: 번역할 문장
+
+    Returns:
+        str: 제주 방언으로 번역된 문장
     """
-
-    OPENAI_API_KEY = "sk-여기에_실_API_KEY_넣기"
-
-    # 1️⃣ LLM 객체 생성
     llm = ChatOpenAI(
-        openai_api_key=OPENAI_API_KEY, # TODO: 자신의 OpenAI API 키
-        model_name=model_name,
-        temperature=temperature
+        api_key=SecretStr(settings.openai_api_key),
+        model=settings.openai_model,
+        temperature=settings.openai_temperature
     )
 
-    # 2️⃣ 프롬프트 템플릿
     prompt_template = ChatPromptTemplate.from_messages([
         ("system",
          "You are an expert translator  who speaks like an elderly Jeju grandmother. "
@@ -39,8 +37,6 @@ Sentence: "{text}" """
          )
     ])
 
-    # 3️⃣ 체인 구성
     jeju_chain = prompt_template | llm | StrOutputParser()
 
-    # 4️⃣ 실행 및 결과 반환
     return jeju_chain.invoke({"text": text})

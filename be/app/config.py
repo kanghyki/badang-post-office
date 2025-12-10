@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "sqlite+aiosqlite:///./data/jeju.db"
 
+    # OpenAI
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
+    openai_temperature: float = 0.7
+
     @property
     def origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",")]
