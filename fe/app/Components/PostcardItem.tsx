@@ -1,0 +1,77 @@
+import Link from "next/link";
+import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import styles from "./PostcardItem.module.scss";
+
+interface PostcardData {
+  id: string;
+  title: string;
+  origin_content: string;
+  jeju_content: string;
+  to_email: string;
+  scheduled_delivery_date: string;
+  created_at: string;
+
+  user_image_url?: string;
+  processed_image_url?: string;
+  postcard_image_url?: string;
+  template_id?: string;
+  status?: string;
+  updated_at?: string;
+  sent_at?: string | null;
+}
+
+interface PostcardItemProps {
+  data: PostcardData;
+}
+
+export default function PostcardItem({ data }: PostcardItemProps) {
+  const formatDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    return date.toISOString().split("T")[0].replace(/-/g, ".");
+  };
+  const relativeDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    const now = new Date();
+    const d1 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffTime = d2.getTime() - d1.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    const formatted = `${y}.${m}.${d}`;
+    if (diffDays === 0) return formatted;
+    if (diffDays === 1) return "1 day after";
+    if (diffDays < 30) return `${diffDays} days after`;
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths === 1) return "1 month after";
+    if (diffMonths < 12) return `${diffMonths} months after`;
+    const diffYears = Math.floor(diffMonths / 12);
+    if (diffYears === 1) return "1 year after";
+
+    return `${diffYears} years after`;
+  };
+  return (
+    <div className={styles.postcardItem}>
+      <div className={styles.postcardDate}>
+        <div className={styles.reservDate}>
+          <span>{formatDate(data.scheduled_delivery_date)}</span>
+          <Link href="" className="btIcon"><FaEdit /></Link>
+          <Link href="" className="btIcon"><FaTrashAlt /></Link>
+        </div>
+        <div className="writeDate">{relativeDate(data.created_at)}</div>
+      </div>
+      <div>
+        <p className="recipient">
+          <span>To_ </span><b>{data.to_email}</b>
+        </p>
+      </div>
+      <div className="title">
+        <p>{data.title}</p>
+      </div>
+      <div className="content">
+        <p>{data.jeju_content}</p>
+      </div>
+    </div>
+  );
+}

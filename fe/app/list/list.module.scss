@@ -1,0 +1,8 @@
+.postcardBox{
+  &>div{
+    margin-top: 10px;
+    &:first-of-type{
+      margin-top: 0;
+    }
+  }
+}

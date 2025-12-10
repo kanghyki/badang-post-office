@@ -1,29 +1,14 @@
 from pydantic_settings import BaseSettings
 from typing import List
 
-
 class Settings(BaseSettings):
     # FastAPI
     env: str = "dev"
     debug: bool = True
     allowed_origins: str = ""
 
-    # Supabase
-    supabase_url: str = ""
-    supabase_anon_key: str = ""
-    supabase_service_key: str = ""
-
-    # OpenAI
-    openai_api_key: str = ""
-
-    # SendGrid
-    sendgrid_api_key: str = ""
-    sendgrid_from_email: str = ""
-    sendgrid_from_name: str = ""
-
-    # Storage
-    storage_bucket_images: str = ""
-    storage_bucket_templates: str = ""
+    # Database
+    database_url: str = "sqlite+aiosqlite:///./data/jeju.db"
 
     @property
     def origins_list(self) -> List[str]:

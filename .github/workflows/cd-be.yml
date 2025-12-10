@@ -3,10 +3,10 @@ name: cd-be
 on:
   push:
     branches:
-      - 'main'
+      - "main"
     paths:
-      - '.github/workflows/cd-be.yml'
-      - 'be/**'
+      - ".github/workflows/cd-be.yml"
+      - "be/**"
   workflow_dispatch:
 
 jobs:
@@ -17,13 +17,6 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
-
-      - name: Create .env file for build
-        run: |
-          cd be
-          cat > .env << 'EOF'
-          ${{ secrets.BE_ENV_FILE }}
-          EOF
 
       - name: Build docker image
         run: |
@@ -56,8 +49,16 @@ jobs:
             echo "Move to project directory"
             cd ${{ vars.BE_PROJECT_DIRECTORY }}
 
+            echo "Ensure static directory exists on server"
+            mkdir -p static/templates static/fonts static/uploads static/generated data
+
             echo "Stop existing containers"
             docker compose down
+
+            echo "Copy .env file"
+            cat > .env << 'EOF'
+            ${{ secrets.BE_ENV_FILE }}
+            EOF
 
             echo "Create docker-compose.yml file"
             cat > docker-compose.yml << 'EOF'
@@ -68,10 +69,17 @@ jobs:
                 networks:
                   - proxy-network
                 restart: unless-stopped
+                env_file:
+                  - .env
+                volumes:
+                  - ./static:/app/static
+                  - ./data:/app/data
+
             networks:
               proxy-network:
                 name: proxy-network
                 external: true
+
             EOF
 
             echo "Start updated service"
