@@ -1,6 +1,6 @@
 "use client";
 import styles from "./home.module.scss";
-import Header from "../components/Header";
+import Header from "@/app/components/Header";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { TbEdit } from "react-icons/tb";
@@ -8,7 +8,7 @@ import { authUtils } from "@/lib/utils/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/store/StoreProvider";
-import { useNotification } from "../context/NotificationContext";
+import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 import { authApi } from "@/lib/api/auth";
 import { useState } from "react";

@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback } from "react";
-import Toast from "../components/Toast";
-import Modal from "../components/Modal";
+import Toast from "@/app/components/Toast";
+import Modal from "@/app/components/Modal";
 
 interface ToastOptions {
   message: string;

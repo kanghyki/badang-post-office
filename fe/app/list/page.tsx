@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Header from "../components/Header";
-import PostcardItem from "../components/PostcardItem";
+import Header from "@/app/components/Header";
+import PostcardItem from "@/app/components/PostcardItem";
 import styles from "./list.module.scss";
 import { useEffect, useState } from "react";
 import {
@@ -11,7 +11,7 @@ import {
   PostcardStatus,
 } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
-import { useNotification } from "../context/NotificationContext";
+import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 import { authUtils } from "@/lib/utils/auth";
 import { authApi } from "@/lib/api/auth";

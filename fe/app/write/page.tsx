@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./write.module.scss";
-import Header from "../components/Header";
+import Header from "@/app/components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
-import { useNotification } from "../context/NotificationContext";
+import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 
 export default function Write() {

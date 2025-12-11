@@ -1,7 +1,7 @@
 "use client";
 import styles from "./home.module.scss";
 import Link from "next/link";
-import Logo from "../components/LogoBox";
+import Logo from "@/app/components/LogoBox";
 import { ROUTES } from "@/lib/constants/urls";
 import { useEffect } from "react";
 export default function Home() {

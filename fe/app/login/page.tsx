@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import styles from "./login.module.scss";
-import Logo from "../components/LogoBox";
+import Logo from "@/app/components/LogoBox";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
 import { authUtils } from "@/lib/utils/auth";
-import { useNotification } from "../context/NotificationContext";
+import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 
 export default function Login() {

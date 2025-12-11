@@ -1,11 +1,11 @@
 "use client";
 import styles from "./profile.module.scss";
-import Header from "../components/Header";
+import Header from "@/app/components/Header";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { authUtils } from "@/lib/utils/auth";
 import { useAuth } from "@/hooks/useAuth";
-import { useNotification } from "../context/NotificationContext";
+import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 import { authApi, UserProfile, UpdateProfileRequest } from "@/lib/api/auth";
 

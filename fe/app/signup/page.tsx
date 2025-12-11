@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import styles from "./signup.module.scss";
-import Logo from "../components/LogoBox";
+import Logo from "@/app/components/LogoBox";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
-import { useNotification } from "../context/NotificationContext";
+import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 
 export default function Signup() {
