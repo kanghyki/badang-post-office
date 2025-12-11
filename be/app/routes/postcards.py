@@ -360,14 +360,14 @@ async def update_postcard(
             if template:
                 # 최신 텍스트 사용 (업데이트된 값 또는 기존 값)
                 texts = update_values.get("text_contents") or postcard.text_contents
-                
+
                 # 텍스트가 없으면 엽서 이미지 생성 불가
                 if not texts:
                     logger.warning(f"Cannot generate postcard image without text content")
                 else:
                     # 최신 사진 경로 사용 (업데이트된 값 또는 기존 값)
                     user_photo_paths = update_values.get("user_photo_paths") or postcard.user_photo_paths
-                    
+
                     photos = {}
                     if user_photo_paths:
                         storage = LocalStorageService()
@@ -377,26 +377,37 @@ async def update_postcard(
                                 photos[photo_id] = photo_bytes
                                 logger.info(f"Loaded photo {photo_id} from {photo_path}")
 
-                    service = PostcardService(db)
-                    postcard_result = await service.create_postcard(
-                        template_id=postcard.template_id,
-                        texts=texts,
-                        photos=photos if photos else None,
-                        sender_name=update_values.get("sender_name") or postcard.sender_name,
-                        user_id=current_user.id,
-                        recipient_email=update_values.get("recipient_email") or postcard.recipient_email,
-                    )
+                    # 트랜잭션으로 보호: 임시 레코드 생성 및 삭제를 하나의 트랜잭션으로 처리
+                    try:
+                        service = PostcardService(db)
+                        postcard_result = await service.create_postcard(
+                            template_id=postcard.template_id,
+                            texts=texts,
+                            photos=photos if photos else None,
+                            sender_name=update_values.get("sender_name") or postcard.sender_name,
+                            user_id=current_user.id,
+                            recipient_email=update_values.get("recipient_email") or postcard.recipient_email,
+                        )
 
-                    # 생성된 이미지 경로 저장
-                    update_values["postcard_image_path"] = postcard_result.postcard_path
+                        # 생성된 이미지 경로 저장
+                        update_values["postcard_image_path"] = postcard_result.postcard_path
 
-                    # 임시 레코드 삭제
-                    temp_postcard = await db.get(Postcard, postcard_result.id)
-                    if temp_postcard:
-                        await db.delete(temp_postcard)
-                        await db.flush()
-        
-        # DB 업데이트
+                        # 임시 레코드 삭제 (같은 세션 내에서)
+                        temp_postcard = await db.get(Postcard, postcard_result.id)
+                        if temp_postcard:
+                            await db.delete(temp_postcard)
+                            # flush만 하고 commit은 나중에 함께 수행
+
+                    except Exception as e:
+                        # 오류 발생 시 롤백
+                        await db.rollback()
+                        logger.error(f"Failed to generate postcard image: {str(e)}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail="엽서 이미지 생성 중 오류가 발생했습니다."
+                        )
+
+        # DB 업데이트 (임시 레코드 삭제와 원본 업데이트를 하나의 트랜잭션으로 처리)
         stmt = (
             update(Postcard)
             .where(Postcard.id == postcard_id)
