@@ -153,7 +153,7 @@ export default function List() {
   if (loading) {
     return (
       <>
-        <div className="hdWrap">
+        <div className="hdrWrap">
           <Header
             title="예약엽서목록"
             showUserMenu={true}
@@ -172,7 +172,7 @@ export default function List() {
   if (error) {
     return (
       <>
-        <div className="hdWrap">
+        <div className="hdrWrap">
           <Header
             title="예약엽서목록"
             showUserMenu={true}

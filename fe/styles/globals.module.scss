@@ -1,7 +1,7 @@
 @use "./_mixin" as *;
-:global(.hdWrap) {
-  width: 100%;
 
+:global(.hdrWrap) {
+  width: 100%;
   position: fixed;
   top: 0;
   z-index: 10;
@@ -13,21 +13,6 @@
   padding-top: 60px;
   padding-bottom: 20px;
   overflow-y: auto;
-}
-
-/////////// button(a) styles ///////////
-:global(.btn) {
-  @include flex-center;
-  width: 90%;
-  height: 50px;
-  background-color: #ccc;
-  border-radius: 6px;
-}
-
-:global(.btIcon) {
-  @include flex-center;
-  width: 24px;
-  height: 24px;
 }
 
 :global(.btnBig) {
@@ -47,41 +32,4 @@
   &:hover {
     background-color: #e55500;
   }
-}
-
-:global(.btnSecondary) {
-  @include flex-center;
-  width: 90%;
-  height: 48px;
-  background-color: transparent;
-  margin: 0 auto;
-  border-radius: 10px;
-  font-weight: bold;
-  color: #f60;
-  border: 2px solid #f60;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 16px;
-
-  &:hover {
-    background-color: rgba(255, 102, 0, 0.1);
-  }
-}
-
-:global(.btnMid) {
-  @include flex-center;
-}
-
-:global(.btnSml) {
-  @include flex-center;
-}
-:global(.btnSend) {
-  @include flex-center;
-  width: 90%;
-  height: 50px;
-  border-radius: 10px;
-  border: 0;
-  background-color: #f60;
-  font-weight: bold;
-  color: #fff;
 }
