@@ -218,12 +218,20 @@ class PostcardService:
                 saved_path = await self.storage.save_user_photo(photo_bytes, "jpg")
                 user_photo_paths[config_id] = saved_path
 
-                # 임시 파일 (PostcardMaker 사용)
-                temp_path = f"/tmp/{uuid_lib.uuid4()}.jpg"
-                with open(temp_path, "wb") as f:
-                    f.write(photo_bytes)
-                user_photo_temp_paths[config_id] = temp_path
-                logger.info(f"Saved user photo for config_id={config_id}: temp={temp_path}, saved={saved_path}")
+                # 임시 파일 (PostcardMaker 사용) - tempfile 모듈로 안전한 임시 파일 생성
+                import tempfile
+                temp_fd, temp_path = tempfile.mkstemp(suffix=".jpg", prefix="postcard_")
+                try:
+                    with os.fdopen(temp_fd, "wb") as f:
+                        f.write(photo_bytes)
+                    user_photo_temp_paths[config_id] = temp_path
+                    logger.info(f"Saved user photo for config_id={config_id}: temp={temp_path}, saved={saved_path}")
+                except Exception as e:
+                    # 파일 생성 실패 시 즉시 삭제 시도
+                    os.close(temp_fd)
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                    raise
         else:
             logger.warning(f"No photos provided for postcard creation")
 
@@ -323,13 +331,15 @@ class PostcardService:
         await self.db.commit()
         await self.db.refresh(postcard)
 
-        # 9. 임시 파일 삭제
-        for temp_path in user_photo_temp_paths.values():
+        # 9. 임시 파일 삭제 (리소스 누수 방지)
+        for config_id, temp_path in user_photo_temp_paths.items():
             try:
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
-            except Exception:
-                pass
+                    logger.debug(f"Deleted temporary file for config_id={config_id}: {temp_path}")
+            except Exception as e:
+                # 삭제 실패를 로깅 (디버깅 및 모니터링용)
+                logger.warning(f"Failed to delete temporary file {temp_path}: {str(e)}")
 
         # 10. 응답 반환
         return PostcardResponse(
