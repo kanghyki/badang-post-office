@@ -36,7 +36,7 @@ class SchedulerService:
         스케줄러 시작 및 기존 예약 복구
         """
         self.scheduler.start()
-        logger.info("Scheduler started")
+        logger.info("✓ Scheduler started")
 
         # DB에서 pending 상태의 예약 복구
         await self._restore_scheduled_postcards()
@@ -53,9 +53,6 @@ class SchedulerService:
         - 예정 시각이 미래인 경우: 스케줄러에 등록
         - 예정 시각이 지난 경우: 즉시 발송
         """
-        logger.info("-" * 60)
-        logger.info("Restoring scheduled postcards from database...")
-        
         async with get_db_session() as db:
             now_utc = datetime.now(pytz.UTC)
             
@@ -68,7 +65,8 @@ class SchedulerService:
             scheduled_postcards = result.scalars().all()
             
             total_count = len(scheduled_postcards)
-            logger.info(f"Found {total_count} pending scheduled postcards in database")
+            if total_count == 0:
+                return
 
             future_count = 0
             overdue_count = 0
@@ -89,12 +87,11 @@ class SchedulerService:
                             id=scheduled.id,
                             replace_existing=True
                         )
-                        logger.info(f"  Scheduled: {scheduled.id[:8]}... at {scheduled_time}")
                         future_count += 1
                     else:
                         # 과거: 즉시 발송 (지연 발송)
                         delay = now_utc - scheduled_time
-                        logger.warning(f"  Overdue: {scheduled.id[:8]}... (delayed by {delay.total_seconds():.0f}s), sending immediately")
+                        logger.warning(f"Overdue postcard {scheduled.id[:8]}... delayed by {delay.total_seconds():.0f}s, sending now")
                         self.scheduler.add_job(
                             self._send_scheduled_postcard,
                             trigger=DateTrigger(run_date=now_utc),  # 즉시 실행
@@ -105,10 +102,9 @@ class SchedulerService:
                         overdue_count += 1
                         
                 except Exception as e:
-                    logger.error(f"  Failed to restore postcard {scheduled.id}: {str(e)}")
+                    logger.error(f"Failed to restore postcard {scheduled.id}: {str(e)}")
 
-            logger.info(f"Restoration complete: {future_count} future, {overdue_count} overdue (total: {total_count})")
-            logger.info("-" * 60)
+            logger.info(f"✓ Restored {total_count} scheduled postcards ({future_count} future, {overdue_count} overdue)")
 
     async def schedule_postcard(
         self,

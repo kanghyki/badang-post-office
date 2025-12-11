@@ -17,7 +17,7 @@ os.makedirs("logs", exist_ok=True)
 # 로깅 설정
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
         # 콘솔 출력
         logging.StreamHandler(),
@@ -28,6 +28,13 @@ logging.basicConfig(
         )
     ]
 )
+
+# SQLAlchemy 로그 레벨을 WARNING으로 설정 (INFO 로그 숨김)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.WARNING)
+
+# APScheduler 로그 레벨을 WARNING으로 설정
+logging.getLogger('apscheduler').setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -51,18 +58,15 @@ async def lifespan(app: FastAPI):
     - Initialize database tables
     - Initialize scheduler and restore scheduled postcards
     """
-    logger.info("Starting application initialization...")
-
     # Initialize database (Postcard table)
     await init_db()
-    logger.info("Database tables created successfully")
+    logger.info("✓ Database initialized")
 
     # Initialize scheduler
     scheduler = init_scheduler()
     await scheduler.start()
-    logger.info("Scheduler initialized and started")
 
-    logger.info("Application initialization completed")
+    logger.info("✓ Application ready")
 
     yield
 
