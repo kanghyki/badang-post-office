@@ -95,11 +95,11 @@ async def create_postcard(
     except HTTPException:
         raise
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        # 보안을 위해 상세 에러 정보는 로그에만 기록
+        logger.error(f"Failed to create postcard: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"엽서 생성 중 오류가 발생했습니다: {str(e)}"
+            detail="엽서 생성 중 오류가 발생했습니다."
         )
 
 
@@ -462,11 +462,11 @@ async def update_postcard(
     except HTTPException:
         raise
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        # 보안을 위해 상세 에러 정보는 로그에만 기록
+        logger.error(f"Failed to update postcard: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"엽서 수정 중 오류가 발생했습니다: {str(e)}"
+            detail="엽서 수정 중 오류가 발생했습니다."
         )
 
 
@@ -686,9 +686,9 @@ async def send_postcard(
     except HTTPException:
         raise
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        # 보안을 위해 상세 에러 정보는 로그에만 기록
+        logger.error(f"Failed to send postcard: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"엽서 발송 중 오류가 발생했습니다: {str(e)}"
+            detail="엽서 발송 중 오류가 발생했습니다."
         )
