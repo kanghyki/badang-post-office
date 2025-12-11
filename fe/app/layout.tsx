@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.scss";
 import "@/styles/globals.module.scss";
 import { StoreProvider } from "@/store/StoreProvider";
+import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: "제주헌디",
@@ -15,8 +16,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>
-        <StoreProvider>{children}</StoreProvider>
+      <body
+        style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      >
+        <StoreProvider>
+          <div style={{ flex: 1 }}>{children}</div>
+          <Footer />
+        </StoreProvider>
       </body>
     </html>
   );
