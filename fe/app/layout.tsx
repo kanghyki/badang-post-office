@@ -44,12 +44,21 @@ export const metadata: Metadata = {
     siteName: "바당우체국",
     locale: "ko_KR",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "바당우체국 - 제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스",
+      },
+    ],
   },
 
   twitter: {
     card: "summary_large_image",
     title: "바당우체국",
     description: "제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스",
+    images: ["/opengraph-image.png"],
   },
 
   icons: {
