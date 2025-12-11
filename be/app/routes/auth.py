@@ -7,7 +7,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.database import get_db
-from app.models.user import SignupRequest, LoginRequest, TokenResponse, UserResponse
+from app.models.user import SignupRequest, LoginRequest, TokenResponse, UserResponse, UpdateUserRequest
 from app.utils.jwt import create_access_token
 from app.services.user_service import UserService
 from app.dependencies.auth import get_current_user
@@ -96,6 +96,68 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     )
 
 
+@router.get("/me", response_model=UserResponse)
+async def get_my_info(current_user: User = Depends(get_current_user)):
+    """
+    내 정보 조회
+
+    - 현재 로그인한 사용자의 정보를 반환합니다.
+
+    Args:
+        current_user: 인증된 사용자 (JWT 토큰에서 추출)
+
+    Returns:
+        사용자 정보
+    """
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        name=current_user.name,
+        created_at=current_user.created_at
+    )
+
+
+@router.patch("/me", response_model=UserResponse)
+async def update_my_info(
+    request: UpdateUserRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    내 정보 수정
+
+    - 현재 로그인한 사용자의 이름 또는 비밀번호를 수정합니다.
+    - 수정하려는 필드만 요청에 포함하면 됩니다.
+
+    Args:
+        request: 수정할 사용자 정보 (이름, 비밀번호 선택적)
+        current_user: 인증된 사용자 (JWT 토큰에서 추출)
+        db: 데이터베이스 세션
+
+    Returns:
+        수정된 사용자 정보
+
+    Raises:
+        HTTPException: 사용자 수정 실패 시
+    """
+    updated_user = await UserService.update_user(
+        db=db,
+        user_id=current_user.id,
+        name=request.name,
+        password=request.password
+    )
+
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+
+    return UserResponse(
+        id=updated_user.id,
+        email=updated_user.email,
+        name=updated_user.name,
+        created_at=updated_user.created_at
+    )
+
+
 @router.delete("/withdrawal", status_code=204)
 async def withdraw(
     current_user: User = Depends(get_current_user),
@@ -118,8 +180,8 @@ async def withdraw(
         HTTPException: 사용자 삭제 실패 시
     """
     success = await UserService.delete_user(db=db, user_id=current_user.id)
-    
+
     if not success:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
-    
+
     return None

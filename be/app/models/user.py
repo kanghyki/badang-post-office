@@ -44,3 +44,16 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+
+
+class UpdateUserRequest(BaseModel):
+    """사용자 정보 수정 요청"""
+    name: Optional[str] = None
+    password: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and len(v) < 6:
+            raise ValueError("비밀번호는 최소 6자 이상이어야 합니다.")
+        return v

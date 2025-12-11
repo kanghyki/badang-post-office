@@ -114,29 +114,67 @@ class UserService:
         return user
 
     @staticmethod
+    async def update_user(
+        db: AsyncSession,
+        user_id: str,
+        name: Optional[str] = None,
+        password: Optional[str] = None
+    ) -> Optional[User]:
+        """
+        사용자 정보 수정
+
+        Args:
+            db: 데이터베이스 세션
+            user_id: 수정할 사용자 ID
+            name: 새로운 이름 (선택적)
+            password: 새로운 비밀번호 (선택적)
+
+        Returns:
+            수정된 사용자 객체, 사용자가 존재하지 않으면 None
+        """
+        user = await UserService.get_user_by_id(db, user_id)
+
+        if not user:
+            return None
+
+        # 이름 변경
+        if name is not None:
+            user.name = name
+
+        # 비밀번호 변경
+        if password is not None:
+            user.hashed_password = hash_password(password)
+
+        await db.commit()
+        await db.refresh(user)
+
+        logger.info(f"Updated user {user_id}")
+        return user
+
+    @staticmethod
     async def delete_user(
         db: AsyncSession,
         user_id: str
     ) -> bool:
         """
         사용자 계정 삭제
-        
+
         - 스케줄러에서 예약된 엽서 작업 취소
         - 사용자의 모든 엽서 데이터 삭제
         - 사용자 계정 삭제
-        
+
         Args:
             db: 데이터베이스 세션
             user_id: 삭제할 사용자 ID
-            
+
         Returns:
             삭제 성공 시 True, 사용자가 존재하지 않으면 False
         """
         user = await UserService.get_user_by_id(db, user_id)
-        
+
         if not user:
             return False
-        
+
         # 1. 사용자의 예약된 엽서 조회 (pending 상태)
         result = await db.execute(
             select(Postcard.id).where(
@@ -145,7 +183,7 @@ class UserService:
             )
         )
         pending_postcard_ids = [row[0] for row in result.all()]
-        
+
         # 2. 스케줄러에서 예약 작업 취소
         if pending_postcard_ids:
             try:
@@ -155,16 +193,16 @@ class UserService:
                 logger.info(f"Cancelled {cancelled_count} scheduled postcards for user {user_id}")
             except Exception as e:
                 logger.warning(f"Failed to cancel schedules for user {user_id}: {str(e)}")
-        
+
         # 3. 사용자의 모든 엽서 삭제
         await db.execute(
             delete(Postcard).where(Postcard.user_id == user_id)
         )
         logger.info(f"Deleted all postcards for user {user_id}")
-        
+
         # 4. 사용자 계정 삭제
         await db.delete(user)
         await db.commit()
-        
+
         logger.info(f"Successfully deleted user {user_id} with all associated data")
         return True
