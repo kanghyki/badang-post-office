@@ -6,10 +6,11 @@ import { ROUTES } from "@/lib/constants/urls";
 
 interface PostcardItemProps {
   data: PostcardResponse;
+  index: number;
   onDelete?: (id: string) => void;
 }
 
-export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
+export default function PostcardItem({ data, index, onDelete }: PostcardItemProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     onDelete?.(data.id);
@@ -43,7 +44,7 @@ export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
   };
   return (
     <div className={styles.postcardItem}>
-      <div className={styles.listBullet}>1</div>
+      <div className={styles.listBullet}>{index + 1}</div>
 
       <div className={styles.listBox}>
         <div className={styles.postcardDate}>

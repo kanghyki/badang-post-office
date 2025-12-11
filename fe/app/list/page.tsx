@@ -75,8 +75,12 @@ export default function List() {
 
     try {
       await postcardsApi.delete(id);
-      // 목록 새로고침
-      fetchPostcards();
+      // 현재 필터 상태를 유지하며 목록 새로고침
+      if (activeFilter === "all") {
+        fetchPostcards();
+      } else {
+        fetchPostcards(activeFilter);
+      }
     } catch (error) {
       console.error("삭제 실패:", error);
       if (error instanceof Error) {
@@ -148,10 +152,11 @@ export default function List() {
                 작성한 엽서가 없습니다.
               </div>
             ) : (
-              postcards.map((item) => (
+              postcards.map((item, index) => (
                 <PostcardItem
                   key={item.id}
                   data={item}
+                  index={index}
                   onDelete={handleDelete}
                 />
               ))
