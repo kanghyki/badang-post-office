@@ -10,6 +10,8 @@ from app.database.database import get_db
 from app.models.user import SignupRequest, LoginRequest, TokenResponse, UserResponse
 from app.utils.jwt import create_access_token
 from app.services.user_service import UserService
+from app.dependencies.auth import get_current_user
+from app.database.models import User
 
 router = APIRouter(prefix="/v1/auth", tags=["Authentication"])
 
@@ -92,3 +94,32 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
             created_at=user.created_at
         )
     )
+
+
+@router.delete("/withdrawal", status_code=204)
+async def withdraw(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    회원 탈퇴
+
+    - 인증된 사용자의 계정을 삭제합니다.
+    - 삭제 시 관련된 모든 데이터가 함께 삭제됩니다.
+
+    Args:
+        current_user: 인증된 사용자 (JWT 토큰에서 추출)
+        db: 데이터베이스 세션
+
+    Returns:
+        204 No Content
+
+    Raises:
+        HTTPException: 사용자 삭제 실패 시
+    """
+    success = await UserService.delete_user(db=db, user_id=current_user.id)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    
+    return None

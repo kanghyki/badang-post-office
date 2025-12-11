@@ -162,6 +162,24 @@ class SchedulerService:
             logger.error(f"Failed to cancel schedule {scheduled_id}: {str(e)}")
             return False
 
+    def cancel_user_schedules(self, postcard_ids: list[str]) -> int:
+        """
+        특정 사용자의 모든 예약 취소
+
+        Args:
+            postcard_ids: 취소할 엽서 ID 목록
+
+        Returns:
+            취소된 스케줄 개수
+        """
+        cancelled_count = 0
+        for postcard_id in postcard_ids:
+            if self.cancel_schedule(postcard_id):
+                cancelled_count += 1
+        
+        logger.info(f"Cancelled {cancelled_count} schedules out of {len(postcard_ids)} postcards")
+        return cancelled_count
+
     def reschedule_postcard(
         self,
         scheduled_id: str,

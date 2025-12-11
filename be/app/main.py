@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from fastapi.staticfiles import StaticFiles
 from app.config import settings
-from app.routes import postcards, templates_dev, templates_public, fonts, translation, auth, files, postcards_dev
+from app.routes import postcards, templates_dev, templates_public, fonts, auth, files, postcards_dev
 from app.database.database import init_db, get_db
 from app.scheduler_instance import init_scheduler, shutdown_scheduler
 
@@ -113,7 +113,6 @@ if settings.env == "dev":
 
 # 프로덕션 템플릿 API (인증 필요)
 app.include_router(templates_public.router)  # 프로덕션: 템플릿 조회
-app.include_router(translation.router)  # 제주 방언 번역 테스트
 
 
 @app.get("/")
