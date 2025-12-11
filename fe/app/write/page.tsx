@@ -121,67 +121,128 @@ export default function Write() {
       <div className="container">
         <main className={styles.writeMain}>
           <form onSubmit={handleSubmit} id="postcardForm">
-            <input
-              type="text"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-              placeholder="받는 사람 이름 (…에게)"
-              required
-            />
-
-            <div className={styles.textBox}>
-              <div className={styles.transrait}>
-                {translatedText || "제주방언이 여기에 표기됩니다."}
+            {/* 엽서 내용 섹션 */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>엽서 내용</h3>
+              <div className={styles.textBox}>
+                <div className={styles.textareaWrapper}>
+                  <textarea
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder="마음을 담아 메시지를 작성해주세요..."
+                    maxLength={120}
+                    className={styles.textarea}
+                    required
+                  />
+                  <span className={styles.charCount}>{text.length} / 120</span>
+                </div>
+                <div className={styles.translationBox}>
+                  <div className={styles.translationLabel}>
+                    <span className={styles.icon}>🌴</span>
+                    <span>미리보기</span>
+                  </div>
+                  <div className={styles.translatedText}>
+                    {translatedText || ""}
+                  </div>
+                </div>
               </div>
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="엽서 내용을 입력 해 주세요.(120자)"
-                maxLength={120}
-                required
-              />
             </div>
 
-            <input
-              type="text"
-              value={senderName}
-              onChange={(e) => setSenderName(e.target.value)}
-              placeholder="보내는 사람 이름"
-            />
+            {/* 이미지 업로드 섹션 */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>사진 첨부</h3>
+              <div className={styles.fileInputWrapper}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className={styles.fileInput}
+                  id="imageInput"
+                />
+                <label htmlFor="imageInput" className={styles.fileLabel}>
+                  <span className={styles.icon}>📷</span>
+                  <span>{image ? image.name : "사진을 선택해주세요"}</span>
+                </label>
+              </div>
 
-            <input
-              type="email"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              placeholder="받는 분 이메일"
-              required
-            />
+              {imagePreview && (
+                <div className={styles.previewBox}>
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className={styles.previewImg}
+                  />
+                </div>
+              )}
+            </div>
 
-            <label htmlFor="scheduled_at" className={styles.future}>
-              미래시간을 정해주세요.
-            </label>
-            <input
-              id="scheduled_at"
-              type="datetime-local"
-              value={scheduledAt}
-              onChange={(e) => setScheduledAt(e.target.value)}
-              required
-            />
+            {/* 보내는 사람 섹션 */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>보내는 사람</h3>
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>
+                  <span className={styles.icon}>✍️</span>
+                  <input
+                    type="text"
+                    value={senderName}
+                    onChange={(e) => setSenderName(e.target.value)}
+                    placeholder="이름을 입력해주세요"
+                    className={styles.input}
+                  />
+                </label>
+              </div>
+            </div>
 
-            <input type="file" accept="image/*" onChange={handleImageChange} />
+            {/* 받는 사람 정보 섹션 */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>받는 사람</h3>
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>
+                  <span className={styles.icon}>👤</span>
+                  <input
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="이름을 입력해주세요"
+                    className={styles.input}
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>
+                  <span className={styles.icon}>📧</span>
+                  <input
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="이메일 주소"
+                    className={styles.input}
+                    required
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* 발송 시간 섹션 */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>발송 예약</h3>
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>
+                  <span className={styles.icon}>📅</span>
+                  <input
+                    id="scheduled_at"
+                    type="datetime-local"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    className={styles.input}
+                    required
+                  />
+                </label>
+              </div>
+            </div>
           </form>
-
-          {imagePreview && (
-            <div className={styles.previewBox}>
-              <p>이미지 미리보기</p>
-              <img
-                src={imagePreview}
-                alt="preview"
-                className={styles.previewImg}
-                height="140px"
-              />
-            </div>
-          )}
 
           <div className={styles.buttonSection}>
             <button
@@ -190,7 +251,17 @@ export default function Write() {
               form="postcardForm"
               disabled={loading || !postcardId}
             >
-              {loading ? "보내는 중..." : "엽서 보내기"}
+              {loading ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  <span>보내는 중...</span>
+                </>
+              ) : (
+                <>
+                  <span>✉️</span>
+                  <span>엽서 보내기</span>
+                </>
+              )}
             </button>
           </div>
         </main>
