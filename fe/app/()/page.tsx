@@ -14,24 +14,21 @@ export default function Home() {
   }, []);
   return (
     <>
-      <div className="hdWrap"></div>
-      <div className="container">
-        <main className={styles.homeMain}>
-          <Logo c_value="#FFF" bg_value="#fff" />
-          <p className={styles.headCopy}>
-            시간을 담아 보내는
-            <br />
-            제주방언 느영나영 편지,
-            <br />
-            미래에 도착해서 만나.
-          </p>
-          <div className={styles.buttonSection}>
-            <Link href="/login" className={`${styles.moveBtn} btnBig`}>
-              START
-            </Link>
-          </div>
-        </main>
-      </div>
+      <main className={styles.homeMain}>
+        <Logo c_value="#FFF" bg_value="#fff" />
+        <p className={styles.headCopy}>
+          시간을 담아 보내는
+          <br />
+          제주방언 느영나영 편지,
+          <br />
+          미래에 도착해서 만나.
+        </p>
+        <div className={styles.buttonSection}>
+          <Link href="/login" className={styles.moveBtn}>
+            문 열고 들어가기
+          </Link>
+        </div>
+      </main>
     </>
   );
 }
