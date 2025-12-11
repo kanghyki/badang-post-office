@@ -45,41 +45,41 @@ export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
   return (
     <div className={styles.postcardItem}>
       <div className={styles.listBullet}>1</div>
+
       <div className={styles.listBox}>
         <div className={styles.postcardDate}>
           <div className={styles.reservDate}>
             <span>
               {data.scheduled_at ? formatDate(data.scheduled_at) : "미정"}
             </span>
+          </div>
+          <div className={styles.dateRight}>
+            <div className={styles.writeDate}>
+              {relativeDate(data.created_at)}
+            </div>
             {(data.status === "writing" || data.status === "pending") && (
-              <>
-                <Link href={`/modify?id=${data.id}`} className="btIcon">
+              <div className={styles.actionButtons}>
+                <Link href={`/modify?id=${data.id}`} className={styles.iconBtn}>
                   <FaEdit />
                 </Link>
-                <button
-                  onClick={handleDelete}
-                  className="btIcon"
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={handleDelete} className={styles.iconBtn}>
                   <FaTrashAlt />
                 </button>
-              </>
+              </div>
             )}
           </div>
-          <div className="writeDate">{relativeDate(data.created_at)}</div>
         </div>
-        <div className="recipient">
-          <span>To_ </span>
-          <b>{data.recipient_email || "미정"}</b>
+        <div className={styles.recipient}>
+          <span className={styles.label}>받는 사람</span>
+          <span className={styles.value}>{data.recipient_email || "미정"}</span>
         </div>
-        <div className="title">
-          <p>{data.recipient_name || "제목 없음"}</p>
+        <div className={styles.title}>
+          <span className={styles.label}>제목</span>
+          <span className={styles.value}>
+            {data.recipient_name || "제목 없음"}
+          </span>
         </div>
-        <div className="content">
+        <div className={styles.content}>
           <p>{data.text || data.original_text || "내용 없음"}</p>
         </div>
       </div>
