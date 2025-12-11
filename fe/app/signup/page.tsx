@@ -1,96 +1,96 @@
 "use client";
 
+import Link from "next/link";
 import styles from "./signup.module.scss";
 import Header from "../Components/Header";
+import Logo from "../Components/LogoBox";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { authApi } from "@/app/api/auth";
 
 export default function Signup() {
-    const [email, setEmail] = useState("");
-    const [name, setName] = useState("");
-    const [password, setPassword] = useState("");
-    const router = useRouter();
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
 
-        const reqBody = {
-            email,
-            name,
-            password,
-        };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        try {
-            const res = await fetch("https://jeju-be.hyki.me/v1/auth/signup", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(reqBody),
-            });
+    try {
+      const response = await authApi.signup({ email, name, password });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                alert(`회원가입 실패: ${errorData.message || "오류 발생"}`);
-                return;
-            }
+      console.log("회원가입 성공:", response);
 
-            const data = await res.json();
-            console.log("회원가입 성공:", data);
+      alert("회원가입이 완료되었습니다!");
+      router.push("/login");
+    } catch (error) {
+      console.error("회원가입 에러:", error);
+      if (error instanceof Error) {
+        alert(`회원가입 실패: ${error.message}`);
+      } else {
+        alert("서버에 연결할 수 없습니다.");
+      }
+    }
+  };
 
-            alert("회원가입이 완료되었습니다!");
-            // 회원가입 완료 후 필요한 페이지로 이동 가능
-            router.push("/login");
-        } catch (error) {
-            console.error(error);
-            alert("서버에 연결할 수 없습니다.");
-        }
-    };
+  return (
+    <>
+      <div className="hdWrap">
+        <Header title="회원가입" path="/login" />
+      </div>
 
-    return (
-        <>
-            <div className="hdWrap">
-                <Header title="회원가입" path="/login" />
-            </div>
+      <div className="container">
+        <main className={styles.signupMain}>
+          <Logo c_value="#f61" bg_value="#fff" />
 
-            <div className="container">
-                <main className={styles.signupMain}>
-                    <form onSubmit={handleSubmit}>
-                        <label>
-                            <span>이메일</span>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </label>
+          <div className={styles.signupBox}>
+            <form onSubmit={handleSubmit}>
+              <label>
+                <span>이메일</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="이메일을 입력하세요"
+                  required
+                />
+              </label>
 
-                        <label>
-                            <span>닉네임</span>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                            />
-                        </label>
+              <label>
+                <span>닉네임</span>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="닉네임을 입력하세요"
+                  required
+                />
+              </label>
 
-                        <label>
-                            <span>비밀번호</span>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </label>
+              <label>
+                <span>비밀번호</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="비밀번호를 입력하세요"
+                  required
+                />
+              </label>
+            </form>
+          </div>
+        </main>
+      </div>
 
-                        <button type="submit" className={styles.signupBtn}>
-                            회원가입
-                        </button>
-                    </form>
-                </main>
-            </div>
-        </>
-    );
+      <div className="navWrap">
+        <button className="btnBig" onClick={handleSubmit}>
+          회원가입
+        </button>
+        <Link href="/login" className="btnBig btnSecondary">
+          로그인하기
+        </Link>
+      </div>
+    </>
+  );
 }

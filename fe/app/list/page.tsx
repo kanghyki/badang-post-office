@@ -1,70 +1,85 @@
+"use client";
+
 import Link from "next/link";
 import Header from "../Components/Header";
 import PostcardItem from "../Components/PostcardItem";
 import styles from "./list.module.scss";
-
+import { useEffect, useState } from "react";
+import { postcardsApi, PostcardResponse } from "../api/postcards";
+import { useAuth } from "../hooks/useAuth";
 
 export default function List() {
-  const pageTitle = "예약엽서 목록";
-  
+  useAuth(); // 인증 체크
+  const [postcards, setPostcards] = useState<PostcardResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 실제로는 API fetch로 받아올 데이터
-  const postcards = [
-    {
-      id: "post_1",
-      title: "Happy New Year!",
-      origin_content: "안녕하세요. 새해 복 많이 받으세요.",
-      jeju_content: "안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예.",
-      to_email: "test1@example.com",
-      scheduled_delivery_date: "2026-12-25T09:00:00Z",
-      created_at: "2025-12-09T10:00:00Z"
-    },
-    {
-      id: "post_2",
-      title: "Merry Christmas",
-      origin_content: "메리 크리스마스!",
-      jeju_content: "메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과!",
-      to_email: "test2@example.com",
-      scheduled_delivery_date: "2027-12-20T09:00:00Z",
-      created_at: "2025-12-08T08:30:00Z"
-    },
-    {
-      id: "post_3",
-      title: "Happy New Year!",
-      origin_content: "안녕하세요. 새해 복 많이 받으세요.",
-      jeju_content: "안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예.",
-      to_email: "test1@example.com",
-      scheduled_delivery_date: "2024-12-25T09:00:00Z",
-      created_at: "2025-12-07T10:00:00Z"
-    },
-    {
-      id: "post_4",
-      title: "Merry Christmas",
-      origin_content: "메리 크리스마스!",
-      jeju_content: "메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과!",
-      to_email: "test2@example.com",
-      scheduled_delivery_date: "2024-12-20T09:00:00Z",
-      created_at: "2025-11-01T08:30:00Z"
-    },
-    {
-      id: "post_5",
-      title: "Happy New Year!",
-      origin_content: "안녕하세요. 새해 복 많이 받으세요.",
-      jeju_content: "안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예. 안녕하우꽈. 새해 복 많이 받으서예.",
-      to_email: "test1@example.com",
-      scheduled_delivery_date: "2024-12-25T09:00:00Z",
-      created_at: "2024-12-01T10:00:00Z"
-    },
-    {
-      id: "post_6",
-      title: "Merry Christmas",
-      origin_content: "메리 크리스마스!",
-      jeju_content: "메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과! 메리 크리스마스 하수과!",
-      to_email: "test2@example.com",
-      scheduled_delivery_date: "2024-12-20T09:00:00Z",
-      created_at: "2023-11-30T08:30:00Z"
+  const fetchPostcards = async () => {
+    try {
+      setLoading(true);
+      const data = await postcardsApi.getList();
+      setPostcards(data);
+    } catch (err) {
+      console.error("엽서 목록 조회 실패:", err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("엽서 목록을 불러올 수 없습니다.");
+      }
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchPostcards();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await postcardsApi.delete(id);
+      alert("엽서가 삭제되었습니다.");
+      // 목록 새로고침
+      fetchPostcards();
+    } catch (error) {
+      console.error("삭제 실패:", error);
+      if (error instanceof Error) {
+        alert(`삭제 실패: ${error.message}`);
+      } else {
+        alert("삭제 중 오류가 발생했습니다.");
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <>
+        <div className="hdWrap">
+          <Header title="예약엽서목록" path="/user"/>
+        </div>
+        <div className="container">
+          <div style={{ textAlign: "center", padding: "50px" }}>
+            로딩 중...
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <div className="hdWrap">
+          <Header title="예약엽서목록" path="/user"/>
+        </div>
+        <div className="container">
+          <div style={{ textAlign: "center", padding: "50px", color: "red" }}>
+            {error}
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -78,9 +93,15 @@ export default function List() {
         </div>
         <main className={styles.listMain}>
           <div className={styles.postcardBox}>
-            {postcards.map((item) => (
-              <PostcardItem key={item.id} data={item} />
-            ))}
+            {postcards.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "50px" }}>
+                작성한 엽서가 없습니다.
+              </div>
+            ) : (
+              postcards.map((item) => (
+                <PostcardItem key={item.id} data={item} onDelete={handleDelete} />
+              ))
+            )}
           </div>
         </main>
       </div>

@@ -1,30 +1,21 @@
 import Link from "next/link";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import styles from "./PostcardItem.module.scss";
-
-interface PostcardData {
-  id: string;
-  title: string;
-  origin_content: string;
-  jeju_content: string;
-  to_email: string;
-  scheduled_delivery_date: string;
-  created_at: string;
-
-  user_image_url?: string;
-  processed_image_url?: string;
-  postcard_image_url?: string;
-  template_id?: string;
-  status?: string;
-  updated_at?: string;
-  sent_at?: string | null;
-}
+import { PostcardResponse } from "../api/postcards";
 
 interface PostcardItemProps {
-  data: PostcardData;
+  data: PostcardResponse;
+  onDelete?: (id: string) => void;
 }
 
-export default function PostcardItem({ data }: PostcardItemProps) {
+export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (confirm("정말 삭제하시겠습니까?")) {
+      onDelete?.(data.id);
+    }
+  };
+
   const formatDate = (isoDate: string) => {
     const date = new Date(isoDate);
     return date.toISOString().split("T")[0].replace(/-/g, ".");
@@ -57,20 +48,32 @@ export default function PostcardItem({ data }: PostcardItemProps) {
       <div className={styles.listBox}>
         <div className={styles.postcardDate}>
           <div className={styles.reservDate}>
-            <span>{formatDate(data.scheduled_delivery_date)}</span>
-            <Link href="" className="btIcon"><FaEdit /></Link>
-            <Link href="" className="btIcon"><FaTrashAlt /></Link>
+            <span>{data.scheduled_at ? formatDate(data.scheduled_at) : "미정"}</span>
+            {(data.status === "writing" || data.status === "pending") && (
+              <>
+                <Link href={`/modify?id=${data.id}`} className="btIcon">
+                  <FaEdit />
+                </Link>
+                <button
+                  onClick={handleDelete}
+                  className="btIcon"
+                  style={{ background: "none", border: "none", cursor: "pointer" }}
+                >
+                  <FaTrashAlt />
+                </button>
+              </>
+            )}
           </div>
           <div className="writeDate">{relativeDate(data.created_at)}</div>
         </div>
         <div className="recipient">
-          <span>To_ </span><b>{data.to_email}</b>
+          <span>To_ </span><b>{data.recipient_email || "미정"}</b>
         </div>
         <div className="title">
-          <p>{data.title}</p>
+          <p>{data.recipient_name || "제목 없음"}</p>
         </div>
         <div className="content">
-          <p>{data.jeju_content}</p>
+          <p>{data.text || data.original_text || "내용 없음"}</p>
         </div>
       </div>
     </div>

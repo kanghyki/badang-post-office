@@ -1,0 +1,16 @@
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { authUtils } from "../utils/auth";
+
+export function useAuth(redirectTo: string = "/login") {
+  const router = useRouter();
+
+  useEffect(() => {
+    const isAuthenticated = authUtils.isAuthenticated();
+
+    if (!isAuthenticated) {
+      alert("로그인이 필요합니다.");
+      router.push(redirectTo);
+    }
+  }, [router, redirectTo]);
+}

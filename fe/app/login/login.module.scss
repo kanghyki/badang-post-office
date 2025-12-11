@@ -1,17 +1,44 @@
 @import "../mixin";
-.loginMain{
-  .loginImg{
-    padding: 30px 0;
-    @include flex-center;
-  }
-  .loginBox{
-    @include flex-center;
-    flex-direction: column;
-    row-gap: 20px;
-    a{
-      color: #fff;
-      justify-content: start;
-      padding-left: 80px;
+
+.loginMain {
+  @include flex-center;
+  flex-direction: column;
+  padding-top: 40px;
+  padding-bottom: 160px; // 하단 버튼 공간 확보
+
+  .loginBox {
+    width: 100%;
+    margin-top: 40px;
+
+    form {
+      width: 90%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      label {
+        display: flex;
+        flex-direction: column;
+
+        span {
+          margin-bottom: 8px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        input {
+          padding: 12px 16px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          font-size: 16px;
+
+          &:focus {
+            outline: none;
+            border-color: #f61;
+          }
+        }
+      }
     }
   }
 }

@@ -7,10 +7,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaRegCircle, FaCircleCheck } from "react-icons/fa6";
 import { TbEdit } from "react-icons/tb";
+import { authUtils } from "../utils/auth";
+import { useAuth } from "../hooks/useAuth";
 
 import Logo from "../Components/LogoBox";
 
 export default function User() {
+  useAuth(); // 인증 체크
   const router = useRouter();
   const [selectedPage, setSelectedPage] = useState("");
   const postcards = [
@@ -36,6 +39,14 @@ export default function User() {
     if (selectedPage === "write") router.push("/write");
   };
 
+  const handleLogout = () => {
+    if (confirm("로그아웃 하시겠습니까?")) {
+      authUtils.removeToken();
+      alert("로그아웃 되었습니다.");
+      router.push("/login");
+    }
+  };
+
   return (
     <>
       <div className="hdrWrap">
@@ -43,6 +54,22 @@ export default function User() {
       </div>
       <div className="container">
         <main className={styles.userMain}>
+          <div style={{ textAlign: "right", marginBottom: "10px" }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: "8px 16px",
+                background: "#f44336",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "14px"
+              }}
+            >
+              로그아웃
+            </button>
+          </div>
           <Logo c_value="#f61" bg_value="#fff" />
           <div className={styles.inputBox}>
             <input

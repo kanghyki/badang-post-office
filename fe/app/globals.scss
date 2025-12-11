@@ -39,7 +39,8 @@ footer, header, hgroup, menu, nav, section {
 body {
 	line-height: 24px;
 	background-color: #ffefef;
-	overflow-y: hidden;
+	overflow-y: auto;
+	min-height: 100vh;
 }
 ol, ul {
 	list-style: none;

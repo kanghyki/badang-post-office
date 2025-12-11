@@ -1,23 +1,43 @@
 @import "../mixin";
 
 .signupMain {
-  form {
-    width: 90%;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
+  @include flex-center;
+  flex-direction: column;
+  padding-top: 40px;
+  padding-bottom: 160px; // 하단 버튼 공간 확보
 
-    label {
+  .signupBox {
+    width: 100%;
+    margin-top: 40px;
+
+    form {
+      width: 90%;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
-      margin-top: 20px;
-      &:first-of-type{
-        margin-top: 0;
-      }
-      span {}
+      gap: 20px;
 
-      input {
-        line-height: 36px;
+      label {
+        display: flex;
+        flex-direction: column;
+
+        span {
+          margin-bottom: 8px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        input {
+          padding: 12px 16px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          font-size: 16px;
+
+          &:focus {
+            outline: none;
+            border-color: #f61;
+          }
+        }
       }
     }
   }
