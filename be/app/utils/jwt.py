@@ -4,7 +4,7 @@ JWT 토큰 생성 및 검증 유틸리티
 python-jose를 사용하여 JWT 액세스 토큰을 생성하고 검증합니다.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from app.config import settings
@@ -21,7 +21,7 @@ def create_access_token(user_id: str, email: str) -> str:
     Returns:
         JWT 액세스 토큰
     """
-    expire = datetime.utcnow() + timedelta(minutes=settings.jwt_access_token_expire_minutes)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_access_token_expire_minutes)
     to_encode = {
         "sub": user_id,  # subject (사용자 ID)
         "email": email,

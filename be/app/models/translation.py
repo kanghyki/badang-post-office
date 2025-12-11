@@ -2,7 +2,7 @@
 제주 방언 번역 API 요청/응답 모델
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class TranslationRequest(BaseModel):
@@ -18,6 +18,16 @@ class TranslationRequest(BaseModel):
 
 class TranslationResponse(BaseModel):
     """제주 방언 번역 응답"""
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "original_text": "안녕하세요, 오늘 날씨가 정말 좋네요!",
+                "translated_text": "안녕하우꽈, 오늘 날씨가 정말 곱습니다게!",
+                "model_used": "gpt-4o-mini"
+            }
+        }
+    )
 
     original_text: str = Field(
         ...,
@@ -31,12 +41,3 @@ class TranslationResponse(BaseModel):
         ...,
         description="사용된 모델명"
     )
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "original_text": "안녕하세요, 오늘 날씨가 정말 좋네요!",
-                "translated_text": "안녕하우꽈, 오늘 날씨가 정말 곱습니다게!",
-                "model_used": "gpt-4o-mini"
-            }
-        }

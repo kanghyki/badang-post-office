@@ -4,7 +4,7 @@
 엽서 생성 요청 및 응답의 구조를 정의합니다.
 """
 
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, field_validator, Field, ConfigDict
 from typing import Optional, Literal
 from uuid import UUID
 from datetime import datetime, timedelta
@@ -24,15 +24,17 @@ class PostcardCreateRequest(BaseModel):
     sender_name: Optional[str] = None
     scheduled_at: Optional[datetime] = Field(None, description="발송 예정 시간 (없으면 즉시 발송)")
 
-    @validator("text")
-    def validate_text_length(cls, v):
+    @field_validator("text")
+    @classmethod
+    def validate_text_length(cls, v: str) -> str:
         """텍스트 길이 검증 (최대 500자)"""
         if len(v) > 500:
             raise ValueError("텍스트는 최대 500자까지 입력 가능합니다.")
         return v
     
-    @validator("scheduled_at")
-    def validate_scheduled_time(cls, v):
+    @field_validator("scheduled_at")
+    @classmethod
+    def validate_scheduled_time(cls, v: Optional[datetime]) -> Optional[datetime]:
         """예약 시간 검증 (최소 5분 후, 최대 2년 이내)"""
         if v is None:
             return v
@@ -76,8 +78,7 @@ class PostcardResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PostcardUpdateRequest(BaseModel):
@@ -88,14 +89,16 @@ class PostcardUpdateRequest(BaseModel):
     recipient_name: Optional[str] = None
     sender_name: Optional[str] = None
 
-    @validator("text")
-    def validate_text_length(cls, v):
+    @field_validator("text")
+    @classmethod
+    def validate_text_length(cls, v: Optional[str]) -> Optional[str]:
         if v and len(v) > 500:
             raise ValueError("텍스트는 최대 500자까지 입력 가능합니다.")
         return v
 
-    @validator("scheduled_at")
-    def validate_scheduled_time(cls, v):
+    @field_validator("scheduled_at")
+    @classmethod
+    def validate_scheduled_time(cls, v: Optional[datetime]) -> Optional[datetime]:
         if v:
             now = datetime.utcnow()
             min_time = now + timedelta(minutes=5)
@@ -129,6 +132,5 @@ class PostcardDB(BaseModel):
     user_id: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
