@@ -218,66 +218,95 @@
   right: 0;
   display: flex;
   justify-content: center;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
   padding: 12px 16px;
   background: #ffffff;
   border-top: 1px solid #f0f0f0;
   z-index: 10;
+  max-width: 100%;
+}
+
+.backBtn {
+  @include flex-center;
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 90px;
+  height: 48px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-weight: 500;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #f5f5f5;
+    border-color: #bbb;
+  }
+
+  &:active:not(:disabled) {
+    background: #ececec;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .saveBtn {
   @include flex-center;
-  gap: 6px;
-  width: 100%;
-  max-width: 340px;
-  height: 54px;
-  border-radius: 8px;
-  border: 2px solid #ff6600;
-  background: transparent;
-  font-weight: 600;
-  font-size: 16px;
-  color: #ff6600;
+  gap: 4px;
+  flex: 1;
+  height: 48px;
+  border-radius: 4px;
+  border: none;
+  background: #fff;
+  font-weight: 500;
+  font-size: 14px;
+  color: #666;
   cursor: pointer;
   transition: all 0.2s ease;
-  letter-spacing: 0.5px;
+  border: 1px solid #ddd;
 
   &:hover:not(:disabled) {
-    background: #fff5f0;
+    background: #f5f5f5;
+    border-color: #bbb;
   }
 
   &:active:not(:disabled) {
-    background: #ffe5d9;
+    background: #ececec;
   }
 
   &:disabled {
-    border-color: #ccc;
-    color: #ccc;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 }
 
 .sendBtn {
   @include flex-center;
-  gap: 6px;
-  width: 100%;
-  max-width: 340px;
-  height: 54px;
-  border-radius: 8px;
+  gap: 4px;
+  flex: 1;
+  height: 48px;
+  border-radius: 4px;
   border: none;
-  background: #ff6600;
+  background: #4caf50;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   color: #fff;
   cursor: pointer;
   transition: background 0.2s ease;
-  letter-spacing: 0.5px;
 
   &:hover:not(:disabled) {
-    background: #ff7711;
+    background: #45a049;
   }
 
   &:active:not(:disabled) {
-    background: #e55500;
+    background: #3d8b40;
   }
 
   &:disabled {

@@ -21,11 +21,49 @@ export default function Modify() {
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [recipientName, setRecipientName] = useState("");
-  const [recipientEmail, setRecipientEmail] = useState("");
+  const [emailLocalPart, setEmailLocalPart] = useState("");
+  const [emailDomain, setEmailDomain] = useState("");
   const [senderName, setSenderName] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // 입력값 변경 감지
+  useEffect(() => {
+    if (
+      text ||
+      recipientName ||
+      emailLocalPart ||
+      emailDomain ||
+      senderName ||
+      scheduledAt ||
+      image
+    ) {
+      setHasUnsavedChanges(true);
+    }
+  }, [
+    text,
+    recipientName,
+    emailLocalPart,
+    emailDomain,
+    senderName,
+    scheduledAt,
+    image,
+  ]);
+
+  // 뒤로가기 시 경고
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // 기존 엽서 데이터 로드
   useEffect(() => {
@@ -59,7 +97,14 @@ export default function Modify() {
         setText(postcard.original_text || "");
         setTranslatedText(postcard.text || "");
         setRecipientName(postcard.recipient_name || "");
-        setRecipientEmail(postcard.recipient_email || "");
+        
+        // 이메일을 @ 기준으로 분리
+        if (postcard.recipient_email) {
+          const [local, domain] = postcard.recipient_email.split('@');
+          setEmailLocalPart(local || "");
+          setEmailDomain(domain || "");
+        }
+        
         setSenderName(postcard.sender_name || "");
 
         if (postcard.scheduled_at) {
@@ -117,9 +162,31 @@ export default function Modify() {
       return;
     }
 
+    // 이메일 validation
+    if (emailLocalPart || emailDomain) {
+      if (!emailLocalPart || !emailDomain) {
+        showToast({ message: "이메일 주소를 완성해주세요.", type: "error" });
+        return;
+      }
+      if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
+        showToast({ message: "유효한 이메일 형식이 아닙니다.", type: "error" });
+        return;
+      }
+      if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
+        showToast({ message: "유효한 도메인 형식이 아닙니다.", type: "error" });
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
+      // 이메일 주소 조합
+      const recipientEmail =
+        emailLocalPart && emailDomain
+          ? `${emailLocalPart}@${emailDomain}`
+          : undefined;
+
       const updatedPostcard = await postcardsApi.update(postcardId, {
         text,
         recipient_email: recipientEmail,
@@ -136,7 +203,8 @@ export default function Modify() {
         setTranslatedText(updatedPostcard.text);
       }
 
-      showToast({ message: "저장되었습니다.", type: "success" });
+      setHasUnsavedChanges(false);
+      showToast({ message: "임시 저장되었습니다.", type: "success" });
     } catch (error) {
       console.error("저장 실패:", error);
       if (error instanceof Error) {
@@ -162,9 +230,26 @@ export default function Modify() {
       return;
     }
 
+    // 이메일 validation
+    if (!emailLocalPart || !emailDomain) {
+      showToast({ message: "이메일 주소를 입력해주세요.", type: "error" });
+      return;
+    }
+    if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
+      showToast({ message: "유효한 이메일 형식이 아닙니다.", type: "error" });
+      return;
+    }
+    if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
+      showToast({ message: "유효한 도메인 형식이 아닙니다.", type: "error" });
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // 이메일 주소 조합
+      const recipientEmail = `${emailLocalPart}@${emailDomain}`;
+
       // 1. 엽서 내용 업데이트
       await postcardsApi.update(postcardId, {
         text,
@@ -180,6 +265,7 @@ export default function Modify() {
       // 2. 엽서 발송
       await postcardsApi.send(postcardId);
 
+      setHasUnsavedChanges(false);
       router.push(ROUTES.LIST);
     } catch (error) {
       console.error("엽서 전송 실패:", error);
@@ -197,7 +283,7 @@ export default function Modify() {
     return (
       <>
         <div className="hdrWrap">
-          <Header title="엽서 수정하기" path="/list" />
+          <Header title="엽서 수정하기" />
         </div>
         <div className="container">
           <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
@@ -209,7 +295,7 @@ export default function Modify() {
   return (
     <>
       <div className="hdrWrap">
-        <Header title="엽서 수정하기" path="/list" />
+        <Header title="엽서 수정하기" />
       </div>
 
       <div className="container">
@@ -307,14 +393,25 @@ export default function Modify() {
               <div className={styles.inputGroup}>
                 <label className={styles.inputLabel}>
                   <span className={styles.icon}>📧</span>
-                  <input
-                    type="email"
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
-                    placeholder="이메일 주소"
-                    className={styles.input}
-                    required
-                  />
+                  <div className={styles.emailInputWrapper}>
+                    <input
+                      type="text"
+                      value={emailLocalPart}
+                      onChange={(e) => setEmailLocalPart(e.target.value)}
+                      placeholder="이메일 아이디"
+                      className={styles.emailInput}
+                      required
+                    />
+                    <span className={styles.atSymbol}>@</span>
+                    <input
+                      type="text"
+                      value={emailDomain}
+                      onChange={(e) => setEmailDomain(e.target.value)}
+                      placeholder="example.com"
+                      className={styles.emailInput}
+                      required
+                    />
+                  </div>
                 </label>
               </div>
             </div>
@@ -340,6 +437,28 @@ export default function Modify() {
 
           <div className={styles.buttonSection}>
             <button
+              className={styles.backBtn}
+              type="button"
+              onClick={async () => {
+                if (hasUnsavedChanges) {
+                  const confirmed = await showModal({
+                    title: "작성 중인 내용이 있습니다",
+                    message: "저장하지 않은 내용은 사라집니다. 나가시겠습니까?",
+                    type: "confirm",
+                  });
+                  if (confirmed) {
+                    router.push(ROUTES.LIST);
+                  }
+                } else {
+                  router.push(ROUTES.LIST);
+                }
+              }}
+              disabled={loading}
+            >
+              <span>←</span>
+              <span>나가기</span>
+            </button>
+            <button
               className={styles.saveBtn}
               type="button"
               onClick={handleSave}
@@ -351,10 +470,7 @@ export default function Modify() {
                   <span>저장 중...</span>
                 </>
               ) : (
-                <>
-                  <span>💾</span>
-                  <span>저장</span>
-                </>
+                <span>임시저장</span>
               )}
             </button>
             <button
@@ -369,10 +485,7 @@ export default function Modify() {
                   <span>보내는 중...</span>
                 </>
               ) : (
-                <>
-                  <span>✉️</span>
-                  <span>다시 접수하기</span>
-                </>
+                <span>출간하기</span>
               )}
             </button>
           </div>

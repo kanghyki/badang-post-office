@@ -42,7 +42,7 @@ export default function Signup() {
   return (
     <>
       <div className="hdWrap">
-        <Header title="회원가입" path={ROUTES.LOGIN} />
+        <Header title="회원가입" />
       </div>
 
       <div className="container">

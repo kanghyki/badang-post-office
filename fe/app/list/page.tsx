@@ -95,7 +95,7 @@ export default function List() {
     return (
       <>
         <div className="hdWrap">
-          <Header title="예약엽서목록" path={ROUTES.USER} />
+          <Header title="예약엽서목록" />
         </div>
         <div className="container">
           <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
@@ -108,7 +108,7 @@ export default function List() {
     return (
       <>
         <div className="hdWrap">
-          <Header title="예약엽서목록" path={ROUTES.USER} />
+          <Header title="예약엽서목록" />
         </div>
         <div className="container">
           <div style={{ textAlign: "center", padding: "50px", color: "red" }}>
@@ -122,7 +122,7 @@ export default function List() {
   return (
     <>
       <div className="hdWrap">
-        <Header title="예약엽서목록" path={ROUTES.USER} />
+        <Header title="예약엽서목록" />
       </div>
 
       <div className="container">

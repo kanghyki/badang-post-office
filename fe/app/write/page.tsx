@@ -212,21 +212,6 @@ export default function Write() {
       <div className="hdrWrap">
         <Header
           title="엽서 작성하기"
-          path="/list"
-          onBackClick={async () => {
-            if (hasUnsavedChanges) {
-              const confirmed = await showModal({
-                title: "작성 중인 내용이 있습니다",
-                message: "저장하지 않은 내용은 사라집니다. 나가시겠습니까?",
-                type: "confirm",
-              });
-              if (confirmed) {
-                router.push(ROUTES.LIST);
-              }
-            } else {
-              router.push(ROUTES.LIST);
-            }
-          }}
         />
       </div>
 
@@ -369,6 +354,28 @@ export default function Write() {
 
           <div className={styles.buttonSection}>
             <button
+              className={styles.backBtn}
+              type="button"
+              onClick={async () => {
+                if (hasUnsavedChanges) {
+                  const confirmed = await showModal({
+                    title: "작성 중인 내용이 있습니다",
+                    message: "저장하지 않은 내용은 사라집니다. 나가시겠습니까?",
+                    type: "confirm",
+                  });
+                  if (confirmed) {
+                    router.push(ROUTES.LIST);
+                  }
+                } else {
+                  router.push(ROUTES.LIST);
+                }
+              }}
+              disabled={loading}
+            >
+              <span>←</span>
+              <span>나가기</span>
+            </button>
+            <button
               className={styles.saveBtn}
               type="button"
               onClick={handleSave}
@@ -380,9 +387,7 @@ export default function Write() {
                   <span>저장 중...</span>
                 </>
               ) : (
-                <>
-                  <span>임시 저장</span>
-                </>
+                <span>임시저장</span>
               )}
             </button>
             <button
@@ -397,10 +402,7 @@ export default function Write() {
                   <span>보내는 중...</span>
                 </>
               ) : (
-                <>
-                  <span>✉️</span>
-                  <span>접수하기</span>
-                </>
+                <span>접수하기</span>
               )}
             </button>
           </div>

@@ -73,7 +73,6 @@ const User = observer(() => {
       <div className="hdrWrap">
         <Header
           title="사용자"
-          path={ROUTES.USER}
           showLogout={true}
           onLogout={handleLogout}
         />

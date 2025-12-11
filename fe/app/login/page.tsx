@@ -43,7 +43,7 @@ export default function Login() {
   return (
     <>
       <div className="hdWrap">
-        <Header title="로그인" path={ROUTES.HOME} />
+        <Header title="로그인" />
       </div>
 
       <div className="container">
