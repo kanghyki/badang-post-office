@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import styles from "./signup.module.scss";
-import Header from "../components/Header";
 import Logo from "../components/LogoBox";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -41,10 +40,6 @@ export default function Signup() {
 
   return (
     <>
-      <div className="hdWrap">
-        <Header title="회원가입" />
-      </div>
-
       <div className="container">
         <main className={styles.signupMain}>
           <Logo c_value="#f61" bg_value="#fff" />

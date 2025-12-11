@@ -9,6 +9,46 @@
   position: relative;
   background-color: #ffefee;
 
+  .logoBtn {
+    @include flex-center;
+    gap: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+
+    &:hover {
+      background: rgba(255, 102, 17, 0.1);
+
+      .logoText {
+        color: #e55500;
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    .logo {
+      border-radius: 0.5rem;
+      object-fit: contain;
+    }
+
+    .logoText {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f61;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+  }
+
   .backBtn {
     @include flex-center;
     width: 3.125rem;

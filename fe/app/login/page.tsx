@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import styles from "./login.module.scss";
-import Header from "../components/Header";
 import Logo from "../components/LogoBox";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -60,10 +59,6 @@ export default function Login() {
 
   return (
     <>
-      <div className="hdWrap">
-        <Header title="로그인" />
-      </div>
-
       <div className="container">
         <main className={styles.loginMain}>
           <Logo c_value="#f61" bg_value="#fff" />

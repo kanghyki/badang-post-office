@@ -4,6 +4,7 @@ import { IoPersonCircle } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { ROUTES } from "@/lib/constants/urls";
+import Image from "next/image";
 
 interface LoginProps {
   title: string;
@@ -57,8 +58,23 @@ export default function Header({
     onDeleteAccount?.();
   };
 
+  const handleLogoClick = () => {
+    router.push(ROUTES.HOME);
+  };
+
   return (
     <header className={styles.header}>
+      <button onClick={handleLogoClick} className={styles.logoBtn}>
+        <Image
+          src="/images/logoImg.png"
+          alt="바당우체국"
+          width={40}
+          height={40}
+          className={styles.logo}
+          priority
+        />
+        <span className={styles.logoText}>바당우체국</span>
+      </button>
       <h2 className={styles.pageTitle}>{title}</h2>
       {showUserMenu && (
         <div className={styles.userMenuWrapper} ref={dropdownRef}>

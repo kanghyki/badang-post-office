@@ -11,8 +11,6 @@ import { useStore } from "@/store/StoreProvider";
 import { useNotification } from "../context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 import { authApi } from "@/lib/api/auth";
-
-import Logo from "../components/LogoBox";
 import { useState } from "react";
 
 const User = observer(() => {
@@ -84,7 +82,7 @@ const User = observer(() => {
     <>
       <div className="hdrWrap">
         <Header
-          title="홈"
+          title=""
           showUserMenu={true}
           userName={userName}
           onLogout={handleLogout}
@@ -93,7 +91,6 @@ const User = observer(() => {
       </div>
       <div className="container">
         <main className={styles.userMain}>
-          <Logo c_value="#f61" bg_value="#fff" />
           <div className={styles.inputBox}>
             <button
               className={styles.menuItem}
