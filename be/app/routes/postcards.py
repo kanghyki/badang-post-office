@@ -132,9 +132,12 @@ async def list_postcards(
         
         responses = []
         for postcard in postcards:
-            text = postcard.text_contents.get("main_text", "")
-            if not text and postcard.text_contents:
-                text = next(iter(postcard.text_contents.values()), "")
+            # None 체크 후 텍스트 추출
+            text = ""
+            if postcard.text_contents:
+                text = postcard.text_contents.get("main_text", "")
+                if not text:
+                    text = next(iter(postcard.text_contents.values()), "")
 
             # 원본 텍스트 추출
             original_text = ""
@@ -191,10 +194,13 @@ async def get_postcard(
         
         if not postcard:
             raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
-        
-        text = postcard.text_contents.get("main_text", "")
-        if not text and postcard.text_contents:
-            text = next(iter(postcard.text_contents.values()), "")
+
+        # None 체크 후 텍스트 추출
+        text = ""
+        if postcard.text_contents:
+            text = postcard.text_contents.get("main_text", "")
+            if not text:
+                text = next(iter(postcard.text_contents.values()), "")
 
         # 원본 텍스트 추출
         original_text = ""
