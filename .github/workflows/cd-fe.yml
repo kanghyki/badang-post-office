@@ -39,40 +39,40 @@ jobs:
         run: |
           docker push ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_FE_TAGNAME }}
 
-      - name: Deploy on Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ vars.SSH_HOST }}
-          port: ${{ vars.SSH_PORT }}
-          username: ${{ vars.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "Login docker hub for private repository access"
-            echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ vars.DOCKER_HUB_USERNAME }} --password-stdin
-
-            echo "Pull docker image"
-            docker pull ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_FE_TAGNAME }}
-
-            echo "Move to project directory"
-            cd ${{ vars.FE_PROJECT_DIRECTORY }}
-
-            echo "Stop existing containers"
-            docker compose down
-
-            echo "Create docker-compose.yml file"
-            cat > docker-compose.yml << 'EOF'
-            services:
-              jeju-gtp-fe:
-                container_name: jeju-gtp-fe
-                image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_FE_TAGNAME }}
-                networks:
-                  - proxy-network
-                restart: unless-stopped
-            networks:
-              proxy-network:
-                name: proxy-network
-                external: true
-            EOF
-
-            echo "Start updated service"
-            docker compose up -d
+#      - name: Deploy on Server
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ vars.SSH_HOST }}
+#          port: ${{ vars.SSH_PORT }}
+#          username: ${{ vars.SSH_USERNAME }}
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          script: |
+#            echo "Login docker hub for private repository access"
+#            echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ vars.DOCKER_HUB_USERNAME }} --password-stdin
+#
+#            echo "Pull docker image"
+#            docker pull ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_FE_TAGNAME }}
+#
+#            echo "Move to project directory"
+#            cd ${{ vars.FE_PROJECT_DIRECTORY }}
+#
+#            echo "Stop existing containers"
+#            docker compose down
+#
+#            echo "Create docker-compose.yml file"
+#            cat > docker-compose.yml << 'EOF'
+#            services:
+#              jeju-gtp-fe:
+#                container_name: jeju-gtp-fe
+#                image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_FE_TAGNAME }}
+#                networks:
+#                  - proxy-network
+#                restart: unless-stopped
+#            networks:
+#              proxy-network:
+#                name: proxy-network
+#                external: true
+#            EOF
+#
+#            echo "Start updated service"
+#            docker compose up -d

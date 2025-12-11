@@ -42,14 +42,6 @@ export const metadata: Metadata = {
     description: "제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스",
     url: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
     siteName: "바당우체국",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "바당우체국 - 제주 방언 디지털 엽서",
-      },
-    ],
     locale: "ko_KR",
     type: "website",
   },
@@ -58,7 +50,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "바당우체국",
     description: "제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스",
-    images: ["/og-image.png"],
   },
 
   icons: {
