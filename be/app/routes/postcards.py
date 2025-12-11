@@ -132,19 +132,21 @@ async def list_postcards(
         
         responses = []
         for postcard in postcards:
-            # None 체크 후 텍스트 추출
+            # 텍스트 추출: main_text를 우선 사용, 없거나 비어있으면 첫 번째 값 사용
             text = ""
             if postcard.text_contents:
-                text = postcard.text_contents.get("main_text", "")
-                if not text:
-                    text = next(iter(postcard.text_contents.values()), "")
+                text = (
+                    postcard.text_contents.get("main_text")
+                    or next(iter(postcard.text_contents.values()), "")
+                )
 
-            # 원본 텍스트 추출
+            # 원본 텍스트 추출: 동일한 로직
             original_text = ""
             if postcard.original_text_contents:
-                original_text = postcard.original_text_contents.get("main_text", "")
-                if not original_text:
-                    original_text = next(iter(postcard.original_text_contents.values()), "")
+                original_text = (
+                    postcard.original_text_contents.get("main_text")
+                    or next(iter(postcard.original_text_contents.values()), "")
+                )
 
             responses.append(PostcardResponse(
                 id=postcard.id,
@@ -195,19 +197,21 @@ async def get_postcard(
         if not postcard:
             raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
 
-        # None 체크 후 텍스트 추출
+        # 텍스트 추출: main_text를 우선 사용, 없거나 비어있으면 첫 번째 값 사용
         text = ""
         if postcard.text_contents:
-            text = postcard.text_contents.get("main_text", "")
-            if not text:
-                text = next(iter(postcard.text_contents.values()), "")
+            text = (
+                postcard.text_contents.get("main_text")
+                or next(iter(postcard.text_contents.values()), "")
+            )
 
-        # 원본 텍스트 추출
+        # 원본 텍스트 추출: 동일한 로직
         original_text = ""
         if postcard.original_text_contents:
-            original_text = postcard.original_text_contents.get("main_text", "")
-            if not original_text:
-                original_text = next(iter(postcard.original_text_contents.values()), "")
+            original_text = (
+                postcard.original_text_contents.get("main_text")
+                or next(iter(postcard.original_text_contents.values()), "")
+            )
 
         return PostcardResponse(
             id=postcard.id,
