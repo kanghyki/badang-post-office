@@ -39,21 +39,24 @@ class PostcardCreateRequest(BaseModel):
         if v is None:
             return v
             
-        now = datetime.utcnow()
-        min_time = now + timedelta(minutes=5)
-        max_time = now + timedelta(days=730)  # 2년
+        now_utc = datetime.now(pytz.UTC)
+        min_time = now_utc + timedelta(minutes=5)
+        max_time = now_utc + timedelta(days=730)  # 2년
         
-        # 입력이 타임존 aware인 경우 UTC로 변환
-        if v.tzinfo is not None:
-            v_utc = v.astimezone(pytz.UTC).replace(tzinfo=None)
+        # 입력을 UTC timezone-aware로 변환
+        if v.tzinfo is None:
+            # timezone-naive면 UTC로 간주
+            v_utc = pytz.UTC.localize(v)
         else:
-            v_utc = v
+            # 다른 timezone이면 UTC로 변환
+            v_utc = v.astimezone(pytz.UTC)
         
         if v_utc < min_time:
             raise ValueError("예약 시간은 최소 5분 후여야 합니다.")
         if v_utc > max_time:
             raise ValueError("예약 시간은 최대 2년 이내여야 합니다.")
         
+        # timezone-aware UTC로 반환
         return v_utc
 
 
@@ -100,14 +103,15 @@ class PostcardUpdateRequest(BaseModel):
     @classmethod
     def validate_scheduled_time(cls, v: Optional[datetime]) -> Optional[datetime]:
         if v:
-            now = datetime.utcnow()
-            min_time = now + timedelta(minutes=5)
-            max_time = now + timedelta(days=730)
+            now_utc = datetime.now(pytz.UTC)
+            min_time = now_utc + timedelta(minutes=5)
+            max_time = now_utc + timedelta(days=730)
             
-            if v.tzinfo is not None:
-                v_utc = v.astimezone(pytz.UTC).replace(tzinfo=None)
+            # UTC timezone-aware로 변환
+            if v.tzinfo is None:
+                v_utc = pytz.UTC.localize(v)
             else:
-                v_utc = v
+                v_utc = v.astimezone(pytz.UTC)
             
             if v_utc < min_time:
                 raise ValueError("예약 시간은 최소 5분 후여야 합니다.")

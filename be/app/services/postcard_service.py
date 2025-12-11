@@ -7,6 +7,7 @@
 import os
 import uuid as uuid_lib
 import logging
+import pytz
 from typing import Optional, Dict, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
@@ -524,6 +525,11 @@ class PostcardService:
         if scheduled_at:
             try:
                 new_scheduled_at = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
+                # UTC로 변환 (timezone-naive면 UTC로 가정)
+                if new_scheduled_at.tzinfo is None:
+                    new_scheduled_at = pytz.UTC.localize(new_scheduled_at)
+                else:
+                    new_scheduled_at = new_scheduled_at.astimezone(pytz.UTC)
                 # 검증
                 update_data = PostcardUpdateRequest(scheduled_at=new_scheduled_at)
                 update_values["scheduled_at"] = update_data.scheduled_at
@@ -614,7 +620,7 @@ class PostcardService:
         if scheduled_at and postcard.scheduled_at:
             from app.scheduler_instance import get_scheduler
             scheduler = get_scheduler()
-            await scheduler.reschedule_postcard(
+            scheduler.reschedule_postcard(
                 postcard_id,
                 update_values["scheduled_at"]
             )
@@ -673,7 +679,7 @@ class PostcardService:
         if postcard.scheduled_at:
             from app.scheduler_instance import get_scheduler
             scheduler = get_scheduler()
-            await scheduler.cancel_schedule(postcard_id)
+            scheduler.cancel_schedule(postcard_id)
         
         # DB 상태 업데이트
         stmt = (
@@ -776,9 +782,12 @@ class PostcardService:
             await self.db.commit()
             await self.db.refresh(postcard)
 
-            # 스케줄러에 등록
+            # 스케줄러에 등록 (UTC timezone-aware 확인)
             scheduler = get_scheduler()
-            success = await scheduler.schedule_postcard(postcard_id, postcard.scheduled_at)
+            scheduled_time = postcard.scheduled_at
+            if scheduled_time.tzinfo is None:
+                scheduled_time = pytz.UTC.localize(scheduled_time)
+            success = scheduler.schedule_postcard(postcard_id, scheduled_time)
 
             if not success:
                 # 스케줄러 등록 실패 시 상태를 다시 writing으로 되돌림

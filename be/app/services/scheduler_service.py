@@ -28,7 +28,12 @@ class SchedulerService:
 
     def __init__(self):
         """스케줄러 초기화"""
-        self.scheduler = AsyncIOScheduler(timezone=pytz.UTC)
+        self.scheduler = AsyncIOScheduler(
+            timezone=pytz.UTC,
+            job_defaults={
+                'misfire_grace_time': None  # 시간 제한 없이 모든 놓친 작업 즉시 실행
+            }
+        )
         self.storage = LocalStorageService()
 
     async def start(self):
@@ -106,7 +111,7 @@ class SchedulerService:
 
             logger.info(f"✓ Restored {total_count} scheduled postcards ({future_count} future, {overdue_count} overdue)")
 
-    async def schedule_postcard(
+    def schedule_postcard(
         self,
         scheduled_id: str,
         scheduled_at: datetime
@@ -136,7 +141,7 @@ class SchedulerService:
             logger.error(f"Failed to schedule postcard {scheduled_id}: {str(e)}")
             return False
 
-    async def cancel_schedule(self, scheduled_id: str) -> bool:
+    def cancel_schedule(self, scheduled_id: str) -> bool:
         """
         예약 취소
 
@@ -157,7 +162,7 @@ class SchedulerService:
             logger.error(f"Failed to cancel schedule {scheduled_id}: {str(e)}")
             return False
 
-    async def reschedule_postcard(
+    def reschedule_postcard(
         self,
         scheduled_id: str,
         new_scheduled_at: datetime
@@ -181,7 +186,7 @@ class SchedulerService:
             return True
         except JobLookupError:
             logger.warning(f"Schedule {scheduled_id} not found, creating new schedule")
-            return await self.schedule_postcard(scheduled_id, new_scheduled_at)
+            return self.schedule_postcard(scheduled_id, new_scheduled_at)
         except Exception as e:
             logger.error(f"Failed to reschedule postcard {scheduled_id}: {str(e)}")
             return False
@@ -214,7 +219,7 @@ class SchedulerService:
                     photos = {}
                     for photo_id, photo_path in scheduled.user_photo_paths.items():
                         try:
-                            photo_bytes = self.storage.read_file(photo_path)
+                            photo_bytes = await self.storage.read_file(photo_path)
                             photos[photo_id] = photo_bytes
                         except Exception as e:
                             logger.error(f"Failed to read photo {photo_path}: {str(e)}")
