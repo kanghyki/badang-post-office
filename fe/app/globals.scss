@@ -1,5 +1,16 @@
 @import "./mixin";
-
+@font-face {
+    font-family: 'YeogiOttaeJalnan';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.2/JalnanOTF00.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'KyuriSDiary';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/naverfont_07@1.0/Kyuri_diary.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+}
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -27,6 +38,8 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
 	line-height: 24px;
+	background-color: #ffefef;
+	overflow-y: hidden;
 }
 ol, ul {
 	list-style: none;
@@ -46,7 +59,20 @@ table {
 h1,h2,h3,h4,h5,h6{
   font-size: inherit;
 }
+h1{
+	font-family: "YeogiOttaeJalnan";
+}
 a {
   color: inherit;
   text-decoration: none;
+	font-size: inherit;
+}
+input,textarea,button{
+	padding: 0; margin: 0;
+	box-sizing: border-box;
+	font-size: inherit;
+	line-height: inherit;
+	border-color: #cfcfcf;
+	border-style: solid;
+	white-space: 0;
 }

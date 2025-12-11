@@ -1,58 +1,94 @@
-.inputBox{
-  display: flex;
-  flex-direction: column;
-  input{
-    display: none;
-  }
+@import "../mixin";
 
-  input+label{
-    width: 90%;
-    margin: 0 auto;
-    border: 3px solid;
-    padding: 10px 20px;
-    border-radius: 100px;
-    //////
-    background-color: transparent;
-    border-color: #ccc;
+.userMain {
+  padding-top: 60px;
+  .inputBox {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    span{
-      b{
-        font-size: 24px;
-        line-height: 30px;
-      }
-      i{
-        font-style: normal;
-        font-size: 12px;
-        line-height: 14px;
-      }
+    flex-direction: column;
+    margin-top: 30px;
+
+    input {
+      display: none;
     }
-    .radioBox{
+
+    input+label {
+      width: 90%;
+      margin: 0 auto;
+      border: 3px solid;
+      padding: 10px 20px;
+      border-radius: 100px;
+      margin-top: 20px;
+      //////
+      background-color: rgba(255, 255, 255, 0.5);
+      border-color: #fff;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      svg{display: none;}
-      svg:nth-of-type(1){
-        display: block;
+
+      span {
+        b {
+          font-size: 24px;
+          line-height: 30px;
+        }
+
+        i {
+          font-style: normal;
+          font-size: 12px;
+          line-height: 14px;
+        }
+      }
+
+      .radioBox {
+        display: flex;
+        align-items: center;
+
+        svg {
+          display: none;
+        }
+
+        svg:nth-of-type(1) {
+          display: block;
+        }
+      }
+
+      .boxTxt {
+        display: flex;
+        flex-direction: column;
+        margin-left: 10px;
+      }
+      .boxCnt{
+        font-size: 30px;
       }
     }
-    .boxTxt{
-      display: flex;
-      flex-direction: column;
-      margin-left: 10px;
-    }
-  }
-  input:checked+label{
-    //////
-    background-color: #fc0;
-    border-color: #f60;
-    .radioBox{
-      display: flex;
-      svg{display: none;}
-      svg:nth-of-type(2){
-        display: block;
+
+    input:checked+label {
+      //////
+      background-color: transparent;
+      border-color: #f60;
+
+      .radioBox {
+        display: flex;
+
+        svg {
+          display: none;
+        }
+
+        svg:nth-of-type(2) {
+          display: block;
+          color: #f60;
+        }
       }
     }
-    
   }
+}
+
+.sendBtn {
+  @include flex-center;
+  width: 90%;
+  height: 50px;
+  border-radius: 10px;
+  border: 0;
+  background-color: #f60;
+  font-weight: bold;
+  color: #fff;
 }

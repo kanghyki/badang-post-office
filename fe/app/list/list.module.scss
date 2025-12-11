@@ -1,8 +1,22 @@
-.postcardBox{
-  &>div{
-    margin-top: 10px;
-    &:first-of-type{
-      margin-top: 0;
+@import "../mixin";
+.postCopy{
+  font-family: 'KyuriSDiary';
+  font-weight: bold;
+  font-size: 24px;
+  line-height: 32px;
+  padding: 0px 30px 20px;
+}
+.listMain {
+  overflow-y: auto;
+  height: calc(100vh - 280px);
+  .postcardBox {
+    @include flex-center;
+    flex-direction: column;
+    &>div {
+      margin-top: 10px;
+      &:first-of-type {
+        margin-top: 0;
+      }
     }
   }
 }

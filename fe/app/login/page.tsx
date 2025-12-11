@@ -1,31 +1,106 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./login.module.scss";
-
-const KAKAO_CLIENT_ID = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID;
-const REDIRECT_URI = "http://localhost:3000/api/auth/kakao/callback";
+import Header from "../Components/Header";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
-  const kakaoLoginUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`;
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const reqBody = {
+      email,
+      password,
+    };
+
+    try {
+      const res = await fetch("https://jeju-be.hyki.me/docs/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reqBody),
+      });
+
+      const data = await res.json();
+
+      console.log("로그인 응답:", data);
+
+      if (!res.ok) {
+        alert(`로그인 실패: ${data.message || "아이디 또는 비밀번호가 올바르지 않습니다."}`);
+        return;
+      }
+
+      alert("로그인 성공!");
+
+      // 🔥 accessToken 저장 (백엔드에서 어떤 키로 주는지 확인 필요)
+      if (data?.data?.accessToken) {
+        localStorage.setItem("accessToken", data.data.accessToken);
+      }
+
+      // 로그인 후 이동
+      router.push("/user");
+
+    } catch (error) {
+      console.error("로그인 에러:", error);
+      alert("서버에 연결할 수 없습니다.");
+    }
+  };
 
   return (
     <>
-      <div className="hdWrap"></div>
+      <div className="hdWrap">
+        <Header title="로그인" path="/user"/>
+      </div>
+
       <div className="container">
         <main className={styles.loginMain}>
-          <div className={styles.loginImg}></div>
-          <div className={styles.loginBox}>
-            <Link href="./user" className="btnBig">
-              GOOGLE LOGIN
-            </Link>
-
-            <Link href={kakaoLoginUrl} className="btnBig">
-              KAKAO LOGIN
-            </Link>
-
-            <Link href="" className="btnBig">
-              LINE LOGIN
-            </Link>
+          <div className={styles.loginImg}>
+            <Image
+              src="/images/alyak.png"
+              alt=""
+              width={200}
+              height={320}
+            />
           </div>
+
+          <div className={styles.loginBox}>
+            <form onSubmit={handleLogin}>
+              <label>
+                <span>이메일</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </label>
+
+              <label>
+                <span>비밀번호</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </label>
+
+              <label>
+                <button type="submit">로그인</button>
+              </label>
+            </form>
+          </div>
+
+          <Link href="/signup">회원가입하기</Link>
         </main>
       </div>
     </>

@@ -53,24 +53,25 @@ export default function PostcardItem({ data }: PostcardItemProps) {
   };
   return (
     <div className={styles.postcardItem}>
-      <div className={styles.postcardDate}>
-        <div className={styles.reservDate}>
-          <span>{formatDate(data.scheduled_delivery_date)}</span>
-          <Link href="" className="btIcon"><FaEdit /></Link>
-          <Link href="" className="btIcon"><FaTrashAlt /></Link>
+      <div className={styles.listBullet}>1</div>
+      <div className={styles.listBox}>
+        <div className={styles.postcardDate}>
+          <div className={styles.reservDate}>
+            <span>{formatDate(data.scheduled_delivery_date)}</span>
+            <Link href="" className="btIcon"><FaEdit /></Link>
+            <Link href="" className="btIcon"><FaTrashAlt /></Link>
+          </div>
+          <div className="writeDate">{relativeDate(data.created_at)}</div>
         </div>
-        <div className="writeDate">{relativeDate(data.created_at)}</div>
-      </div>
-      <div>
-        <p className="recipient">
+        <div className="recipient">
           <span>To_ </span><b>{data.to_email}</b>
-        </p>
-      </div>
-      <div className="title">
-        <p>{data.title}</p>
-      </div>
-      <div className="content">
-        <p>{data.jeju_content}</p>
+        </div>
+        <div className="title">
+          <p>{data.title}</p>
+        </div>
+        <div className="content">
+          <p>{data.jeju_content}</p>
+        </div>
       </div>
     </div>
   );

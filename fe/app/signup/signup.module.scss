@@ -1,0 +1,24 @@
+@import "../mixin";
+
+.signupMain {
+  form {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+      &:first-of-type{
+        margin-top: 0;
+      }
+      span {}
+
+      input {
+        line-height: 36px;
+      }
+    }
+  }
+}

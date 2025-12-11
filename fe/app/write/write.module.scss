@@ -1,0 +1,53 @@
+@import "../mixin";
+
+.writeMain {
+  width: 90%;
+  margin: 0 auto;
+
+  form {
+    display: flex;
+    flex-direction: column;
+
+    input {
+      width: 100%;
+      font-size: 18px;
+      border-radius: 6px;
+      padding: 10px;
+    }
+
+    .textBox {
+      margin-top: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      font-size: 18px;
+      border-radius: 0px 0px 10px 10px;
+      word-spacing: -4px;
+      height: 120px;
+      padding: 10px;
+      border-top: 0;
+    }
+
+    .transrait {
+      background-color: #ccc;
+      font-size: 18px;
+      border-radius: 10px 10px 0px 0px;
+      padding: 10px;
+      height: 120px;
+      margin-top: 10px;
+    }
+
+  }
+}
+
+.sendBtn {
+  @include flex-center;
+  width: 90%;
+  height: 50px;
+  border-radius: 10px;
+  border: 0;
+  background-color: #f60;
+  font-weight: bold;
+  color: #fff;
+}

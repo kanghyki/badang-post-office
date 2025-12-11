@@ -2,15 +2,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./user.module.scss";
+import Header from "../Components/Header";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaRegCircle, FaCircleCheck } from "react-icons/fa6";
+import { TbEdit } from "react-icons/tb";
+
+import Logo from "../Components/LogoBox";
 
 export default function User() {
-  const pageTitle = "사용자";
   const router = useRouter();
   const [selectedPage, setSelectedPage] = useState("");
-
+  const postcards = [
+    { id: 1, title: "..." },
+    { id: 2, title: "..." },
+    { id: 3, title: "..." },
+    { id: 4, title: "..." },
+    { id: 5, title: "..." },
+    { id: 6, title: "..." },
+    { id: 7, title: "..." },
+  ];
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPage(e.target.id);
   };
@@ -27,11 +38,12 @@ export default function User() {
 
   return (
     <>
-      <div className="hdrWrap"></div>
+      <div className="hdrWrap">
+        <Header title="사용자"  path="/user"/>
+      </div>
       <div className="container">
         <main className={styles.userMain}>
-          <div className={styles.logoImg}></div>
-          <h1 className={styles.logoTitle}>제주헌디</h1>
+          <Logo c_value="#f61" bg_value="#fff" />
           <div className={styles.inputBox}>
             <input
               type="radio"
@@ -49,7 +61,7 @@ export default function User() {
                   <i>제주방언엽서 목록 확인하기</i>
                 </span>
               </span>
-              <span className={styles.boxCnt}><b>{"7"}</b><i>개</i></span>
+              <span><b>{postcards.length}</b><i>개</i></span>
             </label>
 
             <input
@@ -68,17 +80,13 @@ export default function User() {
                   <i>제주방언엽서 미래로 보내기</i>
                 </span>
               </span>
-              <span className={styles.boxCnt}><b>1</b><i>day</i></span>
+              <span className={styles.boxCnt}><TbEdit /></span>
             </label>
-
-            <div className={styles.submitWrap}>
-              <button onClick={handleSubmit} className="btnBig">
-                이동하기
-              </button>
-            </div>
-
           </div>
         </main>
+      </div>
+      <div className="navWrap">
+        <button className={styles.sendBtn} onClick={handleSubmit}>이동하기</button>
       </div>
     </>
   );

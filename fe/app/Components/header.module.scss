@@ -1,18 +1,19 @@
 @import "../mixin";
 .header {
-  height: 100%;
+  height: 60px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #Ccc;
 
   .pageTitle {
-    color: red;
+    color: #f61;
+    font-size: 20px;
   }
   .headerBtn{
     @include flex-center;
     width: 50px; height: 50px;
     font-size: 36px;
+    color: #999;
   }
 }
