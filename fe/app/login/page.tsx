@@ -38,14 +38,14 @@ export default function Login() {
 
       if (response.access_token) {
         authUtils.setToken(response.access_token);
-        
+
         // 아이디 기억하기 처리
         if (rememberEmail) {
           localStorage.setItem("rememberedEmail", email);
         } else {
           localStorage.removeItem("rememberedEmail");
         }
-        
+
         router.push(ROUTES.MAIN);
       }
     } catch (error) {

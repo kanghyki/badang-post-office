@@ -1,11 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@/styles/globals.scss";
 import "@/styles/globals.module.scss";
 import { StoreProvider } from "@/store/StoreProvider";
 import { NotificationProvider } from "./context/NotificationContext";
 import ConditionalFooter from "./components/ConditionalFooter";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#ff6611",
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   title: {
     default: "바당우체국",
     template: "%s | 바당우체국",
@@ -30,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "바당우체국",
     description: "제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스",
-    url: "https://jeju.hyki.me",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
     siteName: "바당우체국",
     images: [
       {
@@ -55,14 +63,6 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
-
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
-
-  themeColor: "#ff6611",
 
   robots: {
     index: true,
