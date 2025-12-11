@@ -8,6 +8,7 @@ import { authUtils } from "@/lib/utils/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/store/StoreProvider";
+import { useNotification } from "../context/NotificationContext";
 
 import Logo from "../components/LogoBox";
 
@@ -15,15 +16,23 @@ const User = observer(() => {
   useAuth(); // 인증 체크
   const router = useRouter();
   const { postcardStore } = useStore();
+  const { showModal } = useNotification();
 
   useEffect(() => {
     postcardStore.fetchPostcards();
   }, [postcardStore]);
 
-  const handleLogout = () => {
-    if (confirm("로그아웃 하시겠습니까?")) {
+  const handleLogout = async () => {
+    const confirmed = await showModal({
+      title: "로그아웃",
+      message: "로그아웃 하시겠습니까?",
+      type: "confirm",
+      confirmText: "로그아웃",
+      cancelText: "취소",
+    });
+
+    if (confirmed) {
       authUtils.removeToken();
-      alert("로그아웃 되었습니다.");
       router.push("/login");
     }
   };

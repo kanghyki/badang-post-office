@@ -8,9 +8,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
 import { authUtils } from "@/lib/utils/auth";
+import { useNotification } from "../context/NotificationContext";
 
 export default function Login() {
   const router = useRouter();
+  const { showToast } = useNotification();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,15 +27,14 @@ export default function Login() {
 
       if (response.access_token) {
         authUtils.setToken(response.access_token);
-        alert("로그인 성공!");
         router.push("/user");
       }
     } catch (error) {
       console.error("로그인 에러:", error);
       if (error instanceof Error) {
-        alert(`로그인 실패: ${error.message}`);
+        showToast({ message: `로그인 실패: ${error.message}`, type: "error" });
       } else {
-        alert("서버에 연결할 수 없습니다.");
+        showToast({ message: "서버에 연결할 수 없습니다.", type: "error" });
       }
     }
   };

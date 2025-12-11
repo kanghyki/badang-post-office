@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.scss";
 import "@/styles/globals.module.scss";
 import { StoreProvider } from "@/store/StoreProvider";
+import { NotificationProvider } from "./context/NotificationContext";
 import ConditionalFooter from "./components/ConditionalFooter";
 
 export const metadata: Metadata = {
@@ -20,8 +21,10 @@ export default function RootLayout({
         style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
       >
         <StoreProvider>
-          <div style={{ flex: 1 }}>{children}</div>
-          <ConditionalFooter />
+          <NotificationProvider>
+            <div style={{ flex: 1 }}>{children}</div>
+            <ConditionalFooter />
+          </NotificationProvider>
         </StoreProvider>
       </body>
     </html>

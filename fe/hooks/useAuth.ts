@@ -9,7 +9,6 @@ export function useAuth(redirectTo: string = "/login") {
     const isAuthenticated = authUtils.isAuthenticated();
 
     if (!isAuthenticated) {
-      alert("로그인이 필요합니다.");
       router.push(redirectTo);
     }
   }, [router, redirectTo]);

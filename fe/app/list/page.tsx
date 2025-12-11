@@ -7,9 +7,11 @@ import styles from "./list.module.scss";
 import { useEffect, useState } from "react";
 import { postcardsApi, PostcardResponse } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "../context/NotificationContext";
 
 export default function List() {
   useAuth(); // 인증 체크
+  const { showModal, showToast } = useNotification();
   const [postcards, setPostcards] = useState<PostcardResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,17 +38,26 @@ export default function List() {
   }, []);
 
   const handleDelete = async (id: string) => {
+    const confirmed = await showModal({
+      title: "엽서 삭제",
+      message: "정말로 삭제하시겠습니까?",
+      type: "confirm",
+      confirmText: "삭제",
+      cancelText: "취소",
+    });
+
+    if (!confirmed) return;
+
     try {
       await postcardsApi.delete(id);
-      alert("엽서가 삭제되었습니다.");
       // 목록 새로고침
       fetchPostcards();
     } catch (error) {
       console.error("삭제 실패:", error);
       if (error instanceof Error) {
-        alert(`삭제 실패: ${error.message}`);
+        showToast({ message: `삭제 실패: ${error.message}`, type: "error" });
       } else {
-        alert("삭제 중 오류가 발생했습니다.");
+        showToast({ message: "삭제 중 오류가 발생했습니다.", type: "error" });
       }
     }
   };

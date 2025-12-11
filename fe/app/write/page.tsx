@@ -6,10 +6,12 @@ import styles from "./write.module.scss";
 import Header from "../components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "../context/NotificationContext";
 
 export default function Write() {
   useAuth(); // 인증 체크
   const router = useRouter();
+  const { showToast, showModal } = useNotification();
   const [postcardId, setPostcardId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState("");
@@ -30,13 +32,17 @@ export default function Write() {
         console.log("엽서 생성 완료:", postcard.id);
       } catch (error) {
         console.error("엽서 생성 실패:", error);
-        alert("엽서 생성에 실패했습니다.");
+        await showModal({
+          title: "오류",
+          message: "엽서 생성에 실패했습니다.",
+          type: "alert",
+        });
         router.push("/list");
       }
     };
 
     createPostcard();
-  }, [router]);
+  }, [router, showModal]);
 
   // 텍스트 입력 시 번역 (디바운스)
   useEffect(() => {
@@ -76,7 +82,11 @@ export default function Write() {
     e.preventDefault();
 
     if (!postcardId) {
-      alert("엽서 ID가 없습니다. 페이지를 새로고침해주세요.");
+      await showModal({
+        title: "오류",
+        message: "엽서 ID가 없습니다. 페이지를 새로고침해주세요.",
+        type: "alert",
+      });
       return;
     }
 
@@ -98,14 +108,13 @@ export default function Write() {
       // 2. 엽서 발송
       await postcardsApi.send(postcardId);
 
-      alert("엽서가 성공적으로 예약되었습니다!");
       router.push("/list");
     } catch (error) {
       console.error("엽서 전송 실패:", error);
       if (error instanceof Error) {
-        alert(`전송 실패: ${error.message}`);
+        showToast({ message: `전송 실패: ${error.message}`, type: "error" });
       } else {
-        alert("요청 중 오류가 발생했습니다.");
+        showToast({ message: "요청 중 오류가 발생했습니다.", type: "error" });
       }
     } finally {
       setLoading(false);

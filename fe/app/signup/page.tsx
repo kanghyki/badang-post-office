@@ -7,8 +7,10 @@ import Logo from "../components/LogoBox";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
+import { useNotification } from "../context/NotificationContext";
 
 export default function Signup() {
+  const { showToast } = useNotification();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -22,14 +24,16 @@ export default function Signup() {
 
       console.log("회원가입 성공:", response);
 
-      alert("회원가입이 완료되었습니다!");
       router.push("/login");
     } catch (error) {
       console.error("회원가입 에러:", error);
       if (error instanceof Error) {
-        alert(`회원가입 실패: ${error.message}`);
+        showToast({
+          message: `회원가입 실패: ${error.message}`,
+          type: "error",
+        });
       } else {
-        alert("서버에 연결할 수 없습니다.");
+        showToast({ message: "서버에 연결할 수 없습니다.", type: "error" });
       }
     }
   };

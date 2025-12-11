@@ -11,9 +11,7 @@ interface PostcardItemProps {
 export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (confirm("정말 삭제하시겠습니까?")) {
-      onDelete?.(data.id);
-    }
+    onDelete?.(data.id);
   };
 
   const formatDate = (isoDate: string) => {

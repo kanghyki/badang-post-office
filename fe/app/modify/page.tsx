@@ -6,10 +6,12 @@ import styles from "../write/write.module.scss";
 import Header from "../components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "../context/NotificationContext";
 
 export default function Modify() {
   useAuth(); // 인증 체크
   const router = useRouter();
+  const { showToast, showModal } = useNotification();
   const searchParams = useSearchParams();
   const postcardId = searchParams.get("id");
 
@@ -27,8 +29,13 @@ export default function Modify() {
   // 기존 엽서 데이터 로드
   useEffect(() => {
     if (!postcardId) {
-      alert("엽서 ID가 없습니다.");
-      router.push("/list");
+      showModal({
+        title: "오류",
+        message: "엽서 ID가 없습니다.",
+        type: "alert",
+      }).then(() => {
+        router.push("/list");
+      });
       return;
     }
 
@@ -39,7 +46,11 @@ export default function Modify() {
 
         // 상태가 writing이나 pending일 때만 수정 가능
         if (postcard.status !== "writing" && postcard.status !== "pending") {
-          alert("이미 발송되었거나 발송 중인 엽서는 수정할 수 없습니다.");
+          await showModal({
+            title: "수정 불가",
+            message: "이미 발송되었거나 발송 중인 엽서는 수정할 수 없습니다.",
+            type: "alert",
+          });
           router.push("/list");
           return;
         }
@@ -66,7 +77,11 @@ export default function Modify() {
         }
       } catch (error) {
         console.error("엽서 로드 실패:", error);
-        alert("엽서를 불러올 수 없습니다.");
+        await showModal({
+          title: "오류",
+          message: "엽서를 불러올 수 없습니다.",
+          type: "alert",
+        });
         router.push("/list");
       } finally {
         setInitialLoading(false);
@@ -114,7 +129,11 @@ export default function Modify() {
     e.preventDefault();
 
     if (!postcardId) {
-      alert("엽서 ID가 없습니다.");
+      await showModal({
+        title: "오류",
+        message: "엽서 ID가 없습니다.",
+        type: "alert",
+      });
       return;
     }
 
@@ -133,14 +152,13 @@ export default function Modify() {
         image: image || undefined,
       });
 
-      alert("엽서가 수정되었습니다!");
       router.push("/list");
     } catch (error) {
       console.error("엽서 수정 실패:", error);
       if (error instanceof Error) {
-        alert(`수정 실패: ${error.message}`);
+        showToast({ message: `수정 실패: ${error.message}`, type: "error" });
       } else {
-        alert("수정 중 오류가 발생했습니다.");
+        showToast({ message: "수정 중 오류가 발생했습니다.", type: "error" });
       }
     } finally {
       setLoading(false);
