@@ -28,6 +28,33 @@ class EmailService:
         self.from_email = settings.smtp_from_email
         self.from_name = settings.smtp_from_name
 
+    @staticmethod
+    def _mask_email(email: str) -> str:
+        """
+        개인정보 보호를 위한 이메일 주소 마스킹
+
+        Args:
+            email: 마스킹할 이메일 주소
+
+        Returns:
+            마스킹된 이메일 주소 (예: u***@e***.com)
+        """
+        if not email or "@" not in email:
+            return "***@***"
+
+        local, domain = email.split("@", 1)
+        # local part 마스킹: 첫 글자만 보이고 나머지는 ***
+        masked_local = local[0] + "***" if len(local) > 0 else "***"
+
+        # domain part 마스킹: 첫 글자만 보이고 나머지는 ***
+        if "." in domain:
+            domain_parts = domain.split(".")
+            masked_domain = domain_parts[0][0] + "***." + ".".join(domain_parts[1:])
+        else:
+            masked_domain = domain[0] + "***" if len(domain) > 0 else "***"
+
+        return f"{masked_local}@{masked_domain}"
+
     async def send_email(
         self,
         to_email: str,
@@ -88,22 +115,30 @@ class EmailService:
             msg.attach(image_attachment)
 
             # SMTP 서버 연결 및 전송
-            logger.info(f"Sending email to {to_email} (Subject: {subject})")
+            masked_email = self._mask_email(to_email)
+            logger.info(f"Sending email to {masked_email} (Subject: {subject})")
             with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
                 server.starttls()  # TLS 암호화
                 server.login(self.smtp_username, self.smtp_password)
                 server.send_message(msg)
 
-            logger.info(f"Email sent successfully to {to_email}")
+            logger.info(f"Email sent successfully to {masked_email}")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send email to {to_email}: {str(e)}")
+            masked_email = self._mask_email(to_email)
+            logger.error(f"Failed to send email to {masked_email}: {str(e)}")
             raise
 
     def _get_postcard_email_html(self, greeting: str, subtitle_message: str) -> str:
         """엽서 이메일 HTML 템플릿 생성"""
-        html = f"""
+        import html
+
+        # XSS 방지를 위한 HTML 이스케이프
+        safe_greeting = html.escape(greeting)
+        safe_subtitle = html.escape(subtitle_message)
+
+        html_content = f"""
         <!DOCTYPE html>
         <html>
         <head>
@@ -121,17 +156,17 @@ class EmailService:
             </style>
         </head>
         <body style="margin: 0; padding: 0; font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); min-height: 100vh; padding: 40px 20px;">
-            
+
             <!-- 우편함 배경 효과 -->
             <div style="max-width: 700px; margin: 0 auto; perspective: 1000px;">
-                
+
                 <!-- 실제 엽서 카드 -->
                 <div style="background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1); position: relative; animation: fadeIn 0.8s ease-out; transform: rotate(-0.5deg);">
 
                     <!-- 수신자 정보 (엽서 상단) -->
                     <div style="padding: 30px 40px 20px; background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%);">
-                        <h2 style="margin: 10px 0 5px; color: #2d3748; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">{greeting}</h2>
-                        <p style="margin: 0; color: #718096; font-size: 14px; font-style: italic;">{subtitle_message}</p>
+                        <h2 style="margin: 10px 0 5px; color: #2d3748; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">{safe_greeting}</h2>
+                        <p style="margin: 0; color: #718096; font-size: 14px; font-style: italic;">{safe_subtitle}</p>
                     </div>
 
                     <!-- 엽서 이미지 (메인 컨텐츠) -->
@@ -167,7 +202,7 @@ class EmailService:
         </body>
         </html>
         """
-        return html
+        return html_content
 
 
     async def send_postcard_email(
@@ -213,8 +248,10 @@ class EmailService:
         # 이메일 제목 설정 (랜덤 또는 사용자 지정)
         if not subject:
             subject = random.choice(random_subjects)
-        
-        logger.info(f"Preparing postcard email for {to_email} (to: {to_name or 'N/A'}, from: {sender_name or 'N/A'})")
+
+        # 개인정보 보호를 위해 이메일 주소 마스킹
+        masked_email = self._mask_email(to_email)
+        logger.info(f"Preparing postcard email for {masked_email} (to: {to_name or 'N/A'}, from: {sender_name or 'N/A'})")
         
         # HTML 생성
         greeting = f"{to_name}님께" if to_name else "소중한 당신에게"

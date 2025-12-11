@@ -40,8 +40,14 @@ class FontManager:
                 font_data = get_font_by_id(font_id)
                 if font_data and os.path.exists(font_data.font_path):
                     font = ImageFont.truetype(font_data.font_path, size)
-            except Exception:
-                pass
+            except Exception as e:
+                # 폰트 로드 실패 로깅 (디버깅을 위해 중요)
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(
+                    f"Failed to load font '{font_id}' at size {size}: {str(e)}. "
+                    f"Falling back to default font."
+                )
 
         if font is None:
             font = ImageFont.load_default()

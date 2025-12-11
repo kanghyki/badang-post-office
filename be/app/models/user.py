@@ -4,7 +4,7 @@ User Pydantic 스키마
 회원가입, 로그인, 사용자 응답 등을 위한 데이터 검증 스키마
 """
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
 from datetime import datetime
 from typing import Optional
 
@@ -31,13 +31,12 @@ class LoginRequest(BaseModel):
 
 class UserResponse(BaseModel):
     """사용자 응답"""
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     email: str
     name: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class TokenResponse(BaseModel):

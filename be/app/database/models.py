@@ -5,8 +5,8 @@ SQLAlchemy 데이터베이스 모델
 """
 
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, JSON, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+from sqlalchemy.orm import declarative_base
+from datetime import datetime, timezone
 import uuid
 
 Base = declarative_base()
@@ -20,7 +20,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class Postcard(Base):
@@ -48,7 +48,7 @@ class Postcard(Base):
     postcard_image_path = Column(String)  # NULL이면 아직 생성 안됨
     error_message = Column(Text)  # 실패 시 오류 메시지
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 

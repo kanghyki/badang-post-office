@@ -6,3 +6,8 @@ setup:
 
 upload_static:
 	./upload_static.sh
+
+clean:
+	rm -rf .venv
+
+.PHONY: run setup upload_static clean

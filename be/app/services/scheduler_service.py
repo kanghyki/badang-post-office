@@ -14,6 +14,8 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 import pytz
 
+from app.utils.timezone import now_utc, ensure_utc
+
 from app.database.database import get_db_session
 from app.database.models import Postcard
 from app.services.postcard_service import PostcardService
@@ -28,7 +30,12 @@ class SchedulerService:
 
     def __init__(self):
         """스케줄러 초기화"""
-        self.scheduler = AsyncIOScheduler(timezone=pytz.UTC)
+        self.scheduler = AsyncIOScheduler(
+            timezone=pytz.UTC,
+            job_defaults={
+                'misfire_grace_time': None  # 시간 제한 없이 모든 놓친 작업 즉시 실행
+            }
+        )
         self.storage = LocalStorageService()
 
     async def start(self):
@@ -36,7 +43,7 @@ class SchedulerService:
         스케줄러 시작 및 기존 예약 복구
         """
         self.scheduler.start()
-        logger.info("Scheduler started")
+        logger.info("✓ Scheduler started")
 
         # DB에서 pending 상태의 예약 복구
         await self._restore_scheduled_postcards()
@@ -53,11 +60,8 @@ class SchedulerService:
         - 예정 시각이 미래인 경우: 스케줄러에 등록
         - 예정 시각이 지난 경우: 즉시 발송
         """
-        logger.info("-" * 60)
-        logger.info("Restoring scheduled postcards from database...")
-        
         async with get_db_session() as db:
-            now_utc = datetime.now(pytz.UTC)
+            now = now_utc()
             
             # pending 상태이고 scheduled_at이 있는 모든 엽서 조회
             stmt = select(Postcard).where(
@@ -68,19 +72,18 @@ class SchedulerService:
             scheduled_postcards = result.scalars().all()
             
             total_count = len(scheduled_postcards)
-            logger.info(f"Found {total_count} pending scheduled postcards in database")
+            if total_count == 0:
+                return
 
             future_count = 0
             overdue_count = 0
 
             for scheduled in scheduled_postcards:
                 try:
-                    # timezone-aware 비교를 위해 변환
-                    scheduled_time = scheduled.scheduled_at
-                    if scheduled_time.tzinfo is None:
-                        scheduled_time = pytz.UTC.localize(scheduled_time)
+                    # timezone-aware UTC로 변환
+                    scheduled_time = ensure_utc(scheduled.scheduled_at)
                     
-                    if scheduled_time > now_utc:
+                    if scheduled_time > now:
                         # 미래: 스케줄러에 등록
                         self.scheduler.add_job(
                             self._send_scheduled_postcard,
@@ -89,15 +92,14 @@ class SchedulerService:
                             id=scheduled.id,
                             replace_existing=True
                         )
-                        logger.info(f"  Scheduled: {scheduled.id[:8]}... at {scheduled_time}")
                         future_count += 1
                     else:
                         # 과거: 즉시 발송 (지연 발송)
-                        delay = now_utc - scheduled_time
-                        logger.warning(f"  Overdue: {scheduled.id[:8]}... (delayed by {delay.total_seconds():.0f}s), sending immediately")
+                        delay = now - scheduled_time
+                        logger.warning(f"Overdue postcard {scheduled.id[:8]}... delayed by {delay.total_seconds():.0f}s, sending now")
                         self.scheduler.add_job(
                             self._send_scheduled_postcard,
-                            trigger=DateTrigger(run_date=now_utc),  # 즉시 실행
+                            trigger=DateTrigger(run_date=now),  # 즉시 실행
                             args=[scheduled.id],
                             id=scheduled.id,
                             replace_existing=True
@@ -105,12 +107,11 @@ class SchedulerService:
                         overdue_count += 1
                         
                 except Exception as e:
-                    logger.error(f"  Failed to restore postcard {scheduled.id}: {str(e)}")
+                    logger.error(f"Failed to restore postcard {scheduled.id}: {str(e)}")
 
-            logger.info(f"Restoration complete: {future_count} future, {overdue_count} overdue (total: {total_count})")
-            logger.info("-" * 60)
+            logger.info(f"✓ Restored {total_count} scheduled postcards ({future_count} future, {overdue_count} overdue)")
 
-    async def schedule_postcard(
+    def schedule_postcard(
         self,
         scheduled_id: str,
         scheduled_at: datetime
@@ -140,7 +141,7 @@ class SchedulerService:
             logger.error(f"Failed to schedule postcard {scheduled_id}: {str(e)}")
             return False
 
-    async def cancel_schedule(self, scheduled_id: str) -> bool:
+    def cancel_schedule(self, scheduled_id: str) -> bool:
         """
         예약 취소
 
@@ -161,7 +162,7 @@ class SchedulerService:
             logger.error(f"Failed to cancel schedule {scheduled_id}: {str(e)}")
             return False
 
-    async def reschedule_postcard(
+    def reschedule_postcard(
         self,
         scheduled_id: str,
         new_scheduled_at: datetime
@@ -185,7 +186,7 @@ class SchedulerService:
             return True
         except JobLookupError:
             logger.warning(f"Schedule {scheduled_id} not found, creating new schedule")
-            return await self.schedule_postcard(scheduled_id, new_scheduled_at)
+            return self.schedule_postcard(scheduled_id, new_scheduled_at)
         except Exception as e:
             logger.error(f"Failed to reschedule postcard {scheduled_id}: {str(e)}")
             return False
@@ -218,7 +219,7 @@ class SchedulerService:
                     photos = {}
                     for photo_id, photo_path in scheduled.user_photo_paths.items():
                         try:
-                            photo_bytes = self.storage.read_file(photo_path)
+                            photo_bytes = await self.storage.read_file(photo_path)
                             photos[photo_id] = photo_bytes
                         except Exception as e:
                             logger.error(f"Failed to read photo {photo_path}: {str(e)}")

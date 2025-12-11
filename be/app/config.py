@@ -1,10 +1,13 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from typing import List
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env", extra="ignore")
+    
     # FastAPI
-    env: str = "dev"
-    debug: bool = True
+    env: str = "prod"  # dev, prod
+    debug: bool = False
     allowed_origins: str = ""
 
     # Database
@@ -31,10 +34,6 @@ class Settings(BaseSettings):
     @property
     def origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",")]
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
 
 
 settings = Settings()

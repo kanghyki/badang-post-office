@@ -29,22 +29,22 @@ async def verify_file_access(
 ) -> bool:
     """
     사용자가 특정 파일에 접근 권한이 있는지 확인합니다.
-    
+
     Args:
         file_path: 접근하려는 파일 경로 (예: static/uploads/2025/12/08/uuid.jpg)
         current_user: 현재 로그인한 사용자
         db: 데이터베이스 세션
-        
+
     Returns:
         bool: 접근 권한 여부
     """
-    # 파일 경로 정규화
-    normalized_path = file_path.replace("\\", "/")
-    
+    # 파일 경로 정규화 (POSIX 경로로 변환)
+    normalized_path = Path(file_path).as_posix()
+
     # templates는 모든 사용자 접근 가능
     if normalized_path.startswith("static/templates/"):
         return True
-    
+
     # uploads와 generated는 소유자만 접근 가능
     if normalized_path.startswith("static/uploads/") or normalized_path.startswith("static/generated/"):
         # 해당 파일 경로를 포함한 포스트카드 조회
@@ -53,22 +53,22 @@ async def verify_file_access(
         )
         result = await db.execute(stmt)
         postcards = result.scalars().all()
-        
+
         # 각 포스트카드를 확인하여 해당 파일이 있는지 검사
         for postcard in postcards:
             # postcard_image_path 확인
             if postcard.postcard_image_path == normalized_path:
                 return True
-            
+
             # user_photo_paths (JSON) 확인
             if postcard.user_photo_paths:
                 # user_photo_paths는 {"photo_config_id": "path", ...} 형태
                 for photo_path in postcard.user_photo_paths.values():
                     if photo_path == normalized_path:
                         return True
-        
+
         return False
-    
+
     # 그 외의 경로는 접근 불가
     return False
 
@@ -81,43 +81,58 @@ async def get_file(
 ):
     """
     보안이 적용된 파일 접근 엔드포인트
-    
+
     - templates: 모든 인증된 사용자 접근 가능
     - uploads, generated: 파일 소유자만 접근 가능
-    
+
     Args:
         file_path: static/ 이후의 파일 경로
-        
+
     Returns:
         FileResponse: 파일 응답
-        
+
     Raises:
         HTTPException 403: 접근 권한 없음
         HTTPException 404: 파일을 찾을 수 없음
     """
-    # 전체 파일 경로 생성
-    full_path = f"static/{file_path}"
-    
+    # 경로 탐색 공격 방어: 절대 경로로 정규화하여 base_dir 내에 있는지 확인
+    base_dir = Path("static").resolve()
+    try:
+        requested_path = (base_dir / file_path).resolve()
+    except (ValueError, OSError) as e:
+        logger.warning(f"Invalid file path requested: {file_path}, error: {e}")
+        raise HTTPException(status_code=400, detail="잘못된 파일 경로입니다")
+
+    # 정규화된 경로가 base_dir 내에 있는지 확인 (경로 탐색 공격 방어)
+    try:
+        requested_path.relative_to(base_dir)
+    except ValueError:
+        logger.warning(f"Path traversal attempt detected: {file_path} -> {requested_path}")
+        raise HTTPException(status_code=403, detail="잘못된 파일 경로입니다")
+
     # 파일 존재 여부 확인
-    if not os.path.exists(full_path):
+    if not requested_path.exists():
         raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다")
-    
+
     # 파일이 디렉토리인 경우 거부
-    if os.path.isdir(full_path):
-        raise HTTPException(status_code=400, detail="디렉토리 접근은 불가능합니다")
-    
+    if requested_path.is_dir():
+        raise HTTPException(status_code=403, detail="디렉토리 접근은 불가능합니다")
+
+    # verify_file_access에 전달할 경로는 현재 작업 디렉토리 기준 상대 경로
+    relative_to_cwd = str(requested_path.relative_to(Path.cwd()))
+
     # 접근 권한 확인
-    has_access = await verify_file_access(full_path, current_user, db)
-    
+    has_access = await verify_file_access(relative_to_cwd, current_user, db)
+
     if not has_access:
-        logger.warning(f"User {current_user.id} attempted unauthorized access to {full_path}")
+        logger.warning(f"User {current_user.id} attempted unauthorized access to {relative_to_cwd}")
         raise HTTPException(status_code=403, detail="이 파일에 접근할 권한이 없습니다")
-    
+
     # 파일 응답 반환
     return FileResponse(
-        path=full_path,
+        path=str(requested_path),
         media_type="application/octet-stream",
-        filename=os.path.basename(full_path)
+        filename=requested_path.name
     )
 
 
@@ -128,31 +143,44 @@ async def get_template_file_public(
 ):
     """
     템플릿 파일 접근 (인증 선택)
-    
+
     템플릿은 공개 리소스이므로 인증 없이도 접근 가능합니다.
-    
+
     Args:
         file_path: templates/ 이후의 파일 경로
-        
+
     Returns:
         FileResponse: 파일 응답
-        
+
     Raises:
         HTTPException 404: 파일을 찾을 수 없음
     """
-    full_path = f"static/templates/{file_path}"
-    
+    # 경로 탐색 공격 방어: 절대 경로로 정규화하여 base_dir 내에 있는지 확인
+    base_dir = Path("static/templates").resolve()
+    try:
+        requested_path = (base_dir / file_path).resolve()
+    except (ValueError, OSError) as e:
+        logger.warning(f"Invalid template file path requested: {file_path}, error: {e}")
+        raise HTTPException(status_code=400, detail="잘못된 파일 경로입니다")
+
+    # 정규화된 경로가 base_dir 내에 있는지 확인 (경로 탐색 공격 방어)
+    try:
+        requested_path.relative_to(base_dir)
+    except ValueError:
+        logger.warning(f"Path traversal attempt detected in templates: {file_path} -> {requested_path}")
+        raise HTTPException(status_code=403, detail="잘못된 파일 경로입니다")
+
     # 파일 존재 여부 확인
-    if not os.path.exists(full_path):
+    if not requested_path.exists():
         raise HTTPException(status_code=404, detail="템플릿 파일을 찾을 수 없습니다")
-    
+
     # 파일이 디렉토리인 경우 거부
-    if os.path.isdir(full_path):
-        raise HTTPException(status_code=400, detail="디렉토리 접근은 불가능합니다")
-    
+    if requested_path.is_dir():
+        raise HTTPException(status_code=403, detail="디렉토리 접근은 불가능합니다")
+
     # 파일 응답 반환
     return FileResponse(
-        path=full_path,
+        path=str(requested_path),
         media_type="application/octet-stream",
-        filename=os.path.basename(full_path)
+        filename=requested_path.name
     )

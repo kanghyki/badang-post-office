@@ -6,12 +6,10 @@
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from app.database.database import get_db
-from app.database.models import User
 from app.models.user import SignupRequest, LoginRequest, TokenResponse, UserResponse
-from app.utils.password import hash_password, verify_password
 from app.utils.jwt import create_access_token
+from app.services.user_service import UserService
 
 router = APIRouter(prefix="/v1/auth", tags=["Authentication"])
 
@@ -35,29 +33,22 @@ async def signup(request: SignupRequest, db: AsyncSession = Depends(get_db)):
     Raises:
         HTTPException: 이메일이 이미 가입되어 있는 경우
     """
-    # 이메일 중복 확인
-    result = await db.execute(select(User).where(User.email == request.email))
-    existing_user = result.scalar_one_or_none()
-
-    if existing_user:
-        raise HTTPException(status_code=400, detail="이미 가입된 이메일입니다.")
-
-    # 사용자 생성
-    user = User(
-        email=request.email,
-        name=request.name,
-        hashed_password=hash_password(request.password)
-    )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-
-    return UserResponse(
-        id=user.id,
-        email=user.email,
-        name=user.name,
-        created_at=user.created_at
-    )
+    try:
+        user = await UserService.create_user(
+            db=db,
+            email=request.email,
+            name=request.name,
+            password=request.password
+        )
+        
+        return UserResponse(
+            id=user.id,
+            email=user.email,
+            name=user.name,
+            created_at=user.created_at
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -79,15 +70,13 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     Raises:
         HTTPException: 이메일 또는 비밀번호가 올바르지 않은 경우
     """
-    # 사용자 조회
-    result = await db.execute(select(User).where(User.email == request.email))
-    user = result.scalar_one_or_none()
+    user = await UserService.authenticate_user(
+        db=db,
+        email=request.email,
+        password=request.password
+    )
 
     if not user:
-        raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 올바르지 않습니다.")
-
-    # 비밀번호 검증
-    if not verify_password(request.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 올바르지 않습니다.")
 
     # JWT 토큰 생성
