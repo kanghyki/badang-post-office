@@ -8,10 +8,50 @@
   opacity: 0.9;
   letter-spacing: -0.3px;
 }
+
+.filterContainer {
+  display: flex;
+  gap: 8px;
+  padding: 0 5%;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filterButton {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, #ff6600 0%, #ff8833 100%);
+      color: #fff;
+      border-color: #ff6600;
+      font-weight: 600;
+    }
+  }
+}
+
 .listMain {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 200px);
+  min-height: calc(100vh - 280px);
   padding-bottom: 20px;
 
   .postcardBox {

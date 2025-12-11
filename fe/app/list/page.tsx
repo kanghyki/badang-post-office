@@ -5,10 +5,25 @@ import Header from "../components/Header";
 import PostcardItem from "../components/PostcardItem";
 import styles from "./list.module.scss";
 import { useEffect, useState } from "react";
-import { postcardsApi, PostcardResponse } from "@/lib/api/postcards";
+import {
+  postcardsApi,
+  PostcardResponse,
+  PostcardStatus,
+} from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "../context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
+
+type FilterType = "all" | PostcardStatus;
+
+const STATUS_LABELS: Record<FilterType, string> = {
+  all: "전체",
+  writing: "작성중",
+  pending: "예약됨",
+  sent: "발송완료",
+  failed: "실패",
+  cancelled: "취소됨",
+};
 
 export default function List() {
   useAuth(); // 인증 체크
@@ -16,11 +31,12 @@ export default function List() {
   const [postcards, setPostcards] = useState<PostcardResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
-  const fetchPostcards = async () => {
+  const fetchPostcards = async (status?: PostcardStatus) => {
     try {
       setLoading(true);
-      const data = await postcardsApi.getList();
+      const data = await postcardsApi.getList(status);
       setPostcards(data);
     } catch (err) {
       console.error("엽서 목록 조회 실패:", err);
@@ -35,8 +51,16 @@ export default function List() {
   };
 
   useEffect(() => {
-    fetchPostcards();
-  }, []);
+    if (activeFilter === "all") {
+      fetchPostcards();
+    } else {
+      fetchPostcards(activeFilter);
+    }
+  }, [activeFilter]);
+
+  const handleFilterChange = (filter: FilterType) => {
+    setActiveFilter(filter);
+  };
 
   const handleDelete = async (id: string) => {
     const confirmed = await showModal({
@@ -103,6 +127,19 @@ export default function List() {
           <br />
           바라보멍 너 생각에 웃음 나불어
           <br />이 정 담은 편지를 살그마니 보낸다게
+        </div>
+        <div className={styles.filterContainer}>
+          {(Object.keys(STATUS_LABELS) as FilterType[]).map((filter) => (
+            <button
+              key={filter}
+              className={`${styles.filterButton} ${
+                activeFilter === filter ? styles.active : ""
+              }`}
+              onClick={() => handleFilterChange(filter)}
+            >
+              {STATUS_LABELS[filter]}
+            </button>
+          ))}
         </div>
         <main className={styles.listMain}>
           <div className={styles.postcardBox}>
