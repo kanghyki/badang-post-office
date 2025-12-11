@@ -6,6 +6,7 @@
 
 import os
 import uuid as uuid_lib
+import logging
 from typing import Optional, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,6 +17,8 @@ from app.services.postcards.postcard_maker import PostcardMaker
 from app.services.postcards.text_wrapper import TextWrapper
 from app.models.postcard import PostcardResponse
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class PostcardService:
@@ -109,6 +112,59 @@ class PostcardService:
         return result
 
     @staticmethod
+    async def _translate_user_text_to_jeju(
+        template,
+        original_texts: Dict[str, str]
+    ) -> Dict[str, str]:
+        """
+        사용자 입력 텍스트를 제주어로 번역
+
+        자동 생성 필드, 발신자 이름 등은 번역하지 않고,
+        오직 사용자가 입력한 본문만 번역합니다.
+
+        Args:
+            template: 템플릿 객체
+            original_texts: 원본 텍스트 딕셔너리 (config_id -> text)
+
+        Returns:
+            제주어로 번역된 텍스트 딕셔너리
+        """
+        from app.services.translation_service import translate_to_jeju_async
+        translated_texts = {}
+
+        for text_cfg in template.text_configs:
+            config_id = text_cfg.id
+            original_text = original_texts.get(config_id, "")
+
+            # 빈 텍스트는 그대로
+            if not original_text.strip():
+                translated_texts[config_id] = original_text
+                continue
+
+            # 자동 생성 필드는 번역하지 않음
+            if PostcardService._generate_auto_field(config_id) is not None:
+                translated_texts[config_id] = original_text
+                continue
+
+            # 발신자 이름은 번역하지 않음
+            if config_id == "sender":
+                translated_texts[config_id] = original_text
+                continue
+
+            # 사용자 입력 본문만 번역
+            try:
+                logger.info(f"Translating text for config_id={config_id}: {original_text[:50]}...")
+                translated_text = await translate_to_jeju_async(original_text)
+                translated_texts[config_id] = translated_text
+                logger.info(f"Translation success: {translated_text[:50]}...")
+            except Exception as e:
+                logger.error(f"Translation failed for config_id={config_id}: {str(e)}")
+                # Fallback: 원본 사용
+                translated_texts[config_id] = original_text
+
+        return translated_texts
+
+    @staticmethod
     def _map_simple_photo(template) -> Optional[str]:
         """
         사용자 이미지를 매핑할 photo_config의 ID 반환
@@ -140,6 +196,8 @@ class PostcardService:
         texts: Dict[str, str],  # {text_config_id: text}
         photos: Optional[Dict[str, bytes]] = None,  # {photo_config_id: bytes}
         sender_name: Optional[str] = None,  # 발신자 이름
+        user_id: Optional[str] = None,  # 사용자 ID
+        recipient_email: Optional[str] = None,  # 수신자 이메일 (새 스키마용)
     ) -> PostcardResponse:
         """
         다중 텍스트/이미지를 지원하는 엽서 생성
@@ -154,6 +212,7 @@ class PostcardService:
         user_photo_temp_paths = {}
 
         if photos:
+            logger.info(f"Processing {len(photos)} user photos for template {template_id}")
             for config_id, photo_bytes in photos.items():
                 # 영구 저장
                 saved_path = await self.storage.save_user_photo(photo_bytes, "jpg")
@@ -164,6 +223,9 @@ class PostcardService:
                 with open(temp_path, "wb") as f:
                     f.write(photo_bytes)
                 user_photo_temp_paths[config_id] = temp_path
+                logger.info(f"Saved user photo for config_id={config_id}: temp={temp_path}, saved={saved_path}")
+        else:
+            logger.warning(f"No photos provided for postcard creation")
 
         # 3. PostcardMaker 초기화
         template_path = self.storage.get_template_image_path(
@@ -175,9 +237,12 @@ class PostcardService:
         maker.add_background_image(template_path, opacity=1.0)
 
         # 5. 이미지 영역 추가 (반복문)
+        logger.info(f"Template has {len(template.photo_configs)} photo configs")
         for photo_cfg in template.photo_configs:
             config_id = photo_cfg.id
+            logger.info(f"Processing photo_cfg: id={config_id}, available photos={list(user_photo_temp_paths.keys())}")
             if config_id in user_photo_temp_paths:
+                logger.info(f"Adding user photo to postcard: config_id={config_id}, path={user_photo_temp_paths[config_id]}")
                 maker.add_photo(
                     user_photo_temp_paths[config_id],
                     x=photo_cfg.x,
@@ -186,6 +251,8 @@ class PostcardService:
                     max_height=photo_cfg.max_height,
                     effects=photo_cfg.effects,  # 템플릿에 정의된 효과 적용
                 )
+            else:
+                logger.warning(f"No user photo found for photo_cfg id={config_id}")
 
         # 6. 텍스트 영역 추가 (반복문)
         for text_cfg in template.text_configs:
@@ -248,6 +315,9 @@ class PostcardService:
             user_photo_paths=user_photo_paths,  # JSON으로 저장
             postcard_image_path=postcard_path,
             sender_name=sender_name,  # 발신자 이름
+            user_id=user_id,  # 사용자 ID
+            recipient_email=recipient_email or "unknown@example.com",  # 임시 기본값
+            status="pending",  # 기본 상태
         )
         self.db.add(postcard)
         await self.db.commit()
@@ -263,10 +333,17 @@ class PostcardService:
 
         # 10. 응답 반환
         return PostcardResponse(
-            postcard_id=postcard.id,
+            id=postcard.id,
             postcard_path=postcard_path,
             template_id=template_id,
             text=str(texts),  # Dict를 문자열로 변환 (임시)
+            recipient_email=postcard.recipient_email,
+            recipient_name=postcard.recipient_name,
             sender_name=sender_name,
+            status=postcard.status,
+            scheduled_at=postcard.scheduled_at,
+            sent_at=postcard.sent_at,
+            error_message=postcard.error_message,
             created_at=postcard.created_at,
+            updated_at=postcard.updated_at,
         )

@@ -8,6 +8,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 import uuid as uuid_lib
+from app.utils.url import convert_static_path_to_url
 
 
 class TextConfig(BaseModel):
@@ -73,7 +74,7 @@ class TemplateResponse(BaseModel):
             id=template.id,
             name=template.name,
             description=template.description,
-            template_image_path=template.template_image_path,
+            template_image_path=convert_static_path_to_url(template.template_image_path),
             width=template.width,
             height=template.height,
             supports_photo=len(template.photo_configs) > 0,
