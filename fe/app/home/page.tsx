@@ -89,7 +89,7 @@ const User = observer(() => {
           onDeleteAccount={handleDeleteAccount}
         />
       </div>
-      <div className="container">
+      <div className={styles.homeContainer}>
         <main className={styles.userMain}>
           <div className={styles.inputBox}>
             <button

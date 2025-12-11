@@ -1,9 +1,16 @@
 @use "@/styles/mixin" as *;
 
-.userMain {
+.homeContainer {
+  width: 100%;
+  min-height: calc(100vh - 60px);
   padding-top: 3.75rem;
   padding-bottom: 1.25rem;
-  min-height: calc(100vh - 3.75rem);
+  overflow-y: auto;
+}
+
+.userMain {
+  padding-top: 0;
+  padding-bottom: 0;
   display: flex;
   flex-direction: column;
 
@@ -11,7 +18,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-top: 2.5rem;
+    margin-top: 1rem;
     gap: 1rem;
 
     .menuItem {
