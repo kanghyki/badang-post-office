@@ -185,17 +185,49 @@
   right: 0;
   display: flex;
   justify-content: center;
+  gap: 12px;
   padding: 12px 16px;
   background: #ffffff;
   border-top: 1px solid #f0f0f0;
   z-index: 10;
 }
 
+.saveBtn {
+  @include flex-center;
+  gap: 6px;
+  width: 100%;
+  max-width: 340px;
+  height: 54px;
+  border-radius: 8px;
+  border: 2px solid #ff6600;
+  background: transparent;
+  font-weight: 600;
+  font-size: 16px;
+  color: #ff6600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+
+  &:hover:not(:disabled) {
+    background: #fff5f0;
+  }
+
+  &:active:not(:disabled) {
+    background: #ffe5d9;
+  }
+
+  &:disabled {
+    border-color: #ccc;
+    color: #ccc;
+    cursor: not-allowed;
+  }
+}
+
 .sendBtn {
   @include flex-center;
   gap: 6px;
   width: 100%;
-  max-width: 700px;
+  max-width: 340px;
   height: 54px;
   border-radius: 8px;
   border: none;

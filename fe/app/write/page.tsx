@@ -23,46 +23,34 @@ export default function Write() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // 페이지 진입 시 빈 엽서 생성
+  // 입력값 변경 감지
   useEffect(() => {
-    const createPostcard = async () => {
-      try {
-        const postcard = await postcardsApi.create();
-        setPostcardId(postcard.id);
-        console.log("엽서 생성 완료:", postcard.id);
-      } catch (error) {
-        console.error("엽서 생성 실패:", error);
-        await showModal({
-          title: "오류",
-          message: "엽서 생성에 실패했습니다.",
-          type: "alert",
-        });
-        router.push(ROUTES.LIST);
+    if (
+      text ||
+      recipientName ||
+      recipientEmail ||
+      senderName ||
+      scheduledAt ||
+      image
+    ) {
+      setHasUnsavedChanges(true);
+    }
+  }, [text, recipientName, recipientEmail, senderName, scheduledAt, image]);
+
+  // 뒤로가기 시 경고
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
       }
     };
 
-    createPostcard();
-  }, [router, showModal]);
-
-  // 텍스트 입력 시 번역 (디바운스)
-  useEffect(() => {
-    if (!text.trim()) {
-      setTranslatedText("");
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        const result = await postcardsApi.translate(text);
-        setTranslatedText(result.translated_text);
-      } catch (error) {
-        console.error("번역 실패:", error);
-      }
-    }, 500); // 500ms 디바운스
-
-    return () => clearTimeout(timer);
-  }, [text]);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // 이미지 파일 선택
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,24 +66,71 @@ export default function Write() {
     reader.readAsDataURL(file);
   };
 
-  // 폼 제출
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // 임시 저장 (create + update 또는 update만 호출)
+  const handleSave = async () => {
+    setLoading(true);
 
-    if (!postcardId) {
-      await showModal({
-        title: "오류",
-        message: "엽서 ID가 없습니다. 페이지를 새로고침해주세요.",
-        type: "alert",
+    try {
+      let currentPostcardId = postcardId;
+
+      // postcardId가 없으면 먼저 생성
+      if (!currentPostcardId) {
+        const newPostcard = await postcardsApi.create();
+        currentPostcardId = newPostcard.id;
+        setPostcardId(currentPostcardId);
+        console.log("엽서 생성 완료:", currentPostcardId);
+      }
+
+      // 엽서 내용 업데이트
+      const updatedPostcard = await postcardsApi.update(currentPostcardId, {
+        text,
+        recipient_email: recipientEmail,
+        recipient_name: recipientName,
+        sender_name: senderName,
+        scheduled_at: scheduledAt
+          ? new Date(scheduledAt).toISOString()
+          : undefined,
+        image: image || undefined,
       });
-      return;
+
+      // 서버에서 번역된 텍스트를 미리보기에 표시
+      if (updatedPostcard.text) {
+        setTranslatedText(updatedPostcard.text);
+      }
+
+      setHasUnsavedChanges(false);
+      showToast({ message: "임시 저장되었습니다.", type: "success" });
+    } catch (error) {
+      console.error("저장 실패:", error);
+      if (error instanceof Error) {
+        showToast({ message: `저장 실패: ${error.message}`, type: "error" });
+      } else {
+        showToast({ message: "저장 중 오류가 발생했습니다.", type: "error" });
+      }
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // 접수하기 (update + send 호출)
+  const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
     setLoading(true);
 
     try {
+      let currentPostcardId = postcardId;
+
+      // postcardId가 없으면 먼저 생성
+      if (!currentPostcardId) {
+        const newPostcard = await postcardsApi.create();
+        currentPostcardId = newPostcard.id;
+        setPostcardId(currentPostcardId);
+        console.log("엽서 생성 완료:", currentPostcardId);
+      }
+
       // 1. 엽서 내용 업데이트
-      await postcardsApi.update(postcardId, {
+      await postcardsApi.update(currentPostcardId, {
         text,
         recipient_email: recipientEmail,
         recipient_name: recipientName,
@@ -107,8 +142,9 @@ export default function Write() {
       });
 
       // 2. 엽서 발송
-      await postcardsApi.send(postcardId);
+      await postcardsApi.send(currentPostcardId);
 
+      setHasUnsavedChanges(false);
       router.push(ROUTES.LIST);
     } catch (error) {
       console.error("엽서 전송 실패:", error);
@@ -125,12 +161,29 @@ export default function Write() {
   return (
     <>
       <div className="hdrWrap">
-        <Header title="엽서 작성하기" path="/list" />
+        <Header
+          title="엽서 작성하기"
+          path="/list"
+          onBackClick={async () => {
+            if (hasUnsavedChanges) {
+              const confirmed = await showModal({
+                title: "작성 중인 내용이 있습니다",
+                message: "저장하지 않은 내용은 사라집니다. 나가시겠습니까?",
+                type: "confirm",
+              });
+              if (confirmed) {
+                router.push(ROUTES.LIST);
+              }
+            } else {
+              router.push(ROUTES.LIST);
+            }
+          }}
+        />
       </div>
 
       <div className="container">
         <main className={styles.writeMain}>
-          <form onSubmit={handleSubmit} id="postcardForm">
+          <form onSubmit={handleSend} id="postcardForm">
             {/* 엽서 내용 섹션 */}
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>엽서 내용</h3>
@@ -256,10 +309,27 @@ export default function Write() {
 
           <div className={styles.buttonSection}>
             <button
+              className={styles.saveBtn}
+              type="button"
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  <span>저장 중...</span>
+                </>
+              ) : (
+                <>
+                  <span>임시 저장</span>
+                </>
+              )}
+            </button>
+            <button
               className={styles.sendBtn}
               type="submit"
               form="postcardForm"
-              disabled={loading || !postcardId}
+              disabled={loading}
             >
               {loading ? (
                 <>

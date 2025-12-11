@@ -92,25 +92,6 @@ export default function Modify() {
     loadPostcard();
   }, [postcardId, router]);
 
-  // 텍스트 입력 시 번역 (디바운스)
-  useEffect(() => {
-    if (!text.trim()) {
-      setTranslatedText("");
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        const result = await postcardsApi.translate(text);
-        setTranslatedText(result.translated_text);
-      } catch (error) {
-        console.error("번역 실패:", error);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [text]);
-
   // 이미지 파일 선택
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -125,8 +106,51 @@ export default function Modify() {
     reader.readAsDataURL(file);
   };
 
-  // 폼 제출
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // 저장 (update만 호출)
+  const handleSave = async () => {
+    if (!postcardId) {
+      await showModal({
+        title: "오류",
+        message: "엽서 ID가 없습니다.",
+        type: "alert",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const updatedPostcard = await postcardsApi.update(postcardId, {
+        text,
+        recipient_email: recipientEmail,
+        recipient_name: recipientName,
+        sender_name: senderName,
+        scheduled_at: scheduledAt
+          ? new Date(scheduledAt).toISOString()
+          : undefined,
+        image: image || undefined,
+      });
+
+      // 서버에서 번역된 텍스트를 미리보기에 표시
+      if (updatedPostcard.text) {
+        setTranslatedText(updatedPostcard.text);
+      }
+
+      showToast({ message: "저장되었습니다.", type: "success" });
+    } catch (error) {
+      console.error("저장 실패:", error);
+      if (error instanceof Error) {
+        showToast({ message: `저장 실패: ${error.message}`, type: "error" });
+      } else {
+        showToast({ message: "저장 중 오류가 발생했습니다.", type: "error" });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 다시 접수하기 (update + send 호출)
+  const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!postcardId) {
@@ -141,7 +165,7 @@ export default function Modify() {
     setLoading(true);
 
     try {
-      // 엽서 내용 업데이트
+      // 1. 엽서 내용 업데이트
       await postcardsApi.update(postcardId, {
         text,
         recipient_email: recipientEmail,
@@ -153,13 +177,16 @@ export default function Modify() {
         image: image || undefined,
       });
 
+      // 2. 엽서 발송
+      await postcardsApi.send(postcardId);
+
       router.push(ROUTES.LIST);
     } catch (error) {
-      console.error("엽서 수정 실패:", error);
+      console.error("엽서 전송 실패:", error);
       if (error instanceof Error) {
-        showToast({ message: `수정 실패: ${error.message}`, type: "error" });
+        showToast({ message: `전송 실패: ${error.message}`, type: "error" });
       } else {
-        showToast({ message: "수정 중 오류가 발생했습니다.", type: "error" });
+        showToast({ message: "전송 중 오류가 발생했습니다.", type: "error" });
       }
     } finally {
       setLoading(false);
@@ -187,7 +214,7 @@ export default function Modify() {
 
       <div className="container">
         <main className={styles.writeMain}>
-          <form onSubmit={handleSubmit} id="postcardForm">
+          <form onSubmit={handleSend} id="postcardForm">
             {/* 엽서 내용 섹션 */}
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>엽서 내용</h3>
@@ -313,6 +340,24 @@ export default function Modify() {
 
           <div className={styles.buttonSection}>
             <button
+              className={styles.saveBtn}
+              type="button"
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  <span>저장 중...</span>
+                </>
+              ) : (
+                <>
+                  <span>💾</span>
+                  <span>저장</span>
+                </>
+              )}
+            </button>
+            <button
               className={styles.sendBtn}
               type="submit"
               form="postcardForm"
@@ -321,7 +366,7 @@ export default function Modify() {
               {loading ? (
                 <>
                   <span className={styles.spinner}></span>
-                  <span>수정 중...</span>
+                  <span>보내는 중...</span>
                 </>
               ) : (
                 <>
