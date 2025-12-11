@@ -268,7 +268,7 @@ export default function Write() {
               ) : (
                 <>
                   <span>✉️</span>
-                  <span>엽서 보내기</span>
+                  <span>접수하기</span>
                 </>
               )}
             </button>
