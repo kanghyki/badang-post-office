@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../write/write.module.scss";
 import Header from "../components/Header";
@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "../context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 
-export default function Modify() {
+function ModifyContent() {
   useAuth(); // 인증 체크
   const router = useRouter();
   const { showToast, showModal } = useNotification();
@@ -492,5 +492,22 @@ export default function Modify() {
         </main>
       </div>
     </>
+  );
+}
+
+export default function Modify() {
+  return (
+    <Suspense fallback={
+      <>
+        <div className="hdrWrap">
+          <Header title="엽서 수정하기" />
+        </div>
+        <div className="container">
+          <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
+        </div>
+      </>
+    }>
+      <ModifyContent />
+    </Suspense>
   );
 }
