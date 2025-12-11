@@ -21,7 +21,34 @@ router = APIRouter(
     tags=["Templates Management (개발/운영용)"]
 )
 
-# 조회 API는 templates_public.py에 있으므로 여기서는 제거
+
+@router.get("", response_model=TemplateListResponse)
+def get_templates_dev():
+    """
+    메모리에 로드된 모든 템플릿 목록을 조회합니다 (개발용 - 인증 불필요).
+
+    ⚠️ 주의: 이 엔드포인트는 개발 환경에서만 활성화됩니다.
+    """
+    templates = template_service.get_all_templates()
+
+    # Template 모델을 API 응답용 TemplateResponse 모델로 변환
+    templates_response = [TemplateResponse.from_template(t) for t in templates]
+
+    return TemplateListResponse(templates=templates_response)
+
+
+@router.get("/{template_id}", response_model=Template)
+def get_template_detail_dev(template_id: str):
+    """
+    특정 템플릿의 상세 정보를 조회합니다 (개발용 - 인증 불필요).
+
+    ⚠️ 주의: 이 엔드포인트는 개발 환경에서만 활성화됩니다.
+    """
+    template = template_service.get_template_by_id(template_id)
+    if not template:
+        raise HTTPException(status_code=404, detail="템플릿을 찾을 수 없습니다.")
+
+    return template
 
 
 @router.post("", response_model=Template, status_code=201)
