@@ -14,35 +14,79 @@
 
     form {
       width: 90%;
+      max-width: 420px;
       margin: 0 auto;
+      padding: 40px 32px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 24px;
+      transition: box-shadow 0.3s ease;
+
+      &:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      }
 
       button {
-        margin-top: 10px;
+        margin-top: 8px;
         width: 100%;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #ff6611 0%, #ff8844 100%);
+        border: none;
+        border-radius: 6px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(255, 102, 17, 0.3);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(255, 102, 17, 0.4);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
       }
 
       label {
         display: flex;
         flex-direction: column;
+        position: relative;
 
         span {
-          margin-bottom: 8px;
-          font-weight: 500;
+          margin-bottom: 10px;
+          font-weight: 600;
+          font-size: 14px;
           color: #333;
+          letter-spacing: 0.3px;
         }
 
         input {
-          padding: 12px 16px;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          font-size: 16px;
+          padding: 14px 16px;
+          border: 2px solid #e8e8e8;
+          border-radius: 6px;
+          font-size: 15px;
+          background: #fafafa;
+          transition: all 0.3s ease;
+
+          &::placeholder {
+            color: #aaa;
+          }
 
           &:focus {
             outline: none;
             border-color: #f61;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(255, 102, 17, 0.1);
+          }
+
+          &:hover {
+            border-color: #ddd;
           }
         }
       }
@@ -53,19 +97,40 @@
 .signupLink {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 20px 0;
+  gap: 8px;
+  padding: 24px 0;
   margin-top: auto;
-  font-size: 14px;
+  font-size: 15px;
   color: #666;
+
+  span {
+    font-weight: 400;
+  }
 
   a {
     color: #f61;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: #f61;
+      transition: width 0.3s ease;
+    }
 
     &:hover {
-      text-decoration: underline;
+      color: #ff4400;
+
+      &::after {
+        width: 100%;
+      }
     }
   }
 }
