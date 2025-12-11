@@ -4,7 +4,7 @@ import Link from "next/link";
 import styles from "./login.module.scss";
 import Header from "../components/Header";
 import Logo from "../components/LogoBox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
 import { authUtils } from "@/lib/utils/auth";
@@ -17,6 +17,16 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberEmail, setRememberEmail] = useState(false);
+
+  // 컴포넌트 마운트 시 저장된 이메일 불러오기
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberEmail(true);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +38,14 @@ export default function Login() {
 
       if (response.access_token) {
         authUtils.setToken(response.access_token);
+        
+        // 아이디 기억하기 처리
+        if (rememberEmail) {
+          localStorage.setItem("rememberedEmail", email);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
+        
         router.push(ROUTES.MAIN);
       }
     } catch (error) {
@@ -72,6 +90,15 @@ export default function Login() {
                   placeholder="비밀번호를 입력하세요"
                   required
                 />
+              </label>
+
+              <label className={styles.rememberEmail}>
+                <input
+                  type="checkbox"
+                  checked={rememberEmail}
+                  onChange={(e) => setRememberEmail(e.target.checked)}
+                />
+                <span>이메일 기억하기</span>
               </label>
 
               <button type="submit" className="btnBig">

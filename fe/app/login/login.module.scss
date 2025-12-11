@@ -90,6 +90,28 @@
           }
         }
       }
+
+      .rememberEmail {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        margin-top: -8px;
+
+        input[type="checkbox"] {
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+          accent-color: #f61;
+        }
+
+        span {
+          margin-bottom: 0;
+          font-weight: 400;
+          font-size: 14px;
+          color: #666;
+          cursor: pointer;
+        }
+      }
     }
   }
 }
