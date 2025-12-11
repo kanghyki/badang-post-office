@@ -80,16 +80,16 @@ export default function Signup() {
               </label>
             </form>
           </div>
-        </main>
-      </div>
 
-      <div className="navWrap">
-        <button className="btnBig" onClick={handleSubmit}>
-          회원가입
-        </button>
-        <Link href="/login" className="btnBig btnSecondary">
-          로그인하기
-        </Link>
+          <div className={styles.buttonGroup}>
+            <button className="btnBig" onClick={handleSubmit}>
+              회원가입
+            </button>
+            <Link href="/login" className="btnBig btnSecondary">
+              로그인하기
+            </Link>
+          </div>
+        </main>
       </div>
     </>
   );

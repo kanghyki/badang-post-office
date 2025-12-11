@@ -184,18 +184,18 @@ export default function Write() {
               />
             </div>
           )}
-        </main>
-      </div>
 
-      <div className="navWrap">
-        <button
-          className={styles.sendBtn}
-          type="submit"
-          form="postcardForm"
-          disabled={loading || !postcardId}
-        >
-          {loading ? "보내는 중..." : "엽서 보내기"}
-        </button>
+          <div className={styles.buttonSection}>
+            <button
+              className={styles.sendBtn}
+              type="submit"
+              form="postcardForm"
+              disabled={loading || !postcardId}
+            >
+              {loading ? "보내는 중..." : "엽서 보내기"}
+            </button>
+          </div>
+        </main>
       </div>
     </>
   );

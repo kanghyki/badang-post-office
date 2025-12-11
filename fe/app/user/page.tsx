@@ -110,10 +110,11 @@ export default function User() {
               <span className={styles.boxCnt}><TbEdit /></span>
             </label>
           </div>
+
+          <div className={styles.buttonSection}>
+            <button className={styles.sendBtn} onClick={handleSubmit}>이동하기</button>
+          </div>
         </main>
-      </div>
-      <div className="navWrap">
-        <button className={styles.sendBtn} onClick={handleSubmit}>이동하기</button>
       </div>
     </>
   );

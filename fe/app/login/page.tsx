@@ -73,16 +73,16 @@ export default function Login() {
               </label>
             </form>
           </div>
-        </main>
-      </div>
 
-      <div className="navWrap">
-        <button className="btnBig" onClick={handleLogin} style={{ marginBottom: "10px" }}>
-          로그인
-        </button>
-        <Link href="/signup" className="btnBig btnSecondary">
-          회원가입하기
-        </Link>
+          <div className={styles.buttonGroup}>
+            <button className="btnBig" onClick={handleLogin}>
+              로그인
+            </button>
+            <Link href="/signup" className="btnBig btnSecondary">
+              회원가입하기
+            </Link>
+          </div>
+        </main>
       </div>
     </>
   );

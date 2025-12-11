@@ -103,12 +103,12 @@ export default function List() {
               ))
             )}
           </div>
+          <div className={styles.buttonSection}>
+            <Link href="/write" className={"btnBig"} style={{color: "#FFF"}}>
+              엽서 작성하기
+            </Link>
+          </div>
         </main>
-      </div>
-      <div className="navWrap">
-        <Link href="/write" className={"btnBig"} style={{color: "#FFF"}}>
-          엽서 작성하기
-        </Link>
       </div>
     </>
   );
