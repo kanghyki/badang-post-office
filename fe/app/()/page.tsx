@@ -1,7 +1,7 @@
 "use client";
 import styles from "./home.module.scss";
 import Link from "next/link";
-import Logo from "../Components/LogoBox";
+import Logo from "../components/LogoBox";
 import { useEffect } from "react";
 export default function Home() {
   const pageTitle = "시작";

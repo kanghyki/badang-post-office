@@ -1,4 +1,4 @@
-@import "../mixin";
+@import "@/styles/mixin";
 .header {
   height: 60px;
   margin: 0 auto;
@@ -15,5 +15,25 @@
     width: 50px; height: 50px;
     font-size: 36px;
     color: #999;
+  }
+  .logoutBtn {
+    @include flex-center;
+    width: 50px;
+    height: 50px;
+    border: none;
+    background: none;
+    font-size: 36px;
+    color: #f44336;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #d32f2f;
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
   }
 }

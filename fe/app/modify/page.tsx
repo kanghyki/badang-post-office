@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../write/write.module.scss";
-import Header from "../Components/Header";
-import { postcardsApi } from "../api/postcards";
-import { useAuth } from "../hooks/useAuth";
+import Header from "../components/Header";
+import { postcardsApi } from "@/lib/api/postcards";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Modify() {
   useAuth(); // 인증 체크

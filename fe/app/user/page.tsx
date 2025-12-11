@@ -2,15 +2,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./user.module.scss";
-import Header from "../Components/Header";
+import Header from "../components/Header";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaRegCircle, FaCircleCheck } from "react-icons/fa6";
 import { TbEdit } from "react-icons/tb";
-import { authUtils } from "../utils/auth";
-import { useAuth } from "../hooks/useAuth";
+import { authUtils } from "@/lib/utils/auth";
+import { useAuth } from "@/hooks/useAuth";
 
-import Logo from "../Components/LogoBox";
+import Logo from "../components/LogoBox";
 
 export default function User() {
   useAuth(); // 인증 체크
@@ -50,26 +50,10 @@ export default function User() {
   return (
     <>
       <div className="hdrWrap">
-        <Header title="사용자"  path="/user"/>
+        <Header title="사용자" path="/user" showLogout={true} onLogout={handleLogout} />
       </div>
       <div className="container">
         <main className={styles.userMain}>
-          <div style={{ textAlign: "right", marginBottom: "10px" }}>
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: "8px 16px",
-                background: "#f44336",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "14px"
-              }}
-            >
-              로그아웃
-            </button>
-          </div>
           <Logo c_value="#f61" bg_value="#fff" />
           <div className={styles.inputBox}>
             <input

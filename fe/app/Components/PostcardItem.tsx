@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import styles from "./PostcardItem.module.scss";
-import { PostcardResponse } from "../api/postcards";
+import { PostcardResponse } from "@/lib/api/postcards";
 
 interface PostcardItemProps {
   data: PostcardResponse;

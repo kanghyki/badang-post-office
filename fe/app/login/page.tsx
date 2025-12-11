@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import styles from "./login.module.scss";
-import Header from "../Components/Header";
-import Logo from "../Components/LogoBox";
+import Header from "../components/Header";
+import Logo from "../components/LogoBox";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authApi } from "@/app/api/auth";
-import { authUtils } from "../utils/auth";
+import { authApi } from "@/lib/api/auth";
+import { authUtils } from "@/lib/utils/auth";
 
 export default function Login() {
   const router = useRouter();

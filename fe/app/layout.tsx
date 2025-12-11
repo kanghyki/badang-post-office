@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import "./globals.scss";
-import "./globals.module.scss";
+import "@/styles/globals.scss";
+import "@/styles/globals.module.scss";
 
 export const metadata: Metadata = {
   title: "제주헌디",

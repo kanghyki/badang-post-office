@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import styles from "./signup.module.scss";
-import Header from "../Components/Header";
-import Logo from "../Components/LogoBox";
+import Header from "../components/Header";
+import Logo from "../components/LogoBox";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authApi } from "@/app/api/auth";
+import { authApi } from "@/lib/api/auth";
 
 export default function Signup() {
   const [email, setEmail] = useState("");

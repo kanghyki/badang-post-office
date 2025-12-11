@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authUtils } from "../utils/auth";
+import { authUtils } from "@/lib/utils/auth";
 
 export function useAuth(redirectTo: string = "/login") {
   const router = useRouter();

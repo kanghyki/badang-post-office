@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Header from "../Components/Header";
-import PostcardItem from "../Components/PostcardItem";
+import Header from "../components/Header";
+import PostcardItem from "../components/PostcardItem";
 import styles from "./list.module.scss";
 import { useEffect, useState } from "react";
-import { postcardsApi, PostcardResponse } from "../api/postcards";
-import { useAuth } from "../hooks/useAuth";
+import { postcardsApi, PostcardResponse } from "@/lib/api/postcards";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function List() {
   useAuth(); // 인증 체크
