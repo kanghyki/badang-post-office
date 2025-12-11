@@ -3,8 +3,8 @@ from typing import List
 
 class Settings(BaseSettings):
     # FastAPI
-    env: str = "dev"
-    debug: bool = True
+    env: str = "prod"  # dev, prod
+    debug: bool = False
     allowed_origins: str = ""
 
     # Database
