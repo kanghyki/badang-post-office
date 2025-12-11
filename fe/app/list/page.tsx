@@ -13,6 +13,9 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "../context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
+import { authUtils } from "@/lib/utils/auth";
+import { authApi } from "@/lib/api/auth";
+import { useRouter } from "next/navigation";
 
 type FilterType = "all" | PostcardStatus;
 
@@ -27,11 +30,13 @@ const STATUS_LABELS: Record<FilterType, string> = {
 
 export default function List() {
   useAuth(); // 인증 체크
+  const router = useRouter();
   const { showModal, showToast } = useNotification();
   const [postcards, setPostcards] = useState<PostcardResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [userName, setUserName] = useState<string>("");
 
   const fetchPostcards = async (status?: PostcardStatus) => {
     try {
@@ -56,7 +61,61 @@ export default function List() {
     } else {
       fetchPostcards(activeFilter);
     }
+    loadUserProfile();
   }, [activeFilter]);
+
+  const loadUserProfile = async () => {
+    try {
+      const profile = await authApi.getUserProfile();
+      setUserName(profile.name);
+    } catch {
+      // 조용히 실패 처리
+    }
+  };
+
+  const handleLogout = async () => {
+    const confirmed = await showModal({
+      title: "로그아웃",
+      message: "로그아웃 하시겠습니까?",
+      type: "confirm",
+      confirmText: "로그아웃",
+      cancelText: "취소",
+    });
+
+    if (confirmed) {
+      authUtils.removeToken();
+      router.push(ROUTES.LOGIN);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = await showModal({
+      title: "회원 탈퇴",
+      message: "정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      type: "confirm",
+      confirmText: "탈퇴",
+      cancelText: "취소",
+    });
+
+    if (confirmed) {
+      try {
+        await authApi.deleteAccount();
+        authUtils.removeToken();
+        await showModal({
+          title: "탈퇴 완료",
+          message: "회원 탈퇴가 완료되었습니다.",
+          type: "alert",
+        });
+        router.push(ROUTES.LOGIN);
+      } catch {
+        await showModal({
+          title: "오류",
+          message: "회원 탈퇴 중 오류가 발생했습니다.",
+          type: "alert",
+        });
+      }
+    }
+  };
 
   const handleFilterChange = (filter: FilterType) => {
     setActiveFilter(filter);
@@ -95,7 +154,13 @@ export default function List() {
     return (
       <>
         <div className="hdWrap">
-          <Header title="예약엽서목록" />
+          <Header
+            title="예약엽서목록"
+            showUserMenu={true}
+            userName={userName}
+            onLogout={handleLogout}
+            onDeleteAccount={handleDeleteAccount}
+          />
         </div>
         <div className="container">
           <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
@@ -108,7 +173,13 @@ export default function List() {
     return (
       <>
         <div className="hdWrap">
-          <Header title="예약엽서목록" />
+          <Header
+            title="예약엽서목록"
+            showUserMenu={true}
+            userName={userName}
+            onLogout={handleLogout}
+            onDeleteAccount={handleDeleteAccount}
+          />
         </div>
         <div className="container">
           <div style={{ textAlign: "center", padding: "50px", color: "red" }}>
@@ -122,7 +193,13 @@ export default function List() {
   return (
     <>
       <div className="hdWrap">
-        <Header title="예약엽서목록" />
+        <Header
+          title="예약엽서목록"
+          showUserMenu={true}
+          userName={userName}
+          onLogout={handleLogout}
+          onDeleteAccount={handleDeleteAccount}
+        />
       </div>
 
       <div className="container">
@@ -149,7 +226,9 @@ export default function List() {
           <div className={styles.postcardBox}>
             {postcards.length === 0 ? (
               <div className={styles.emptyState}>
-                <div className={styles.emptyText}>아직 작성한 엽서가 없어요</div>
+                <div className={styles.emptyText}>
+                  아직 작성한 엽서가 없어요
+                </div>
               </div>
             ) : (
               postcards.map((item, index) => (

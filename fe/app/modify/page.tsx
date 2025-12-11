@@ -97,14 +97,14 @@ export default function Modify() {
         setText(postcard.original_text || "");
         setTranslatedText(postcard.text || "");
         setRecipientName(postcard.recipient_name || "");
-        
+
         // 이메일을 @ 기준으로 분리
         if (postcard.recipient_email) {
-          const [local, domain] = postcard.recipient_email.split('@');
+          const [local, domain] = postcard.recipient_email.split("@");
           setEmailLocalPart(local || "");
           setEmailDomain(domain || "");
         }
-        
+
         setSenderName(postcard.sender_name || "");
 
         if (postcard.scheduled_at) {

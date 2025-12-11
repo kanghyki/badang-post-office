@@ -18,6 +18,7 @@ export const AUTH_ENDPOINTS = {
   LOGOUT: "/v1/auth/logout",
   REFRESH: "/v1/auth/refresh",
   DELETE_ACCOUNT: "/v1/auth/withdrawal",
+  ME: "/v1/auth/me",
 } as const;
 
 /**
@@ -52,6 +53,7 @@ export const ROUTES = {
   WRITE: "/write",
   MODIFY: (id?: string) => (id ? `/modify?id=${id}` : "/modify"),
   USER: "/user",
+  PROFILE: "/profile",
   LICENSE: "/license",
 } as const;
 
@@ -62,6 +64,7 @@ export const PROTECTED_ROUTES = [
   ROUTES.LIST,
   ROUTES.WRITE,
   ROUTES.USER,
+  ROUTES.PROFILE,
 ] as const;
 
 /**

@@ -13,16 +13,28 @@ import { ROUTES } from "@/lib/constants/urls";
 import { authApi } from "@/lib/api/auth";
 
 import Logo from "../components/LogoBox";
+import { useState } from "react";
 
 const User = observer(() => {
   useAuth(); // 인증 체크
   const router = useRouter();
   const { postcardStore } = useStore();
   const { showModal } = useNotification();
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
     postcardStore.fetchPostcards();
+    loadUserProfile();
   }, [postcardStore]);
+
+  const loadUserProfile = async () => {
+    try {
+      const profile = await authApi.getUserProfile();
+      setUserName(profile.name);
+    } catch {
+      // 조용히 실패 처리
+    }
+  };
 
   const handleLogout = async () => {
     const confirmed = await showModal({
@@ -58,7 +70,7 @@ const User = observer(() => {
           type: "alert",
         });
         router.push(ROUTES.LOGIN);
-      } catch (error) {
+      } catch {
         await showModal({
           title: "오류",
           message: "회원 탈퇴 중 오류가 발생했습니다.",
@@ -73,8 +85,10 @@ const User = observer(() => {
       <div className="hdrWrap">
         <Header
           title="사용자"
-          showLogout={true}
+          showUserMenu={true}
+          userName={userName}
           onLogout={handleLogout}
+          onDeleteAccount={handleDeleteAccount}
         />
       </div>
       <div className="container">
@@ -106,10 +120,6 @@ const User = observer(() => {
               </span>
             </button>
           </div>
-
-          <button className={styles.deleteButton} onClick={handleDeleteAccount}>
-            회원 탈퇴
-          </button>
         </main>
       </div>
     </>

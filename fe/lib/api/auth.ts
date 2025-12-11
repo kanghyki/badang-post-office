@@ -30,6 +30,18 @@ export interface LoginResponse {
   };
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  created_at: string;
+}
+
+export interface UpdateProfileRequest {
+  name?: string;
+  password?: string;
+}
+
 export const authApi = {
   signup: async (data: SignupRequest): Promise<SignupResponse> => {
     return apiClient.post<SignupResponse>(AUTH_ENDPOINTS.SIGNUP, data);
@@ -41,5 +53,15 @@ export const authApi = {
 
   deleteAccount: async (): Promise<void> => {
     return apiClient.delete<void>(AUTH_ENDPOINTS.DELETE_ACCOUNT, true);
+  },
+
+  getUserProfile: async (): Promise<UserProfile> => {
+    return apiClient.get<UserProfile>(AUTH_ENDPOINTS.ME, true);
+  },
+
+  updateUserProfile: async (
+    data: UpdateProfileRequest
+  ): Promise<UserProfile> => {
+    return apiClient.patch<UserProfile>(AUTH_ENDPOINTS.ME, data, true);
   },
 };

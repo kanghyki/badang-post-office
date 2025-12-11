@@ -1,24 +1,97 @@
+"use client";
 import styles from "./header.module.scss";
-import { IoLogOutOutline, IoChevronBack } from "react-icons/io5";
+import { IoPersonCircle } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import { ROUTES } from "@/lib/constants/urls";
 
 interface LoginProps {
   title: string;
-  showLogout?: boolean;
+  showUserMenu?: boolean;
+  userName?: string;
   onLogout?: () => void;
+  onDeleteAccount?: () => void;
 }
 export default function Header({
   title,
-  showLogout,
+  showUserMenu,
+  userName,
   onLogout,
+  onDeleteAccount,
 }: LoginProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  const handleProfileClick = () => {
+    router.push(ROUTES.PROFILE);
+    setIsDropdownOpen(false);
+  };
+
+  const handleLogoutClick = () => {
+    setIsDropdownOpen(false);
+    onLogout?.();
+  };
+
+  const handleDeleteClick = () => {
+    setIsDropdownOpen(false);
+    onDeleteAccount?.();
+  };
+
   return (
     <header className={styles.header}>
       <h2 className={styles.pageTitle}>{title}</h2>
-      {showLogout && onLogout && (
-        <button onClick={onLogout} className={styles.logoutBtn}>
-          <IoLogOutOutline />
-        </button>
+      {showUserMenu && (
+        <div className={styles.userMenuWrapper} ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className={styles.userMenuBtn}
+          >
+            {userName && <span className={styles.userName}>{userName}</span>}
+            <IoPersonCircle />
+          </button>
+          {isDropdownOpen && (
+            <div className={styles.dropdown}>
+              <button
+                onClick={handleProfileClick}
+                className={styles.dropdownItem}
+              >
+                내 정보
+              </button>
+              <button
+                onClick={handleLogoutClick}
+                className={styles.dropdownItem}
+              >
+                로그아웃
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className={`${styles.dropdownItem} ${styles.danger}`}
+              >
+                회원탈퇴
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </header>
   );
