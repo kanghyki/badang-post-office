@@ -1,7 +1,7 @@
 @import "./_mixin";
 :global(.hdWrap) {
   width: 100%;
-  
+
   position: fixed;
   top: 0;
   z-index: 10;
@@ -34,7 +34,7 @@
   @include flex-center;
   width: 90%;
   height: 48px;
-  background-color: #F60;
+  background-color: #f60;
   margin: 0 auto;
   border-radius: 10px;
   font-weight: bold;
@@ -57,8 +57,8 @@
   margin: 0 auto;
   border-radius: 10px;
   font-weight: bold;
-  color: #F60;
-  border: 2px solid #F60;
+  color: #f60;
+  border: 2px solid #f60;
   cursor: pointer;
   text-decoration: none;
   font-size: 16px;
@@ -75,7 +75,7 @@
 :global(.btnSml) {
   @include flex-center;
 }
-:global(.btnSend){
+:global(.btnSend) {
   @include flex-center;
   width: 90%;
   height: 50px;

@@ -5,17 +5,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 20px;
 
   .pageTitle {
     color: #f61;
     font-size: 20px;
+    flex: 1;
   }
-  .headerBtn{
-    @include flex-center;
-    width: 50px; height: 50px;
-    font-size: 36px;
-    color: #999;
-  }
+
   .logoutBtn {
     @include flex-center;
     width: 50px;

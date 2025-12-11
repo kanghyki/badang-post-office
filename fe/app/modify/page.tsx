@@ -53,7 +53,9 @@ export default function Modify() {
         if (postcard.scheduled_at) {
           // ISO 8601을 datetime-local 형식으로 변환
           const date = new Date(postcard.scheduled_at);
-          const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+          const localDateTime = new Date(
+            date.getTime() - date.getTimezoneOffset() * 60000
+          )
             .toISOString()
             .slice(0, 16);
           setScheduledAt(localDateTime);
@@ -125,7 +127,9 @@ export default function Modify() {
         recipient_email: recipientEmail,
         recipient_name: recipientName,
         sender_name: senderName,
-        scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        scheduled_at: scheduledAt
+          ? new Date(scheduledAt).toISOString()
+          : undefined,
         image: image || undefined,
       });
 
@@ -150,9 +154,7 @@ export default function Modify() {
           <Header title="엽서 수정하기" path="/list" />
         </div>
         <div className="container">
-          <div style={{ textAlign: "center", padding: "50px" }}>
-            로딩 중...
-          </div>
+          <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
         </div>
       </>
     );
@@ -214,11 +216,7 @@ export default function Modify() {
               required
             />
 
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
+            <input type="file" accept="image/*" onChange={handleImageChange} />
           </form>
 
           {imagePreview && (

@@ -78,16 +78,16 @@ export default function Signup() {
                   required
                 />
               </label>
+
+              <button type="submit" className="btnBig">
+                회원가입
+              </button>
             </form>
           </div>
 
-          <div className={styles.buttonGroup}>
-            <button className="btnBig" onClick={handleSubmit}>
-              회원가입
-            </button>
-            <Link href="/login" className="btnBig btnSecondary">
-              로그인하기
-            </Link>
+          <div className={styles.loginLink}>
+            <span>이미 계정이 있으신가요?</span>
+            <Link href="/login">로그인</Link>
           </div>
         </main>
       </div>

@@ -1,6 +1,6 @@
 @import "@/styles/mixin";
-.postCopy{
-  font-family: 'KyuriSDiary';
+.postCopy {
+  font-family: "KyuriSDiary";
   font-weight: bold;
   font-size: 24px;
   line-height: 32px;
@@ -12,7 +12,7 @@
   .postcardBox {
     @include flex-center;
     flex-direction: column;
-    &>div {
+    & > div {
       margin-top: 10px;
       &:first-of-type {
         margin-top: 0;

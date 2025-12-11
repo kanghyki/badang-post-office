@@ -50,7 +50,12 @@ export default function User() {
   return (
     <>
       <div className="hdrWrap">
-        <Header title="사용자" path="/user" showLogout={true} onLogout={handleLogout} />
+        <Header
+          title="사용자"
+          path="/user"
+          showLogout={true}
+          onLogout={handleLogout}
+        />
       </div>
       <div className="container">
         <main className={styles.userMain}>
@@ -72,7 +77,10 @@ export default function User() {
                   <i>제주방언엽서 목록 확인하기</i>
                 </span>
               </span>
-              <span><b>{postcards.length}</b><i>개</i></span>
+              <span>
+                <b>{postcards.length}</b>
+                <i>개</i>
+              </span>
             </label>
 
             <input
@@ -91,12 +99,16 @@ export default function User() {
                   <i>제주방언엽서 미래로 보내기</i>
                 </span>
               </span>
-              <span className={styles.boxCnt}><TbEdit /></span>
+              <span className={styles.boxCnt}>
+                <TbEdit />
+              </span>
             </label>
           </div>
 
           <div className={styles.buttonSection}>
-            <button className={styles.sendBtn} onClick={handleSubmit}>이동하기</button>
+            <button className={styles.sendBtn} onClick={handleSubmit}>
+              이동하기
+            </button>
           </div>
         </main>
       </div>

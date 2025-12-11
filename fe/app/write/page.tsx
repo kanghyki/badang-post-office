@@ -89,7 +89,9 @@ export default function Write() {
         recipient_email: recipientEmail,
         recipient_name: recipientName,
         sender_name: senderName,
-        scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        scheduled_at: scheduledAt
+          ? new Date(scheduledAt).toISOString()
+          : undefined,
         image: image || undefined,
       });
 
@@ -166,11 +168,7 @@ export default function Write() {
               required
             />
 
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
+            <input type="file" accept="image/*" onChange={handleImageChange} />
           </form>
 
           {imagePreview && (

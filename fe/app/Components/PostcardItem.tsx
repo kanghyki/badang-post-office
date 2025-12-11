@@ -48,7 +48,9 @@ export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
       <div className={styles.listBox}>
         <div className={styles.postcardDate}>
           <div className={styles.reservDate}>
-            <span>{data.scheduled_at ? formatDate(data.scheduled_at) : "미정"}</span>
+            <span>
+              {data.scheduled_at ? formatDate(data.scheduled_at) : "미정"}
+            </span>
             {(data.status === "writing" || data.status === "pending") && (
               <>
                 <Link href={`/modify?id=${data.id}`} className="btIcon">
@@ -57,7 +59,11 @@ export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
                 <button
                   onClick={handleDelete}
                   className="btIcon"
-                  style={{ background: "none", border: "none", cursor: "pointer" }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
                   <FaTrashAlt />
                 </button>
@@ -67,7 +73,8 @@ export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
           <div className="writeDate">{relativeDate(data.created_at)}</div>
         </div>
         <div className="recipient">
-          <span>To_ </span><b>{data.recipient_email || "미정"}</b>
+          <span>To_ </span>
+          <b>{data.recipient_email || "미정"}</b>
         </div>
         <div className="title">
           <p>{data.recipient_name || "제목 없음"}</p>

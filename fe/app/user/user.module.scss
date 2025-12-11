@@ -17,7 +17,7 @@
       display: none;
     }
 
-    input+label {
+    input + label {
       width: 90%;
       margin: 0 auto;
       border: 3px solid;
@@ -62,12 +62,12 @@
         flex-direction: column;
         margin-left: 10px;
       }
-      .boxCnt{
+      .boxCnt {
         font-size: 30px;
       }
     }
 
-    input:checked+label {
+    input:checked + label {
       //////
       background-color: transparent;
       border-color: #f60;

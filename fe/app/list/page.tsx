@@ -55,12 +55,10 @@ export default function List() {
     return (
       <>
         <div className="hdWrap">
-          <Header title="예약엽서목록" path="/user"/>
+          <Header title="예약엽서목록" path="/user" />
         </div>
         <div className="container">
-          <div style={{ textAlign: "center", padding: "50px" }}>
-            로딩 중...
-          </div>
+          <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
         </div>
       </>
     );
@@ -70,7 +68,7 @@ export default function List() {
     return (
       <>
         <div className="hdWrap">
-          <Header title="예약엽서목록" path="/user"/>
+          <Header title="예약엽서목록" path="/user" />
         </div>
         <div className="container">
           <div style={{ textAlign: "center", padding: "50px", color: "red" }}>
@@ -84,12 +82,15 @@ export default function List() {
   return (
     <>
       <div className="hdWrap">
-        <Header title="예약엽서목록" path="/user"/>
+        <Header title="예약엽서목록" path="/user" />
       </div>
 
       <div className="container">
         <div className={styles.postCopy}>
-          오늘도 해 넘어가는 들녘<br/>바라보멍 너 생각에 웃음 나불어<br/>이 정 담은 편지를 살그마니 보낸다게
+          오늘도 해 넘어가는 들녘
+          <br />
+          바라보멍 너 생각에 웃음 나불어
+          <br />이 정 담은 편지를 살그마니 보낸다게
         </div>
         <main className={styles.listMain}>
           <div className={styles.postcardBox}>
@@ -99,12 +100,16 @@ export default function List() {
               </div>
             ) : (
               postcards.map((item) => (
-                <PostcardItem key={item.id} data={item} onDelete={handleDelete} />
+                <PostcardItem
+                  key={item.id}
+                  data={item}
+                  onDelete={handleDelete}
+                />
               ))
             )}
           </div>
           <div className={styles.buttonSection}>
-            <Link href="/write" className={"btnBig"} style={{color: "#FFF"}}>
+            <Link href="/write" className={"btnBig"} style={{ color: "#FFF" }}>
               엽서 작성하기
             </Link>
           </div>

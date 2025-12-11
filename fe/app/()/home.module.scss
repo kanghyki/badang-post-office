@@ -1,12 +1,12 @@
 @import "@/styles/mixin";
 
-.homeMain{
+.homeMain {
   padding-top: 14vh;
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 60px);
 
-  .headCopy{
+  .headCopy {
     font-size: 18px;
     line-height: 24px;
     text-align: center;
@@ -25,7 +25,7 @@
   margin-top: auto;
 }
 
-.moveBtn{
+.moveBtn {
   background-color: #fff;
   color: #fe6716;
 }
