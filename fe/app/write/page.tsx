@@ -18,7 +18,8 @@ export default function Write() {
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [recipientName, setRecipientName] = useState("");
-  const [recipientEmail, setRecipientEmail] = useState("");
+  const [emailLocalPart, setEmailLocalPart] = useState("");
+  const [emailDomain, setEmailDomain] = useState("");
   const [senderName, setSenderName] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -30,14 +31,23 @@ export default function Write() {
     if (
       text ||
       recipientName ||
-      recipientEmail ||
+      emailLocalPart ||
+      emailDomain ||
       senderName ||
       scheduledAt ||
       image
     ) {
       setHasUnsavedChanges(true);
     }
-  }, [text, recipientName, recipientEmail, senderName, scheduledAt, image]);
+  }, [
+    text,
+    recipientName,
+    emailLocalPart,
+    emailDomain,
+    senderName,
+    scheduledAt,
+    image,
+  ]);
 
   // 뒤로가기 시 경고
   useEffect(() => {
@@ -68,6 +78,22 @@ export default function Write() {
 
   // 임시 저장 (create + update 또는 update만 호출)
   const handleSave = async () => {
+    // 이메일 validation
+    if (emailLocalPart || emailDomain) {
+      if (!emailLocalPart || !emailDomain) {
+        showToast({ message: "이메일 주소를 완성해주세요.", type: "error" });
+        return;
+      }
+      if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
+        showToast({ message: "유효한 이메일 형식이 아닙니다.", type: "error" });
+        return;
+      }
+      if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
+        showToast({ message: "유효한 도메인 형식이 아닙니다.", type: "error" });
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -80,6 +106,12 @@ export default function Write() {
         setPostcardId(currentPostcardId);
         console.log("엽서 생성 완료:", currentPostcardId);
       }
+
+      // 이메일 주소 조합
+      const recipientEmail =
+        emailLocalPart && emailDomain
+          ? `${emailLocalPart}@${emailDomain}`
+          : undefined;
 
       // 엽서 내용 업데이트
       const updatedPostcard = await postcardsApi.update(currentPostcardId, {
@@ -116,6 +148,20 @@ export default function Write() {
   const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // 이메일 validation
+    if (!emailLocalPart || !emailDomain) {
+      showToast({ message: "이메일 주소를 입력해주세요.", type: "error" });
+      return;
+    }
+    if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
+      showToast({ message: "유효한 이메일 형식이 아닙니다.", type: "error" });
+      return;
+    }
+    if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
+      showToast({ message: "유효한 도메인 형식이 아닙니다.", type: "error" });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -128,6 +174,9 @@ export default function Write() {
         setPostcardId(currentPostcardId);
         console.log("엽서 생성 완료:", currentPostcardId);
       }
+
+      // 이메일 주소 조합
+      const recipientEmail = `${emailLocalPart}@${emailDomain}`;
 
       // 1. 엽서 내용 업데이트
       await postcardsApi.update(currentPostcardId, {
@@ -276,14 +325,25 @@ export default function Write() {
               <div className={styles.inputGroup}>
                 <label className={styles.inputLabel}>
                   <span className={styles.icon}>📧</span>
-                  <input
-                    type="email"
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
-                    placeholder="이메일 주소"
-                    className={styles.input}
-                    required
-                  />
+                  <div className={styles.emailInputWrapper}>
+                    <input
+                      type="text"
+                      value={emailLocalPart}
+                      onChange={(e) => setEmailLocalPart(e.target.value)}
+                      placeholder="이메일 아이디"
+                      className={styles.emailInput}
+                      required
+                    />
+                    <span className={styles.atSymbol}>@</span>
+                    <input
+                      type="text"
+                      value={emailDomain}
+                      onChange={(e) => setEmailDomain(e.target.value)}
+                      placeholder="example.com"
+                      className={styles.emailInput}
+                      required
+                    />
+                  </div>
                 </label>
               </div>
             </div>
