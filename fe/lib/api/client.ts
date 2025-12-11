@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { API_BASE_URL } from "../constants/urls";
+
+const API_URL = API_BASE_URL;
 
 interface RequestConfig extends Omit<RequestInit, "headers"> {
   requiresAuth?: boolean;

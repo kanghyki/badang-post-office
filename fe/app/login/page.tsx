@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
 import { authUtils } from "@/lib/utils/auth";
 import { useNotification } from "../context/NotificationContext";
+import { ROUTES } from "@/lib/constants/urls";
 
 export default function Login() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function Login() {
 
       if (response.access_token) {
         authUtils.setToken(response.access_token);
-        router.push("/user");
+        router.push(ROUTES.USER);
       }
     } catch (error) {
       console.error("로그인 에러:", error);
@@ -42,7 +43,7 @@ export default function Login() {
   return (
     <>
       <div className="hdWrap">
-        <Header title="로그인" path="/" />
+        <Header title="로그인" path={ROUTES.HOME} />
       </div>
 
       <div className="container">
@@ -81,7 +82,7 @@ export default function Login() {
 
           <div className={styles.signupLink}>
             <span>계정이 없으신가요?</span>
-            <Link href="/signup">회원가입</Link>
+            <Link href={ROUTES.SIGNUP}>회원가입</Link>
           </div>
         </main>
       </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import styles from "./PostcardItem.module.scss";
 import { PostcardResponse } from "@/lib/api/postcards";
+import { ROUTES } from "@/lib/constants/urls";
 
 interface PostcardItemProps {
   data: PostcardResponse;
@@ -57,7 +58,7 @@ export default function PostcardItem({ data, onDelete }: PostcardItemProps) {
             </div>
             {(data.status === "writing" || data.status === "pending") && (
               <div className={styles.actionButtons}>
-                <Link href={`/modify?id=${data.id}`} className={styles.iconBtn}>
+                <Link href={ROUTES.MODIFY(data.id)} className={styles.iconBtn}>
                   <FaEdit />
                 </Link>
                 <button onClick={handleDelete} className={styles.iconBtn}>

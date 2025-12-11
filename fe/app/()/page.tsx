@@ -2,6 +2,7 @@
 import styles from "./home.module.scss";
 import Link from "next/link";
 import Logo from "../components/LogoBox";
+import { ROUTES } from "@/lib/constants/urls";
 import { useEffect } from "react";
 export default function Home() {
   const pageTitle = "시작";
@@ -24,7 +25,7 @@ export default function Home() {
           미래에 도착해서 만나.
         </p>
         <div className={styles.buttonSection}>
-          <Link href="/login" className={styles.moveBtn}>
+          <Link href={ROUTES.LOGIN} className={styles.moveBtn}>
             문 열고 들어가기
           </Link>
         </div>

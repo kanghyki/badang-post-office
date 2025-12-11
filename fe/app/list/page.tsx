@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { postcardsApi, PostcardResponse } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "../context/NotificationContext";
+import { ROUTES } from "@/lib/constants/urls";
 
 export default function List() {
   useAuth(); // 인증 체크
@@ -66,7 +67,7 @@ export default function List() {
     return (
       <>
         <div className="hdWrap">
-          <Header title="예약엽서목록" path="/user" />
+          <Header title="예약엽서목록" path={ROUTES.USER} />
         </div>
         <div className="container">
           <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
@@ -79,7 +80,7 @@ export default function List() {
     return (
       <>
         <div className="hdWrap">
-          <Header title="예약엽서목록" path="/user" />
+          <Header title="예약엽서목록" path={ROUTES.USER} />
         </div>
         <div className="container">
           <div style={{ textAlign: "center", padding: "50px", color: "red" }}>
@@ -93,7 +94,7 @@ export default function List() {
   return (
     <>
       <div className="hdWrap">
-        <Header title="예약엽서목록" path="/user" />
+        <Header title="예약엽서목록" path={ROUTES.USER} />
       </div>
 
       <div className="container">
@@ -120,7 +121,11 @@ export default function List() {
             )}
           </div>
           <div className={styles.buttonSection}>
-            <Link href="/write" className={"btnBig"} style={{ color: "#FFF" }}>
+            <Link
+              href={ROUTES.WRITE}
+              className={"btnBig"}
+              style={{ color: "#FFF" }}
+            >
               엽서 작성하기
             </Link>
           </div>

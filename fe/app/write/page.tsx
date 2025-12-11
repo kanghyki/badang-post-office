@@ -7,6 +7,7 @@ import Header from "../components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "../context/NotificationContext";
+import { ROUTES } from "@/lib/constants/urls";
 
 export default function Write() {
   useAuth(); // 인증 체크
@@ -37,7 +38,7 @@ export default function Write() {
           message: "엽서 생성에 실패했습니다.",
           type: "alert",
         });
-        router.push("/list");
+        router.push(ROUTES.LIST);
       }
     };
 
@@ -108,7 +109,7 @@ export default function Write() {
       // 2. 엽서 발송
       await postcardsApi.send(postcardId);
 
-      router.push("/list");
+      router.push(ROUTES.LIST);
     } catch (error) {
       console.error("엽서 전송 실패:", error);
       if (error instanceof Error) {

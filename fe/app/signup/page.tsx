@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
 import { useNotification } from "../context/NotificationContext";
+import { ROUTES } from "@/lib/constants/urls";
 
 export default function Signup() {
   const { showToast } = useNotification();
@@ -24,7 +25,7 @@ export default function Signup() {
 
       console.log("회원가입 성공:", response);
 
-      router.push("/login");
+      router.push(ROUTES.LOGIN);
     } catch (error) {
       console.error("회원가입 에러:", error);
       if (error instanceof Error) {
@@ -41,7 +42,7 @@ export default function Signup() {
   return (
     <>
       <div className="hdWrap">
-        <Header title="회원가입" path="/login" />
+        <Header title="회원가입" path={ROUTES.LOGIN} />
       </div>
 
       <div className="container">
@@ -91,7 +92,7 @@ export default function Signup() {
 
           <div className={styles.loginLink}>
             <span>이미 계정이 있으신가요?</span>
-            <Link href="/login">로그인</Link>
+            <Link href={ROUTES.LOGIN}>로그인</Link>
           </div>
         </main>
       </div>

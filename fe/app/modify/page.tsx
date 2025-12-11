@@ -7,6 +7,7 @@ import Header from "../components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "../context/NotificationContext";
+import { ROUTES } from "@/lib/constants/urls";
 
 export default function Modify() {
   useAuth(); // 인증 체크
@@ -34,7 +35,7 @@ export default function Modify() {
         message: "엽서 ID가 없습니다.",
         type: "alert",
       }).then(() => {
-        router.push("/list");
+        router.push(ROUTES.LIST);
       });
       return;
     }
@@ -51,7 +52,7 @@ export default function Modify() {
             message: "이미 발송되었거나 발송 중인 엽서는 수정할 수 없습니다.",
             type: "alert",
           });
-          router.push("/list");
+          router.push(ROUTES.LIST);
           return;
         }
 
@@ -82,7 +83,7 @@ export default function Modify() {
           message: "엽서를 불러올 수 없습니다.",
           type: "alert",
         });
-        router.push("/list");
+        router.push(ROUTES.LIST);
       } finally {
         setInitialLoading(false);
       }
@@ -152,7 +153,7 @@ export default function Modify() {
         image: image || undefined,
       });
 
-      router.push("/list");
+      router.push(ROUTES.LIST);
     } catch (error) {
       console.error("엽서 수정 실패:", error);
       if (error instanceof Error) {

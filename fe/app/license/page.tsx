@@ -1,12 +1,13 @@
 import styles from "./license.module.scss";
 import Link from "next/link";
 import { IoArrowBack } from "react-icons/io5";
+import { ROUTES } from "@/lib/constants/urls";
 
 export default function LicensePage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <Link href="/" className={styles.backButton}>
+        <Link href={ROUTES.HOME} className={styles.backButton}>
           <IoArrowBack />
         </Link>
         <h1>License</h1>
