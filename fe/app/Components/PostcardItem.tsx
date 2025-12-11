@@ -10,7 +10,11 @@ interface PostcardItemProps {
   onDelete?: (id: string) => void;
 }
 
-export default function PostcardItem({ data, index, onDelete }: PostcardItemProps) {
+export default function PostcardItem({
+  data,
+  index,
+  onDelete,
+}: PostcardItemProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     onDelete?.(data.id);

@@ -148,8 +148,8 @@ export default function List() {
         <main className={styles.listMain}>
           <div className={styles.postcardBox}>
             {postcards.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "50px" }}>
-                작성한 엽서가 없습니다.
+              <div className={styles.emptyState}>
+                <div className={styles.emptyText}>아직 작성한 엽서가 없어요</div>
               </div>
             ) : (
               postcards.map((item, index) => (
