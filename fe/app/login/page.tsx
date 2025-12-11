@@ -28,7 +28,7 @@ export default function Login() {
 
       if (response.access_token) {
         authUtils.setToken(response.access_token);
-        router.push(ROUTES.USER);
+        router.push(ROUTES.MAIN);
       }
     } catch (error) {
       console.error("로그인 에러:", error);

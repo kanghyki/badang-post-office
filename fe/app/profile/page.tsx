@@ -35,7 +35,7 @@ export default function Profile() {
         message: "프로필 정보를 불러올 수 없습니다.",
         type: "error",
       });
-      router.push(ROUTES.USER);
+      router.push(ROUTES.MAIN);
     } finally {
       setIsLoading(false);
     }

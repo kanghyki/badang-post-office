@@ -52,7 +52,7 @@ export const ROUTES = {
   LIST: "/list",
   WRITE: "/write",
   MODIFY: (id?: string) => (id ? `/modify?id=${id}` : "/modify"),
-  USER: "/user",
+  MAIN: "/home",
   PROFILE: "/profile",
   LICENSE: "/license",
 } as const;
@@ -63,7 +63,7 @@ export const ROUTES = {
 export const PROTECTED_ROUTES = [
   ROUTES.LIST,
   ROUTES.WRITE,
-  ROUTES.USER,
+  ROUTES.MAIN,
   ROUTES.PROFILE,
 ] as const;
 

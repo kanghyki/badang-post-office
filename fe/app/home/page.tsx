@@ -1,5 +1,5 @@
 "use client";
-import styles from "./user.module.scss";
+import styles from "./home.module.scss";
 import Header from "../components/Header";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -84,7 +84,7 @@ const User = observer(() => {
     <>
       <div className="hdrWrap">
         <Header
-          title="사용자"
+          title="홈"
           showUserMenu={true}
           userName={userName}
           onLogout={handleLogout}
