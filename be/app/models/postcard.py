@@ -8,7 +8,7 @@ from pydantic import BaseModel, field_validator, Field, ConfigDict
 from typing import Optional, Literal
 from uuid import UUID
 from datetime import datetime, timedelta
-import pytz
+from app.utils.timezone import to_utc, validate_schedule_time
 
 
 class PostcardCreateRequest(BaseModel):
@@ -38,25 +38,15 @@ class PostcardCreateRequest(BaseModel):
         """예약 시간 검증 (최소 5분 후, 최대 2년 이내)"""
         if v is None:
             return v
-            
-        now_utc = datetime.now(pytz.UTC)
-        min_time = now_utc + timedelta(minutes=5)
-        max_time = now_utc + timedelta(days=730)  # 2년
         
-        # 입력을 UTC timezone-aware로 변환
-        if v.tzinfo is None:
-            # timezone-naive면 UTC로 간주
-            v_utc = pytz.UTC.localize(v)
-        else:
-            # 다른 timezone이면 UTC로 변환
-            v_utc = v.astimezone(pytz.UTC)
+        # UTC timezone-aware로 변환
+        v_utc = to_utc(v)
         
-        if v_utc < min_time:
-            raise ValueError("예약 시간은 최소 5분 후여야 합니다.")
-        if v_utc > max_time:
-            raise ValueError("예약 시간은 최대 2년 이내여야 합니다.")
+        # 유효성 검증
+        is_valid, error = validate_schedule_time(v_utc, min_minutes=5, max_days=730)
+        if not is_valid:
+            raise ValueError(error)
         
-        # timezone-aware UTC로 반환
         return v_utc
 
 
@@ -103,21 +93,10 @@ class PostcardUpdateRequest(BaseModel):
     @classmethod
     def validate_scheduled_time(cls, v: Optional[datetime]) -> Optional[datetime]:
         if v:
-            now_utc = datetime.now(pytz.UTC)
-            min_time = now_utc + timedelta(minutes=5)
-            max_time = now_utc + timedelta(days=730)
-            
-            # UTC timezone-aware로 변환
-            if v.tzinfo is None:
-                v_utc = pytz.UTC.localize(v)
-            else:
-                v_utc = v.astimezone(pytz.UTC)
-            
-            if v_utc < min_time:
-                raise ValueError("예약 시간은 최소 5분 후여야 합니다.")
-            if v_utc > max_time:
-                raise ValueError("예약 시간은 최대 2년 이내여야 합니다.")
-            
+            v_utc = to_utc(v)
+            is_valid, error = validate_schedule_time(v_utc, min_minutes=5, max_days=730)
+            if not is_valid:
+                raise ValueError(error)
             return v_utc
         return v
 

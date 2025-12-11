@@ -14,6 +14,8 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 import pytz
 
+from app.utils.timezone import now_utc, ensure_utc
+
 from app.database.database import get_db_session
 from app.database.models import Postcard
 from app.services.postcard_service import PostcardService
@@ -59,7 +61,7 @@ class SchedulerService:
         - 예정 시각이 지난 경우: 즉시 발송
         """
         async with get_db_session() as db:
-            now_utc = datetime.now(pytz.UTC)
+            now = now_utc()
             
             # pending 상태이고 scheduled_at이 있는 모든 엽서 조회
             stmt = select(Postcard).where(
@@ -78,12 +80,10 @@ class SchedulerService:
 
             for scheduled in scheduled_postcards:
                 try:
-                    # timezone-aware 비교를 위해 변환
-                    scheduled_time = scheduled.scheduled_at
-                    if scheduled_time.tzinfo is None:
-                        scheduled_time = pytz.UTC.localize(scheduled_time)
+                    # timezone-aware UTC로 변환
+                    scheduled_time = ensure_utc(scheduled.scheduled_at)
                     
-                    if scheduled_time > now_utc:
+                    if scheduled_time > now:
                         # 미래: 스케줄러에 등록
                         self.scheduler.add_job(
                             self._send_scheduled_postcard,
@@ -95,11 +95,11 @@ class SchedulerService:
                         future_count += 1
                     else:
                         # 과거: 즉시 발송 (지연 발송)
-                        delay = now_utc - scheduled_time
+                        delay = now - scheduled_time
                         logger.warning(f"Overdue postcard {scheduled.id[:8]}... delayed by {delay.total_seconds():.0f}s, sending now")
                         self.scheduler.add_job(
                             self._send_scheduled_postcard,
-                            trigger=DateTrigger(run_date=now_utc),  # 즉시 실행
+                            trigger=DateTrigger(run_date=now),  # 즉시 실행
                             args=[scheduled.id],
                             id=scheduled.id,
                             replace_existing=True

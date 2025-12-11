@@ -7,10 +7,10 @@
 import os
 import uuid as uuid_lib
 import logging
-import pytz
 from typing import Optional, Dict, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
+from app.utils.timezone import from_isoformat, ensure_utc
 
 from app.database.models import Postcard
 from app.services.storage_service import LocalStorageService
@@ -524,17 +524,12 @@ class PostcardService:
         # 예약 시간 처리
         if scheduled_at:
             try:
-                new_scheduled_at = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
-                # UTC로 변환 (timezone-naive면 UTC로 가정)
-                if new_scheduled_at.tzinfo is None:
-                    new_scheduled_at = pytz.UTC.localize(new_scheduled_at)
-                else:
-                    new_scheduled_at = new_scheduled_at.astimezone(pytz.UTC)
+                new_scheduled_at = from_isoformat(scheduled_at)
                 # 검증
                 update_data = PostcardUpdateRequest(scheduled_at=new_scheduled_at)
                 update_values["scheduled_at"] = update_data.scheduled_at
-            except ValueError:
-                raise ValueError("scheduled_at은 ISO 8601 형식이어야 합니다")
+            except ValueError as e:
+                raise ValueError(f"scheduled_at 처리 실패: {str(e)}")
         
         # 텍스트 수정 시 번역 수행
         if text:
@@ -784,9 +779,7 @@ class PostcardService:
 
             # 스케줄러에 등록 (UTC timezone-aware 확인)
             scheduler = get_scheduler()
-            scheduled_time = postcard.scheduled_at
-            if scheduled_time.tzinfo is None:
-                scheduled_time = pytz.UTC.localize(scheduled_time)
+            scheduled_time = ensure_utc(postcard.scheduled_at)
             success = scheduler.schedule_postcard(postcard_id, scheduled_time)
 
             if not success:
