@@ -1,4 +1,4 @@
-@import "@/styles/mixin";
+@use "@/styles/mixin" as *;
 .header {
   height: 60px;
   margin: 0 auto;

@@ -1,4 +1,4 @@
-@import "@/styles/mixin";
+@use "@/styles/mixin" as *;
 .postcardItem {
   display: flex;
   flex-direction: column;

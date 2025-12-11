@@ -1,4 +1,4 @@
-@import "./_mixin";
+@use "./_mixin" as *;
 :global(.hdWrap) {
   width: 100%;
 

@@ -1,4 +1,4 @@
-@import "@/styles/mixin";
+@use "@/styles/mixin" as *;
 .logoBox {
   display: flex;
   align-items: center;

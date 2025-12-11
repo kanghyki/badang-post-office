@@ -1,4 +1,4 @@
-@import "@/styles/mixin";
+@use "@/styles/mixin" as *;
 .postCopy {
   font-family: "KyuriSDiary";
   font-weight: bold;
@@ -68,7 +68,7 @@
     justify-content: center;
     padding: 60px 20px;
     width: 100%;
-    
+
     .emptyText {
       font-size: 16px;
       font-weight: 500;
@@ -79,7 +79,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {

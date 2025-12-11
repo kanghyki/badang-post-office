@@ -1,4 +1,4 @@
-@import "./_mixin";
+@use "./_mixin" as *;
 @font-face {
   font-family: "YeogiOttaeJalnan";
   src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.2/JalnanOTF00.woff")
