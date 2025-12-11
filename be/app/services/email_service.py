@@ -103,7 +103,13 @@ class EmailService:
 
     def _get_postcard_email_html(self, greeting: str, subtitle_message: str) -> str:
         """엽서 이메일 HTML 템플릿 생성"""
-        html = f"""
+        import html
+
+        # XSS 방지를 위한 HTML 이스케이프
+        safe_greeting = html.escape(greeting)
+        safe_subtitle = html.escape(subtitle_message)
+
+        html_content = f"""
         <!DOCTYPE html>
         <html>
         <head>
@@ -121,17 +127,17 @@ class EmailService:
             </style>
         </head>
         <body style="margin: 0; padding: 0; font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); min-height: 100vh; padding: 40px 20px;">
-            
+
             <!-- 우편함 배경 효과 -->
             <div style="max-width: 700px; margin: 0 auto; perspective: 1000px;">
-                
+
                 <!-- 실제 엽서 카드 -->
                 <div style="background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1); position: relative; animation: fadeIn 0.8s ease-out; transform: rotate(-0.5deg);">
 
                     <!-- 수신자 정보 (엽서 상단) -->
                     <div style="padding: 30px 40px 20px; background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%);">
-                        <h2 style="margin: 10px 0 5px; color: #2d3748; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">{greeting}</h2>
-                        <p style="margin: 0; color: #718096; font-size: 14px; font-style: italic;">{subtitle_message}</p>
+                        <h2 style="margin: 10px 0 5px; color: #2d3748; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">{safe_greeting}</h2>
+                        <p style="margin: 0; color: #718096; font-size: 14px; font-style: italic;">{safe_subtitle}</p>
                     </div>
 
                     <!-- 엽서 이미지 (메인 컨텐츠) -->
@@ -167,7 +173,7 @@ class EmailService:
         </body>
         </html>
         """
-        return html
+        return html_content
 
 
     async def send_postcard_email(
