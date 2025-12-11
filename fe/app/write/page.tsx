@@ -73,46 +73,31 @@ export default function Write() {
       <div className="container">
         <main className={styles.writeMain}>
           <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="recipient_name"
+              placeholder="받는 사람 이름 (…에게)"
+              required
+            />
             <div className={styles.textBox}>
-              <h4>Postcard</h4>
-
-              <input
-                className={styles.textBox}
-                type="text"
-                name="recipient_name"
-                placeholder="받는 사람 이름 (…에게)"
-                required
-              />
-
               <div className={styles.transrait}>제주방언이 여기에 표기됩니다.</div>
-
               <textarea
                 name="text"
-                placeholder="엽서 내용을 입력 해 주세요.(140자)"
-                maxLength={150}
-                required
-              />
-
-              <input
-                className={styles.textBox}
-                type="text"
-                name="sender_name"
-                placeholder="보내는 사람 이름 (…이가)"
+                placeholder="엽서 내용을 입력 해 주세요.(120자)"
+                maxLength={120}
                 required
               />
             </div>
 
             <input
-              className={styles.textBox}
               type="email"
               name="recipient_email"
               placeholder="받는 분 이메일"
               required
             />
-
-            <label>미래시간을 정해주세요.</label>
+            <label htmlFor="scheduled_at" className={styles.future}>미래시간을 정해주세요.</label>
             <input
-              className={styles.textBox}
+              id="scheduled_at"
               type="datetime-local"
               name="scheduled_at"
               required
@@ -122,7 +107,6 @@ export default function Write() {
 
             {/* 파일 선택 시 base64로 인코딩 */}
             <input
-              className={styles.textBox}
               type="file"
               accept="image/*"
               onChange={handleImageChange}
@@ -134,7 +118,7 @@ export default function Write() {
           {imageBase64 && (
             <div className={styles.previewBox}>
               <p>이미지 미리보기</p>
-              <img src={imageBase64} alt="preview" className={styles.previewImg} width={"100%"}/>
+              <img src={imageBase64} alt="preview" className={styles.previewImg} height="140px" />
             </div>
           )}
         </main>

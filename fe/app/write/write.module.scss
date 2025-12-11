@@ -5,39 +5,37 @@
   margin: 0 auto;
 
   form {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+
 
     input {
       width: 100%;
       font-size: 18px;
       border-radius: 6px;
       padding: 10px;
+      border-width: 1px;
     }
 
     .textBox {
-      margin-top: 10px;
-    }
+      .transrait {
+        background-color: #ccc;
+        font-size: 18px;
+        border-radius: 10px 10px 0px 0px;
+        padding: 10px;
+        height: 120px;
+        margin-top: 10px;
+      }
 
-    textarea {
-      width: 100%;
-      font-size: 18px;
-      border-radius: 0px 0px 10px 10px;
-      word-spacing: -4px;
-      height: 120px;
-      padding: 10px;
-      border-top: 0;
+      textarea {
+        width: 100%;
+        font-size: 18px;
+        border-radius: 0px 0px 10px 10px;
+        word-spacing: -4px;
+        height: 120px;
+        padding: 10px;
+        border-top: 0;
+      }
     }
-
-    .transrait {
-      background-color: #ccc;
-      font-size: 18px;
-      border-radius: 10px 10px 0px 0px;
-      padding: 10px;
-      height: 120px;
-      margin-top: 10px;
-    }
-
   }
 }
 

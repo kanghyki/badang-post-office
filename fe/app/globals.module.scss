@@ -9,11 +9,10 @@
 
 :global(.container) {
   width: 100%;
-  height: calc(100vh - 140px);
+  height: calc(100vh - 150px);
   position: absolute;
   top: 60px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  
 }
 
 :global(.navWrap) {
