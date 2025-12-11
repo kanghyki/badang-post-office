@@ -4,27 +4,25 @@ import Link from "next/link";
 import styles from "./user.module.scss";
 import Header from "../components/Header";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaRegCircle, FaCircleCheck } from "react-icons/fa6";
 import { TbEdit } from "react-icons/tb";
 import { authUtils } from "@/lib/utils/auth";
 import { useAuth } from "@/hooks/useAuth";
+import { observer } from "mobx-react-lite";
+import { useStore } from "@/store/StoreProvider";
 
 import Logo from "../components/LogoBox";
 
-export default function User() {
+const User = observer(() => {
   useAuth(); // 인증 체크
   const router = useRouter();
+  const { postcardStore } = useStore();
   const [selectedPage, setSelectedPage] = useState("");
-  const postcards = [
-    { id: 1, title: "..." },
-    { id: 2, title: "..." },
-    { id: 3, title: "..." },
-    { id: 4, title: "..." },
-    { id: 5, title: "..." },
-    { id: 6, title: "..." },
-    { id: 7, title: "..." },
-  ];
+
+  useEffect(() => {
+    postcardStore.fetchPostcards();
+  }, [postcardStore]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPage(e.target.id);
   };
@@ -78,7 +76,7 @@ export default function User() {
                 </span>
               </span>
               <span>
-                <b>{postcards.length}</b>
+                <b>{postcardStore.postcardsCount}</b>
                 <i>개</i>
               </span>
             </label>
@@ -114,4 +112,6 @@ export default function User() {
       </div>
     </>
   );
-}
+});
+
+export default User;
