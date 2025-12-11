@@ -1,9 +1,9 @@
 @use "@/styles/mixin" as *;
 
 .userMain {
-  padding-top: 60px;
-  padding-bottom: 20px;
-  min-height: calc(100vh - 60px);
+  padding-top: 3.75rem;
+  padding-bottom: 1.25rem;
+  min-height: calc(100vh - 3.75rem);
   display: flex;
   flex-direction: column;
 
@@ -11,22 +11,22 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-top: 40px;
-    gap: 16px;
+    margin-top: 2.5rem;
+    gap: 1rem;
 
     .menuItem {
       width: 90%;
       margin: 0 auto;
       border: none;
-      padding: 24px 28px;
-      border-radius: 20px;
+      padding: 1.5rem 1.75rem;
+      border-radius: 1.25rem;
       background: linear-gradient(
         135deg,
         rgba(255, 255, 255, 0.95) 0%,
         rgba(255, 255, 255, 0.85) 100%
       );
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(0.625rem);
+      box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.08);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -49,8 +49,8 @@
       }
 
       &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 30px rgba(255, 102, 0, 0.25);
+        transform: translateY(-0.25rem);
+        box-shadow: 0 0.5rem 1.875rem rgba(255, 102, 0, 0.25);
 
         &::before {
           opacity: 1;
@@ -64,7 +64,7 @@
       }
 
       &:active {
-        transform: translateY(-2px);
+        transform: translateY(-0.125rem);
       }
 
       span {
@@ -73,18 +73,18 @@
         transition: color 0.3s ease;
 
         b {
-          font-size: 22px;
-          line-height: 28px;
+          font-size: 1.375rem;
+          line-height: 1.75rem;
           font-weight: 700;
-          letter-spacing: -0.5px;
+          letter-spacing: -0.03125rem;
         }
 
         i {
           font-style: normal;
-          font-size: 13px;
-          line-height: 18px;
+          font-size: 0.8125rem;
+          line-height: 1.125rem;
           opacity: 0.75;
-          margin-top: 4px;
+          margin-top: 0.25rem;
         }
       }
 
@@ -92,11 +92,11 @@
         display: flex;
         flex-direction: column;
         text-align: left;
-        gap: 4px;
+        gap: 0.25rem;
       }
 
       .boxCnt {
-        font-size: 32px;
+        font-size: 2rem;
         font-weight: 600;
       }
     }
@@ -104,17 +104,17 @@
 
   .deleteButton {
     margin-top: auto;
-    padding: 12px 20px;
+    padding: 0.75rem 1.25rem;
     background: transparent;
     border: 1px solid rgba(255, 0, 0, 0.3);
-    border-radius: 12px;
+    border-radius: 0.75rem;
     color: rgba(255, 0, 0, 0.7);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
     align-self: center;
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
 
     &:hover {
       background: rgba(255, 0, 0, 0.05);

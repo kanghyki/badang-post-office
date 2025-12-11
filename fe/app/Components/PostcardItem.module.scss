@@ -4,16 +4,16 @@
   flex-direction: column;
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: #ffffff;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
   width: 100%;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 0.125rem 0.75rem rgba(0, 0, 0, 0.04);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
     border-color: rgba(255, 102, 0, 0.3);
   }
 
@@ -25,13 +25,13 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 16px;
+    gap: 1rem;
 
     .postcardDate {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 12px;
+      padding-bottom: 0.75rem;
       border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 
       .reservDate {
@@ -40,32 +40,32 @@
 
         span {
           font-weight: 700;
-          font-size: 15px;
+          font-size: 0.9375rem;
           color: #ff6600;
-          letter-spacing: -0.3px;
+          letter-spacing: -0.01875rem;
         }
       }
 
       .dateRight {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 0.75rem;
       }
 
       .writeDate {
-        font-size: 13px;
+        font-size: 0.8125rem;
         color: #999;
         font-weight: 500;
       }
 
       .actionButtons {
         display: flex;
-        gap: 6px;
+        gap: 0.375rem;
 
         .iconBtn {
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
+          width: 1.75rem;
+          height: 1.75rem;
+          border-radius: 0.375rem;
           background: rgba(255, 102, 0, 0.08);
           border: 1px solid rgba(255, 102, 0, 0.2);
           display: flex;
@@ -74,7 +74,7 @@
           cursor: pointer;
           transition: all 0.2s ease;
           color: #ff6600;
-          font-size: 12px;
+          font-size: 0.75rem;
 
           &:hover {
             background: #ff6600;
@@ -94,33 +94,33 @@
     .title {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 0.75rem;
 
       .label {
-        font-size: 12px;
+        font-size: 0.75rem;
         font-weight: 600;
         color: #999;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        min-width: 70px;
+        letter-spacing: 0.03125rem;
+        min-width: 4.375rem;
       }
 
       .value {
-        font-size: 15px;
+        font-size: 0.9375rem;
         font-weight: 600;
         color: #333;
-        letter-spacing: -0.3px;
+        letter-spacing: -0.01875rem;
       }
     }
 
     .content {
-      margin-top: 4px;
+      margin-top: 0.25rem;
 
       p {
-        font-size: 14px;
+        font-size: 0.875rem;
         line-height: 1.7;
         color: #666;
-        letter-spacing: -0.2px;
+        letter-spacing: -0.0125rem;
         margin: 0;
         display: -webkit-box;
         -webkit-line-clamp: 3;

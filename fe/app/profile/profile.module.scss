@@ -1,43 +1,43 @@
 @use "@/styles/mixin" as *;
 
 .profileMain {
-  padding: 24px 20px;
-  max-width: 500px;
+  padding: 1.5rem 1.25rem;
+  max-width: 31.25rem;
   margin: 0 auto;
 
   .loading {
     text-align: center;
-    padding: 40px 20px;
+    padding: 2.5rem 1.25rem;
     color: #999;
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
 }
 
 .infoSection {
   background: #f8f8f8;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .infoItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 0.75rem 0;
 
   &:not(:last-child) {
     border-bottom: 1px solid #e8e8e8;
   }
 
   .label {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #666;
     font-weight: 500;
   }
 
   .value {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #333;
     font-weight: 500;
   }
@@ -45,28 +45,28 @@
 
 .editSection {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.08);
 }
 
 .formGroup {
-  margin-bottom: 18px;
+  margin-bottom: 1.125rem;
 
   label {
     display: block;
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: #444;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
   }
 
   input {
     width: 100%;
-    padding: 11px 14px;
+    padding: 0.6875rem 0.875rem;
     border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
     transition: border-color 0.2s;
     box-sizing: border-box;
 
@@ -89,15 +89,15 @@
 
 .buttonGroup {
   display: flex;
-  gap: 10px;
-  margin-top: 24px;
+  gap: 0.625rem;
+  margin-top: 1.5rem;
 
   button {
     flex: 1;
-    padding: 12px 20px;
+    padding: 0.75rem 1.25rem;
     border: none;
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -138,14 +138,14 @@
 
 @media (max-width: 768px) {
   .profileMain {
-    padding: 16px;
+    padding: 1rem;
   }
 
   .infoSection {
-    padding: 16px;
+    padding: 1rem;
   }
 
   .editSection {
-    padding: 20px;
+    padding: 1.25rem;
   }
 }

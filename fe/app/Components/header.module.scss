@@ -1,21 +1,21 @@
 @use "@/styles/mixin" as *;
 .header {
-  height: 60px;
+  height: 3.75rem;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 1.25rem;
   position: relative;
   background-color: #ffefee;
 
   .backBtn {
     @include flex-center;
-    width: 50px;
-    height: 50px;
+    width: 3.125rem;
+    height: 3.125rem;
     border: none;
     background: none;
-    font-size: 28px;
+    font-size: 1.75rem;
     color: #666;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -32,7 +32,7 @@
 
   .pageTitle {
     color: #f61;
-    font-size: 20px;
+    font-size: 1.25rem;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -45,12 +45,12 @@
 
   .userMenuBtn {
     @include flex-center;
-    gap: 8px;
-    height: 50px;
-    padding: 0 12px;
+    gap: 0.5rem;
+    height: 3.125rem;
+    padding: 0 0.75rem;
     border: none;
     background: none;
-    font-size: 36px;
+    font-size: 2.25rem;
     color: #f61;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -69,7 +69,7 @@
   }
 
   .userName {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #f61;
     white-space: nowrap;
@@ -78,12 +78,12 @@
 
   .dropdown {
     position: absolute;
-    top: 55px;
+    top: 3.4375rem;
     right: 0;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    min-width: 140px;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
+    min-width: 8.75rem;
     overflow: hidden;
     z-index: 1000;
     animation: fadeIn 0.2s ease;
@@ -91,11 +91,11 @@
 
   .dropdownItem {
     width: 100%;
-    padding: 12px 20px;
+    padding: 0.75rem 1.25rem;
     border: none;
     background: white;
     text-align: left;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #333;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -115,11 +115,11 @@
 
   .logoutBtn {
     @include flex-center;
-    width: 50px;
-    height: 50px;
+    width: 3.125rem;
+    height: 3.125rem;
     border: none;
     background: none;
-    font-size: 36px;
+    font-size: 2.25rem;
     color: #f44336;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -138,7 +138,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-0.625rem);
   }
   to {
     opacity: 1;

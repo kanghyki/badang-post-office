@@ -485,7 +485,7 @@ function ModifyContent() {
                   <span>보내는 중...</span>
                 </>
               ) : (
-                <span>출간하기</span>
+                <span>접수하기</span>
               )}
             </button>
           </div>
@@ -497,16 +497,20 @@ function ModifyContent() {
 
 export default function Modify() {
   return (
-    <Suspense fallback={
-      <>
-        <div className="hdrWrap">
-          <Header title="엽서 수정하기" />
-        </div>
-        <div className="container">
-          <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
-        </div>
-      </>
-    }>
+    <Suspense
+      fallback={
+        <>
+          <div className="hdrWrap">
+            <Header title="엽서 수정하기" />
+          </div>
+          <div className="container">
+            <div style={{ textAlign: "center", padding: "50px" }}>
+              로딩 중...
+            </div>
+          </div>
+        </>
+      }
+    >
       <ModifyContent />
     </Suspense>
   );
