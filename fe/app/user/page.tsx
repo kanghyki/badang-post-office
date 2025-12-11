@@ -10,6 +10,7 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "@/store/StoreProvider";
 import { useNotification } from "../context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
+import { authApi } from "@/lib/api/auth";
 
 import Logo from "../components/LogoBox";
 
@@ -35,6 +36,35 @@ const User = observer(() => {
     if (confirmed) {
       authUtils.removeToken();
       router.push(ROUTES.LOGIN);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = await showModal({
+      title: "회원 탈퇴",
+      message: "정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      type: "confirm",
+      confirmText: "탈퇴",
+      cancelText: "취소",
+    });
+
+    if (confirmed) {
+      try {
+        await authApi.deleteAccount();
+        authUtils.removeToken();
+        await showModal({
+          title: "탈퇴 완료",
+          message: "회원 탈퇴가 완료되었습니다.",
+          type: "alert",
+        });
+        router.push(ROUTES.LOGIN);
+      } catch (error) {
+        await showModal({
+          title: "오류",
+          message: "회원 탈퇴 중 오류가 발생했습니다.",
+          type: "alert",
+        });
+      }
     }
   };
 
@@ -77,6 +107,10 @@ const User = observer(() => {
               </span>
             </button>
           </div>
+
+          <button className={styles.deleteButton} onClick={handleDeleteAccount}>
+            회원 탈퇴
+          </button>
         </main>
       </div>
     </>

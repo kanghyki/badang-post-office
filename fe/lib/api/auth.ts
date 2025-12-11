@@ -38,4 +38,8 @@ export const authApi = {
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     return apiClient.post<LoginResponse>(AUTH_ENDPOINTS.LOGIN, data);
   },
+
+  deleteAccount: async (): Promise<void> => {
+    return apiClient.delete<void>(AUTH_ENDPOINTS.DELETE_ACCOUNT, true);
+  },
 };

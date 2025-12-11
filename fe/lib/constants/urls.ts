@@ -17,6 +17,7 @@ export const AUTH_ENDPOINTS = {
   LOGIN: "/v1/auth/login",
   LOGOUT: "/v1/auth/logout",
   REFRESH: "/v1/auth/refresh",
+  DELETE_ACCOUNT: "/v1/auth/withdrawal",
 } as const;
 
 /**

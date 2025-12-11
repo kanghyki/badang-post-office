@@ -101,4 +101,29 @@
       }
     }
   }
+
+  .deleteButton {
+    margin-top: auto;
+    padding: 12px 20px;
+    background: transparent;
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    border-radius: 12px;
+    color: rgba(255, 0, 0, 0.7);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: center;
+    margin-bottom: 20px;
+
+    &:hover {
+      background: rgba(255, 0, 0, 0.05);
+      border-color: rgba(255, 0, 0, 0.5);
+      color: rgba(255, 0, 0, 0.9);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
 }
