@@ -6,8 +6,8 @@ import { NotificationProvider } from "./context/NotificationContext";
 import ConditionalFooter from "./components/ConditionalFooter";
 
 export const metadata: Metadata = {
-  title: "제주헌디",
-  description: "제주방언 살리기 프로젝트",
+  title: "바당우체국",
+  description: "제주바당우체국",
 };
 
 export default function RootLayout({
