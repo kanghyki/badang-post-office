@@ -9,7 +9,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#ff6611",
+  themeColor: "#ffefef", // 대부분 페이지의 배경색
 };
 
 export const metadata: Metadata = {

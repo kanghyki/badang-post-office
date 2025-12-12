@@ -24,6 +24,16 @@ export default function PostcardItem({
     const date = new Date(isoDate);
     return date.toISOString().split("T")[0].replace(/-/g, ".");
   };
+
+  const getScheduledDateText = () => {
+    if (data.scheduled_at) {
+      return formatDate(data.scheduled_at);
+    }
+    if (data.status === "sent" && data.sent_at) {
+      return formatDate(data.sent_at);
+    }
+    return "바로 전달";
+  };
   const relativeDate = (isoDate: string) => {
     const date = new Date(isoDate);
     const now = new Date();
@@ -53,9 +63,7 @@ export default function PostcardItem({
       <div className={styles.listBox}>
         <div className={styles.postcardDate}>
           <div className={styles.reservDate}>
-            <span>
-              {data.scheduled_at ? formatDate(data.scheduled_at) : "미정"}
-            </span>
+            <span>{getScheduledDateText()}</span>
           </div>
           <div className={styles.dateRight}>
             <div className={styles.writeDate}>
@@ -74,15 +82,18 @@ export default function PostcardItem({
           </div>
         </div>
         <div className={styles.recipient}>
-          <span className={styles.label}>받는 사람</span>
-          <span className={styles.value}>{data.recipient_email || "미정"}</span>
-        </div>
-        <div className={styles.title}>
-          <span className={styles.label}>제목</span>
+          <span className={styles.label}>받는 분</span>
           <span className={styles.value}>
-            {data.recipient_name || "제목 없음"}
+            {data.recipient_name || "이름 없음"}
+            {data.recipient_email && ` (${data.recipient_email})`}
           </span>
         </div>
+        {data.sender_name && (
+          <div className={styles.title}>
+            <span className={styles.label}>보내는 분</span>
+            <span className={styles.value}>{data.sender_name}</span>
+          </div>
+        )}
         <div className={styles.content}>
           <p>{data.text || data.original_text || "내용 없음"}</p>
         </div>
