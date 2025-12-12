@@ -88,6 +88,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
+        suppressHydrationWarning
         style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
       >
         <StoreProvider>

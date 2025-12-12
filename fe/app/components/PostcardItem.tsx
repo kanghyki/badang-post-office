@@ -88,9 +88,11 @@ export default function PostcardItem({
     return "바로 전달";
   };
   const relativeDate = (isoDate: string) => {
+    // UTC 시간을 한국 시간(KST)으로 변환
     const date = new Date(isoDate);
+    const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
     const now = new Date();
-    const diffTime = now.getTime() - date.getTime();
+    const diffTime = now.getTime() - kstDate.getTime();
     const diffSeconds = Math.floor(diffTime / 1000);
     const diffMinutes = Math.floor(diffSeconds / 60);
     const diffHours = Math.floor(diffMinutes / 60);
