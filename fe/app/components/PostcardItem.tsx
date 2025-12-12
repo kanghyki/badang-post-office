@@ -136,15 +136,13 @@ export default function PostcardItem({
                 {isDropdownOpen && (
                   <div className={styles.dropdown}>
                     <button onClick={handleEdit} className={styles.dropdownItem}>
-                      <FaEdit />
-                      <span>수정</span>
+                      수정
                     </button>
                     <button
                       onClick={handleDelete}
                       className={`${styles.dropdownItem} ${styles.danger}`}
                     >
-                      <FaTrashAlt />
-                      <span>삭제</span>
+                      삭제
                     </button>
                   </div>
                 )}
