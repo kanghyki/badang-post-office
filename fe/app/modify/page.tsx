@@ -126,15 +126,14 @@ function ModifyContent() {
           setSendType("immediate");
         }
 
-        // user_photo_url을 우선적으로 사용, 없으면 postcard_path 사용
-        const photoUrl = postcard.user_photo_url || postcard.postcard_path;
-        if (photoUrl) {
+        // 사용자가 업로드한 사진이 있는 경우 미리보기 표시
+        if (postcard.user_photo_url) {
           try {
-            const imageUrl = `${API_BASE_URL}${photoUrl}`;
+            const imageUrl = `${API_BASE_URL}${postcard.user_photo_url}`;
             const blobUrl = await fetchImageWithAuth(imageUrl);
             setImagePreview(blobUrl);
           } catch (error) {
-            console.error("이미지 로드 실패:", error);
+            console.error("사용자 업로드 이미지 로드 실패:", error);
           }
         }
       } catch (error) {

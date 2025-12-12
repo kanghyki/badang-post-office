@@ -215,17 +215,14 @@ export default function Write() {
         setTranslatedText(updatedPostcard.text);
       }
 
-      // 서버에서 받은 사진 URL을 미리보기에 표시 (이미지를 새로 업로드하지 않은 경우)
-      if (!image) {
-        const photoUrl = updatedPostcard.user_photo_url || updatedPostcard.postcard_path;
-        if (photoUrl && !imagePreview) {
-          try {
-            const imageUrl = `${API_BASE_URL}${photoUrl}`;
-            const blobUrl = await fetchImageWithAuth(imageUrl);
-            setImagePreview(blobUrl);
-          } catch (error) {
-            console.error("이미지 로드 실패:", error);
-          }
+      // 사용자가 업로드한 사진이 서버에 있는 경우 미리보기 표시
+      if (!image && updatedPostcard.user_photo_url && !imagePreview) {
+        try {
+          const imageUrl = `${API_BASE_URL}${updatedPostcard.user_photo_url}`;
+          const blobUrl = await fetchImageWithAuth(imageUrl);
+          setImagePreview(blobUrl);
+        } catch (error) {
+          console.error("사용자 업로드 이미지 로드 실패:", error);
         }
       }
 
