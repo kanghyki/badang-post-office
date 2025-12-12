@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     smtp_from_email: str = ""
     smtp_from_name: str = "제주 엽서"
 
+    # Encryption
+    encryption_key: str = ""  # Fernet 키 (Base64 인코딩된 32바이트)
+
     @property
     def origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",")]
