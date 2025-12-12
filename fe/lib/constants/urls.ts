@@ -40,6 +40,14 @@ export const TRANSLATION_ENDPOINTS = {
   TRANSLATE_TO_JEJU: "/v1/translation/jeju",
 } as const;
 
+/**
+ * 템플릿 관련 API 엔드포인트
+ */
+export const TEMPLATE_ENDPOINTS = {
+  LIST: "/v1/templates",
+  DETAIL: (id: string) => `/v1/templates/${id}`,
+} as const;
+
 // ==================== 프론트엔드 라우트 ====================
 
 /**

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./write.module.scss";
 import Header from "@/app/components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
+import { templatesApi, TemplateResponse } from "@/lib/api/templates";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
@@ -30,6 +31,60 @@ export default function Write() {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [templates, setTemplates] = useState<TemplateResponse[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [templateImageUrls, setTemplateImageUrls] = useState<Record<string, string>>({});
+
+  // 템플릿 목록 불러오기
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        setLoadingTemplates(true);
+        const response = await templatesApi.getList();
+        setTemplates(response.templates);
+
+        // 첫 번째 템플릿을 기본 선택
+        if (response.templates.length > 0) {
+          setSelectedTemplateId(response.templates[0].id);
+        }
+
+        // 각 템플릿의 이미지를 인증과 함께 불러오기
+        const imageUrls: Record<string, string> = {};
+        await Promise.all(
+          response.templates.map(async (template) => {
+            try {
+              const imageUrl = `${API_BASE_URL}${template.template_image_path}`;
+              const blobUrl = await fetchImageWithAuth(imageUrl);
+              imageUrls[template.id] = blobUrl;
+            } catch (error) {
+              console.error(`템플릿 ${template.id} 이미지 로드 실패:`, error);
+            }
+          })
+        );
+        setTemplateImageUrls(imageUrls);
+      } catch (error) {
+        console.error("템플릿 목록 불러오기 실패:", error);
+        showToast({
+          message: "템플릿을 불러오는데 실패했습니다.",
+          type: "error",
+        });
+      } finally {
+        setLoadingTemplates(false);
+      }
+    };
+
+    fetchTemplates();
+
+    // cleanup: blob URL 해제
+    return () => {
+      Object.values(templateImageUrls).forEach((url) => {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [showToast]);
 
   // 입력값 변경 감지
   useEffect(() => {
@@ -126,7 +181,7 @@ export default function Write() {
 
       // postcardId가 없으면 먼저 생성
       if (!currentPostcardId) {
-        const newPostcard = await postcardsApi.create();
+        const newPostcard = await postcardsApi.create(selectedTemplateId);
         currentPostcardId = newPostcard.id;
         setPostcardId(currentPostcardId);
         console.log("엽서 생성 완료:", currentPostcardId);
@@ -230,7 +285,7 @@ export default function Write() {
 
       // postcardId가 없으면 먼저 생성
       if (!currentPostcardId) {
-        const newPostcard = await postcardsApi.create();
+        const newPostcard = await postcardsApi.create(selectedTemplateId);
         currentPostcardId = newPostcard.id;
         setPostcardId(currentPostcardId);
         console.log("엽서 생성 완료:", currentPostcardId);
@@ -284,6 +339,62 @@ export default function Write() {
       <div className="container">
         <main className={styles.writeMain}>
           <form onSubmit={handleSend} id="postcardForm">
+            {/* 템플릿 선택 섹션 */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>템플릿 선택</h3>
+              {loadingTemplates ? (
+                <div className={styles.templateLoading}>
+                  <span className={styles.smallSpinner}></span>
+                  <span>템플릿을 불러오는 중...</span>
+                </div>
+              ) : templates.length === 0 ? (
+                <div className={styles.templateEmpty}>
+                  사용 가능한 템플릿이 없습니다.
+                </div>
+              ) : (
+                <div className={styles.templateGrid}>
+                  {templates.map((template) => (
+                    <label
+                      key={template.id}
+                      className={`${styles.templateCard} ${
+                        selectedTemplateId === template.id ? styles.selected : ""
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="template"
+                        value={template.id}
+                        checked={selectedTemplateId === template.id}
+                        onChange={(e) => setSelectedTemplateId(e.target.value)}
+                        className={styles.templateRadio}
+                      />
+                      <div className={styles.templateImageWrapper}>
+                        {templateImageUrls[template.id] ? (
+                          <img
+                            src={templateImageUrls[template.id]}
+                            alt={template.name}
+                            className={styles.templateImage}
+                          />
+                        ) : (
+                          <div className={styles.templateImageLoading}>
+                            <span className={styles.smallSpinner}></span>
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles.templateInfo}>
+                        <div className={styles.templateName}>{template.name}</div>
+                        {template.description && (
+                          <div className={styles.templateDescription}>
+                            {template.description}
+                          </div>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* 엽서 내용 섹션 */}
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>엽서 내용</h3>

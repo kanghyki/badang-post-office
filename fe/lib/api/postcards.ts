@@ -58,9 +58,10 @@ export const postcardsApi = {
     return apiClient.get<PostcardResponse>(POSTCARD_ENDPOINTS.DETAIL(id), true);
   },
 
-  create: async (): Promise<PostcardResponse> => {
+  create: async (templateId?: string): Promise<PostcardResponse> => {
+    const params = templateId ? `?template_id=${templateId}` : "";
     return apiClient.post<PostcardResponse>(
-      POSTCARD_ENDPOINTS.CREATE,
+      `${POSTCARD_ENDPOINTS.CREATE}${params}`,
       undefined,
       true
     );
