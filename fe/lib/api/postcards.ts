@@ -31,6 +31,7 @@ export interface PostcardResponse {
 }
 
 export interface UpdatePostcardData {
+  template_id?: string;
   text?: string;
   recipient_email?: string;
   recipient_name?: string;
@@ -73,6 +74,7 @@ export const postcardsApi = {
   ): Promise<PostcardResponse> => {
     const formData = new FormData();
 
+    if (data.template_id) formData.append("template_id", data.template_id);
     if (data.text) formData.append("text", data.text);
     if (data.recipient_email)
       formData.append("recipient_email", data.recipient_email);

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./write.module.scss";
 import Header from "@/app/components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
-import { templatesApi, TemplateResponse } from "@/lib/api/templates";
+import { templatesApi, TemplateResponse, TemplateDetailResponse } from "@/lib/api/templates";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
@@ -39,6 +39,7 @@ export default function Write() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [templateImageUrls, setTemplateImageUrls] = useState<Record<string, string>>({});
+  const [selectedTemplateDetail, setSelectedTemplateDetail] = useState<TemplateDetailResponse | null>(null);
 
   // 템플릿 목록 불러오기
   useEffect(() => {
@@ -89,6 +90,27 @@ export default function Write() {
       });
     };
   }, [showToast]);
+
+  // 선택된 템플릿의 상세 정보 가져오기
+  useEffect(() => {
+    const fetchTemplateDetail = async () => {
+      if (!selectedTemplateId) return;
+
+      try {
+        const detail = await templatesApi.getById(selectedTemplateId);
+        setSelectedTemplateDetail(detail);
+        console.log("템플릿 상세 정보:", detail);
+      } catch (error) {
+        console.error("템플릿 상세 정보 로드 실패:", error);
+        showToast({
+          message: "템플릿 설정을 불러오는데 실패했습니다.",
+          type: "error",
+        });
+      }
+    };
+
+    fetchTemplateDetail();
+  }, [selectedTemplateId, showToast]);
 
   // 입력값 변경 감지
   useEffect(() => {
@@ -199,6 +221,7 @@ export default function Write() {
 
       // 엽서 내용 업데이트
       const updatedPostcard = await postcardsApi.update(currentPostcardId, {
+        template_id: selectedTemplateId,
         text,
         recipient_email: recipientEmail,
         recipient_name: recipientName,
@@ -297,6 +320,7 @@ export default function Write() {
 
       // 1. 엽서 내용 업데이트
       await postcardsApi.update(currentPostcardId, {
+        template_id: selectedTemplateId,
         text,
         recipient_email: recipientEmail,
         recipient_name: recipientName,
