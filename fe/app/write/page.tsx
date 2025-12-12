@@ -77,6 +77,17 @@ export default function Write() {
     reader.readAsDataURL(file);
   };
 
+  // 이미지 삭제
+  const handleImageRemove = () => {
+    setImage(null);
+    setImagePreview("");
+    // input 파일도 초기화
+    const fileInput = document.getElementById("imageInput") as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
   // 임시 저장 (create + update 또는 update만 호출)
   const handleSave = async () => {
     // 이메일 validation
@@ -247,27 +258,54 @@ export default function Write() {
             {/* 이미지 업로드 섹션 */}
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>사진 첨부</h3>
-              <div className={styles.fileInputWrapper}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className={styles.fileInput}
-                  id="imageInput"
-                />
-                <label htmlFor="imageInput" className={styles.fileLabel}>
-                  <span className={styles.icon}>📷</span>
-                  <span>{image ? image.name : "사진을 선택해주세요"}</span>
-                </label>
-              </div>
-
-              {imagePreview && (
-                <div className={styles.previewBox}>
-                  <img
-                    src={imagePreview}
-                    alt="preview"
-                    className={styles.previewImg}
+              {!imagePreview ? (
+                <div className={styles.fileInputWrapper}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className={styles.fileInput}
+                    id="imageInput"
                   />
+                  <label htmlFor="imageInput" className={styles.fileLabel}>
+                    <span className={styles.uploadIcon}>📷</span>
+                    <span className={styles.uploadText}>사진을 선택해주세요</span>
+                    <span className={styles.uploadHint}>클릭하여 사진 업로드</span>
+                  </label>
+                </div>
+              ) : (
+                <div className={styles.imagePreviewContainer}>
+                  <div className={styles.previewBox}>
+                    <img
+                      src={imagePreview}
+                      alt="preview"
+                      className={styles.previewImg}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleImageRemove}
+                      className={styles.removeImageBtn}
+                      aria-label="사진 삭제"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M15 5L5 15M5 5L15 15"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  {image && (
+                    <p className={styles.imageName}>{image.name}</p>
+                  )}
                 </div>
               )}
             </div>
