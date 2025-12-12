@@ -87,6 +87,10 @@
   font-weight: normal;
   font-display: swap;
 }
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body,
 div,
@@ -197,6 +201,11 @@ body {
   background-color: #ffefef;
   overflow-y: auto;
   min-height: 100vh;
+
+  /* 페이지 전환 시 깜빡임 방지 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 ol,
 ul {
