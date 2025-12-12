@@ -8,6 +8,7 @@ import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
+import { fetchImageWithAuth } from "@/lib/utils/image";
 
 export default function Write() {
   useAuth(); // 인증 체크
@@ -153,6 +154,20 @@ export default function Write() {
       // 서버에서 번역된 텍스트를 미리보기에 표시
       if (updatedPostcard.text) {
         setTranslatedText(updatedPostcard.text);
+      }
+
+      // 서버에서 받은 사진 URL을 미리보기에 표시 (이미지를 새로 업로드하지 않은 경우)
+      if (!image) {
+        const photoUrl = updatedPostcard.user_photo_url || updatedPostcard.postcard_path;
+        if (photoUrl && !imagePreview) {
+          try {
+            const imageUrl = `${API_BASE_URL}${photoUrl}`;
+            const blobUrl = await fetchImageWithAuth(imageUrl);
+            setImagePreview(blobUrl);
+          } catch (error) {
+            console.error("이미지 로드 실패:", error);
+          }
+        }
       }
 
       setHasUnsavedChanges(false);

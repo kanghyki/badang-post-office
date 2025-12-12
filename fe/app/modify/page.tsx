@@ -8,6 +8,7 @@ import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
+import { fetchImageWithAuth } from "@/lib/utils/image";
 
 function ModifyContent() {
   useAuth(); // 인증 체크
@@ -125,9 +126,16 @@ function ModifyContent() {
           setSendType("immediate");
         }
 
-        if (postcard.postcard_path) {
-          const imagePath = `${API_BASE_URL}${postcard.postcard_path}`;
-          setImagePreview(imagePath);
+        // user_photo_url을 우선적으로 사용, 없으면 postcard_path 사용
+        const photoUrl = postcard.user_photo_url || postcard.postcard_path;
+        if (photoUrl) {
+          try {
+            const imageUrl = `${API_BASE_URL}${photoUrl}`;
+            const blobUrl = await fetchImageWithAuth(imageUrl);
+            setImagePreview(blobUrl);
+          } catch (error) {
+            console.error("이미지 로드 실패:", error);
+          }
         }
       } catch (error) {
         console.error("엽서 로드 실패:", error);

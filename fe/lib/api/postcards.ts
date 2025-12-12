@@ -24,6 +24,7 @@ export interface PostcardResponse {
   scheduled_at: string | null;
   sent_at: string | null;
   postcard_path: string | null;
+  user_photo_url: string | null;
   error_message: string | null;
   created_at: string;
   updated_at: string;
