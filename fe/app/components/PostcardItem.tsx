@@ -98,7 +98,7 @@ export default function PostcardItem({
   const relativeDate = (isoDate: string) => {
     // UTC 시간을 한국 시간(KST)으로 변환
     const date = new Date(isoDate);
-    const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+    const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
     const now = new Date();
     const diffTime = now.getTime() - kstDate.getTime();
     const diffSeconds = Math.floor(diffTime / 1000);
@@ -145,7 +145,10 @@ export default function PostcardItem({
               {isDropdownOpen && (
                 <div className={styles.dropdown}>
                   {(data.status === "writing" || data.status === "pending") && (
-                    <button onClick={handleEdit} className={styles.dropdownItem}>
+                    <button
+                      onClick={handleEdit}
+                      className={styles.dropdownItem}
+                    >
                       수정
                     </button>
                   )}

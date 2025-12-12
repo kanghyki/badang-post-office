@@ -43,10 +43,7 @@ export default function List() {
   const [selectedPostcard, setSelectedPostcard] =
     useState<PostcardResponse | null>(null);
 
-  const fetchPostcards = async (
-    status?: PostcardStatus,
-    isInitial = false
-  ) => {
+  const fetchPostcards = async (status?: PostcardStatus, isInitial = false) => {
     try {
       if (isInitial) {
         setInitialLoading(true);
@@ -153,7 +150,8 @@ export default function List() {
   const handleCancel = async (id: string) => {
     const confirmed = await showModal({
       title: "예약 취소",
-      message: "예약된 발송을 취소하시겠습니까?\n취소된 엽서는 목록에서 확인할 수 있습니다.",
+      message:
+        "예약된 발송을 취소하시겠습니까?\n취소된 엽서는 목록에서 확인할 수 있습니다.",
       type: "confirm",
       confirmText: "예약 취소",
       cancelText: "돌아가기",
@@ -173,9 +171,15 @@ export default function List() {
     } catch (error) {
       console.error("예약 취소 실패:", error);
       if (error instanceof Error) {
-        showToast({ message: `예약 취소 실패: ${error.message}`, type: "error" });
+        showToast({
+          message: `예약 취소 실패: ${error.message}`,
+          type: "error",
+        });
       } else {
-        showToast({ message: "예약 취소 중 오류가 발생했습니다.", type: "error" });
+        showToast({
+          message: "예약 취소 중 오류가 발생했습니다.",
+          type: "error",
+        });
       }
     }
   };

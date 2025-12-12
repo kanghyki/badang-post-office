@@ -5,11 +5,7 @@ import {
   API_BASE_URL,
 } from "../constants/urls";
 
-export type PostcardStatus =
-  | "writing"
-  | "pending"
-  | "sent"
-  | "failed";
+export type PostcardStatus = "writing" | "pending" | "sent" | "failed";
 
 export interface PostcardResponse {
   id: string;
@@ -118,11 +114,7 @@ export const postcardsApi = {
   },
 
   cancel: async (id: string): Promise<void> => {
-    return apiClient.post<void>(
-      POSTCARD_ENDPOINTS.CANCEL(id),
-      undefined,
-      true
-    );
+    return apiClient.post<void>(POSTCARD_ENDPOINTS.CANCEL(id), undefined, true);
   },
 
   translate: async (text: string): Promise<TranslationResponse> => {

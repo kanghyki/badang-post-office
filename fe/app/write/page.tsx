@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import styles from "./write.module.scss";
 import Header from "@/app/components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
-import { templatesApi, TemplateResponse, TemplateDetailResponse } from "@/lib/api/templates";
+import {
+  templatesApi,
+  TemplateResponse,
+  TemplateDetailResponse,
+} from "@/lib/api/templates";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
@@ -38,8 +42,11 @@ export default function Write() {
   const [templates, setTemplates] = useState<TemplateResponse[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [loadingTemplates, setLoadingTemplates] = useState(true);
-  const [templateImageUrls, setTemplateImageUrls] = useState<Record<string, string>>({});
-  const [selectedTemplateDetail, setSelectedTemplateDetail] = useState<TemplateDetailResponse | null>(null);
+  const [templateImageUrls, setTemplateImageUrls] = useState<
+    Record<string, string>
+  >({});
+  const [selectedTemplateDetail, setSelectedTemplateDetail] =
+    useState<TemplateDetailResponse | null>(null);
 
   // 템플릿 목록 불러오기
   useEffect(() => {
@@ -382,7 +389,9 @@ export default function Write() {
                     <label
                       key={template.id}
                       className={`${styles.templateCard} ${
-                        selectedTemplateId === template.id ? styles.selected : ""
+                        selectedTemplateId === template.id
+                          ? styles.selected
+                          : ""
                       }`}
                     >
                       <input
@@ -407,7 +416,9 @@ export default function Write() {
                         )}
                       </div>
                       <div className={styles.templateInfo}>
-                        <div className={styles.templateName}>{template.name}</div>
+                        <div className={styles.templateName}>
+                          {template.name}
+                        </div>
                         {template.description && (
                           <div className={styles.templateDescription}>
                             {template.description}
