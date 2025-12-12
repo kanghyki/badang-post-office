@@ -35,18 +35,24 @@ class PostcardCreateRequest(BaseModel):
     @field_validator("scheduled_at")
     @classmethod
     def validate_scheduled_time(cls, v: Optional[datetime]) -> Optional[datetime]:
-        """예약 시간 검증 (최소 5분 후, 최대 2년 이내)"""
+        """예약 시간 검증 (과거 시간이면 즉시발송, 최대 2년 이내)"""
         if v is None:
             return v
-        
+
+        from app.utils.timezone import now_utc
+
         # UTC timezone-aware로 변환
         v_utc = to_utc(v)
-        
-        # 유효성 검증
-        is_valid, error = validate_schedule_time(v_utc, min_minutes=5, max_days=730)
+
+        # 과거 시간이면 None으로 변경 (즉시발송)
+        if v_utc <= now_utc():
+            return None
+
+        # 최대 시간 검증만 수행 (최소 시간 제한 제거)
+        is_valid, error = validate_schedule_time(v_utc, min_minutes=0, max_days=730)
         if not is_valid:
             raise ValueError(error)
-        
+
         return v_utc
 
 
@@ -67,6 +73,7 @@ class PostcardResponse(BaseModel):
     scheduled_at: Optional[datetime] = None  # NULL이면 즉시 발송
     sent_at: Optional[datetime] = None
     postcard_path: Optional[str] = None  # 생성된 엽서 이미지 경로
+    user_photo_url: Optional[str] = None  # 사용자 업로드 사진 URL (첫 번째 사진)
     error_message: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -93,8 +100,16 @@ class PostcardUpdateRequest(BaseModel):
     @classmethod
     def validate_scheduled_time(cls, v: Optional[datetime]) -> Optional[datetime]:
         if v:
+            from app.utils.timezone import now_utc
+
             v_utc = to_utc(v)
-            is_valid, error = validate_schedule_time(v_utc, min_minutes=5, max_days=730)
+
+            # 과거 시간이면 None으로 변경 (즉시발송)
+            if v_utc <= now_utc():
+                return None
+
+            # 최대 시간 검증만 수행 (최소 시간 제한 제거)
+            is_valid, error = validate_schedule_time(v_utc, min_minutes=0, max_days=730)
             if not is_valid:
                 raise ValueError(error)
             return v_utc

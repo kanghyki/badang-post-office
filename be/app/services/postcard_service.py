@@ -346,6 +346,13 @@ class PostcardService:
                 logger.warning(f"Failed to delete temporary file {temp_path}: {str(e)}")
 
         # 10. 응답 반환
+        # 사용자 업로드 사진 경로를 URL로 변환 (첫 번째 사진만)
+        user_photo_url = None
+        if postcard.user_photo_paths:
+            first_photo_path = next(iter(postcard.user_photo_paths.values()), None)
+            if first_photo_path:
+                user_photo_url = convert_static_path_to_url(first_photo_path)
+
         return PostcardResponse(
             id=postcard.id,
             postcard_path=postcard_path,
@@ -357,6 +364,7 @@ class PostcardService:
             status=postcard.status,
             scheduled_at=postcard.scheduled_at,
             sent_at=postcard.sent_at,
+            user_photo_url=user_photo_url,
             error_message=postcard.error_message,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at,
@@ -392,6 +400,13 @@ class PostcardService:
         
         responses = []
         for postcard in postcards:
+            # 사용자 업로드 사진 경로를 URL로 변환 (첫 번째 사진만)
+            user_photo_url = None
+            if postcard.user_photo_paths:
+                first_photo_path = next(iter(postcard.user_photo_paths.values()), None)
+                if first_photo_path:
+                    user_photo_url = convert_static_path_to_url(first_photo_path)
+
             responses.append(PostcardResponse(
                 id=postcard.id,
                 template_id=postcard.template_id,
@@ -404,11 +419,12 @@ class PostcardService:
                 scheduled_at=postcard.scheduled_at,
                 sent_at=postcard.sent_at,
                 postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
+                user_photo_url=user_photo_url,
                 error_message=postcard.error_message,
                 created_at=postcard.created_at,
                 updated_at=postcard.updated_at
             ))
-        
+
         return responses
 
     async def get_postcard_by_id(
@@ -437,7 +453,14 @@ class PostcardService:
         
         if not postcard:
             return None
-        
+
+        # 사용자 업로드 사진 경로를 URL로 변환 (첫 번째 사진만)
+        user_photo_url = None
+        if postcard.user_photo_paths:
+            first_photo_path = next(iter(postcard.user_photo_paths.values()), None)
+            if first_photo_path:
+                user_photo_url = convert_static_path_to_url(first_photo_path)
+
         return PostcardResponse(
             id=postcard.id,
             template_id=postcard.template_id,
@@ -450,6 +473,7 @@ class PostcardService:
             scheduled_at=postcard.scheduled_at,
             sent_at=postcard.sent_at,
             postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
+            user_photo_url=user_photo_url,
             error_message=postcard.error_message,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
@@ -623,6 +647,13 @@ class PostcardService:
         # 업데이트된 데이터 조회
         await self.db.refresh(postcard)
 
+        # 사용자 업로드 사진 경로를 URL로 변환 (첫 번째 사진만)
+        user_photo_url = None
+        if postcard.user_photo_paths:
+            first_photo_path = next(iter(postcard.user_photo_paths.values()), None)
+            if first_photo_path:
+                user_photo_url = convert_static_path_to_url(first_photo_path)
+
         return PostcardResponse(
             id=postcard.id,
             template_id=postcard.template_id,
@@ -635,6 +666,7 @@ class PostcardService:
             scheduled_at=postcard.scheduled_at,
             sent_at=postcard.sent_at,
             postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
+            user_photo_url=user_photo_url,
             error_message=postcard.error_message,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
@@ -795,6 +827,13 @@ class PostcardService:
 
             logger.info(f"Scheduled postcard {postcard_id} for {postcard.scheduled_at}")
 
+        # 사용자 업로드 사진 경로를 URL로 변환 (첫 번째 사진만)
+        user_photo_url = None
+        if postcard.user_photo_paths:
+            first_photo_path = next(iter(postcard.user_photo_paths.values()), None)
+            if first_photo_path:
+                user_photo_url = convert_static_path_to_url(first_photo_path)
+
         return PostcardResponse(
             id=postcard.id,
             template_id=postcard.template_id,
@@ -807,6 +846,7 @@ class PostcardService:
             scheduled_at=postcard.scheduled_at,
             sent_at=postcard.sent_at,
             postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
+            user_photo_url=user_photo_url,
             error_message=postcard.error_message,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
@@ -866,6 +906,7 @@ class PostcardService:
             scheduled_at=None,
             sent_at=None,
             postcard_path=None,
+            user_photo_url=None,
             error_message=None,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
