@@ -52,24 +52,27 @@ export default function PostcardItem({
   const relativeDate = (isoDate: string) => {
     const date = new Date(isoDate);
     const now = new Date();
-    const d1 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const diffTime = d2.getTime() - d1.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    const formatted = `${y}.${m}.${d}`;
-    if (diffDays === 0) return formatted;
-    if (diffDays === 1) return "1 day after";
-    if (diffDays < 30) return `${diffDays} days after`;
-    const diffMonths = Math.floor(diffDays / 30);
-    if (diffMonths === 1) return "1 month after";
-    if (diffMonths < 12) return `${diffMonths} months after`;
-    const diffYears = Math.floor(diffMonths / 12);
-    if (diffYears === 1) return "1 year after";
+    const diffTime = now.getTime() - date.getTime();
+    const diffSeconds = Math.floor(diffTime / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
 
-    return `${diffYears} years after`;
+    if (diffSeconds < 60) return "방금 전";
+    if (diffMinutes < 60) return `${diffMinutes}분 전`;
+    if (diffHours < 24) return `${diffHours}시간 전`;
+    if (diffDays === 1) return "하루 전";
+    if (diffDays < 7) return `${diffDays}일 전`;
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return weeks === 1 ? "일주일 전" : `${weeks}주 전`;
+    }
+    if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return months === 1 ? "한 달 전" : `${months}달 전`;
+    }
+    const years = Math.floor(diffDays / 365);
+    return years === 1 ? "1년 전" : `${years}년 전`;
   };
 
   return (
