@@ -26,14 +26,24 @@ body {
 }
 
 /* iOS Safari 링크 색상 및 하이라이트 제거 */
-a {
+a,
+a:link,
+a:visited,
+a:hover,
+a:active,
+a:-webkit-any-link {
   color: inherit;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 button {
+  color: inherit;
   -webkit-tap-highlight-color: transparent;
+}
+
+button * {
+  color: inherit;
 }
 
 /* iOS Safari 전화번호 자동 감지 방지 */
