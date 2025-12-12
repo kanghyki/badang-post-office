@@ -24,7 +24,11 @@ export default function Write() {
   const [emailLocalPart, setEmailLocalPart] = useState("");
   const [emailDomain, setEmailDomain] = useState("");
   const [senderName, setSenderName] = useState("");
-  const [scheduledAt, setScheduledAt] = useState("");
+  const [scheduledAt, setScheduledAt] = useState(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  });
   const [sendType, setSendType] = useState<"immediate" | "scheduled">(
     "immediate"
   );
