@@ -380,15 +380,15 @@ class PostcardService:
         
         Args:
             user_id: 사용자 ID
-            status_filter: 상태 필터 (writing, pending, sent, failed, cancelled)
-            
+            status_filter: 상태 필터 (writing, pending, sent, failed)
+
         Returns:
             엽서 목록
         """
         stmt = select(Postcard).where(Postcard.user_id == user_id)
-        
+
         if status_filter:
-            valid_statuses = ["writing", "pending", "sent", "failed", "cancelled"]
+            valid_statuses = ["writing", "pending", "sent", "failed"]
             if status_filter not in valid_statuses:
                 raise ValueError(f"status는 {', '.join(valid_statuses)} 중 하나여야 합니다.")
             stmt = stmt.where(Postcard.status == status_filter)
@@ -767,6 +767,9 @@ class PostcardService:
         """
         예약된 엽서 취소 (pending 상태만 가능)
 
+        예약을 취소하면 상태가 writing으로 되돌아가며,
+        사용자가 다시 수정하고 재발송할 수 있습니다.
+
         Args:
             postcard_id: 엽서 ID
             user_id: 사용자 ID (권한 체크용)
@@ -799,16 +802,20 @@ class PostcardService:
             scheduler = get_scheduler()
             scheduler.cancel_schedule(postcard_id)
 
-        # DB 상태 업데이트 (cancelled로 변경)
+        # DB 상태 업데이트 (writing으로 되돌림)
         stmt = (
             sql_update(Postcard)
             .where(Postcard.id == postcard_id)
-            .values(status="cancelled", updated_at=datetime.utcnow())
+            .values(
+                status="writing",
+                scheduled_at=None,  # 예약 시간도 제거
+                updated_at=datetime.utcnow()
+            )
         )
         await self.db.execute(stmt)
         await self.db.commit()
 
-        logger.info(f"Cancelled scheduled postcard {postcard_id}")
+        logger.info(f"Cancelled scheduled postcard {postcard_id}, reverted to writing state")
 
     async def send_postcard(self, postcard_id: str, user_id: str) -> PostcardResponse:
         """

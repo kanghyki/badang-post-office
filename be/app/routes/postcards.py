@@ -46,7 +46,7 @@ async def create_postcard(
 
 @router.get("", response_model=List[PostcardResponse])
 async def list_postcards(
-    status: Optional[str] = Query(None, description="상태 필터 (writing, pending, sent, failed, cancelled)"),
+    status: Optional[str] = Query(None, description="상태 필터 (writing, pending, sent, failed)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -201,7 +201,9 @@ async def cancel_postcard(
     """
     예약된 엽서 취소 (pending 상태만 가능)
 
-    예약을 취소하면 상태가 cancelled로 변경되며, 스케줄러에서 제거됩니다.
+    예약을 취소하면 상태가 writing으로 되돌아가며,
+    예약 시간이 제거되고 스케줄러에서 제거됩니다.
+    사용자는 다시 수정하고 재발송할 수 있습니다.
     """
     try:
         service = PostcardService(db)
