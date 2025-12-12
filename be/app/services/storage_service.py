@@ -145,3 +145,28 @@ class LocalStorageService:
                 raise ValueError(f"파일 복호화 실패: {e}")
 
         return file_bytes
+
+    async def delete_file(self, file_path: str) -> bool:
+        """
+        파일을 삭제합니다.
+
+        Args:
+            file_path: 삭제할 파일 경로
+
+        Returns:
+            bool: 삭제 성공 여부
+
+        Example:
+            success = await storage.delete_file("static/uploads/2025/12/08/uuid.jpg")
+        """
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                return True
+            return False
+        except Exception as e:
+            # 삭제 실패를 로깅 (디버깅 및 모니터링용)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Failed to delete file {file_path}: {str(e)}")
+            return False

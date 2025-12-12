@@ -166,13 +166,42 @@ async def update_postcard(
 
 
 @router.delete("/{postcard_id}", status_code=204)
+async def delete_postcard(
+    postcard_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    엽서 삭제 (DB에서 완전히 제거)
+    """
+    try:
+        service = PostcardService(db)
+        await service.delete_postcard(postcard_id=postcard_id, user_id=current_user.id)
+        return None
+    except ValueError as e:
+        error_msg = str(e)
+        if "찾을 수 없습니다" in error_msg:
+            raise HTTPException(status_code=404, detail=error_msg)
+        else:
+            raise HTTPException(status_code=400, detail=error_msg)
+    except Exception as e:
+        logger.error(f"Failed to delete postcard {postcard_id}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="엽서 삭제 중 오류가 발생했습니다."
+        )
+
+
+@router.post("/{postcard_id}/cancel", status_code=204)
 async def cancel_postcard(
     postcard_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 취소 또는 삭제 (writing 또는 pending 상태만 가능)
+    예약된 엽서 취소 (pending 상태만 가능)
+
+    예약을 취소하면 상태가 cancelled로 변경되며, 스케줄러에서 제거됩니다.
     """
     try:
         service = PostcardService(db)

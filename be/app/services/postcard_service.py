@@ -697,20 +697,25 @@ class PostcardService:
             updated_at=postcard.updated_at
         )
 
-    async def cancel_postcard(self, postcard_id: str, user_id: str) -> None:
+    async def delete_postcard(self, postcard_id: str, user_id: str) -> None:
         """
-        엽서 취소 (writing 또는 pending 상태만 가능)
-        
+        엽서 삭제 (DB에서 완전히 제거)
+
+        관련된 모든 리소스를 삭제합니다:
+        - 스케줄러에서 제거 (예약된 경우)
+        - 사용자 업로드 사진 파일 삭제
+        - 생성된 엽서 이미지 파일 삭제
+        - DB 레코드 삭제
+
         Args:
             postcard_id: 엽서 ID
             user_id: 사용자 ID (권한 체크용)
-            
+
         Raises:
-            ValueError: 엽서를 찾을 수 없거나 취소 불가능한 상태인 경우
+            ValueError: 엽서를 찾을 수 없는 경우
         """
-        from datetime import datetime
-        from sqlalchemy import update as sql_update
-        
+        from sqlalchemy import delete as sql_delete
+
         # 엽서 조회 및 권한 체크
         stmt = select(Postcard).where(
             and_(
@@ -720,20 +725,81 @@ class PostcardService:
         )
         result = await self.db.execute(stmt)
         postcard = result.scalar_one_or_none()
-        
+
         if not postcard:
             raise ValueError("엽서를 찾을 수 없습니다.")
 
-        if postcard.status not in ["writing", "pending"]:
-            raise ValueError(f"writing 또는 pending 상태의 엽서만 취소/삭제 가능합니다. (현재 상태: {postcard.status})")
-        
-        # 스케줄러에서 제거 (예약된 경우)
+        # 1. 스케줄러에서 제거 (예약된 경우)
+        if postcard.scheduled_at and postcard.status == "pending":
+            from app.scheduler_instance import get_scheduler
+            scheduler = get_scheduler()
+            scheduler.cancel_schedule(postcard_id)
+            logger.info(f"Removed postcard {postcard_id} from scheduler")
+
+        # 2. 사용자 업로드 사진 삭제
+        if postcard.user_photo_paths:
+            for photo_id, photo_path in postcard.user_photo_paths.items():
+                deleted = await self.storage.delete_file(photo_path)
+                if deleted:
+                    logger.info(f"Deleted user photo: {photo_path}")
+                else:
+                    logger.warning(f"Failed to delete user photo or file not found: {photo_path}")
+
+        # 3. 생성된 엽서 이미지 삭제
+        if postcard.postcard_image_path:
+            deleted = await self.storage.delete_file(postcard.postcard_image_path)
+            if deleted:
+                logger.info(f"Deleted postcard image: {postcard.postcard_image_path}")
+            else:
+                logger.warning(f"Failed to delete postcard image or file not found: {postcard.postcard_image_path}")
+
+        # 4. DB에서 완전히 삭제
+        stmt = (
+            sql_delete(Postcard)
+            .where(Postcard.id == postcard_id)
+        )
+        await self.db.execute(stmt)
+        await self.db.commit()
+
+        logger.info(f"Deleted postcard {postcard_id} from database")
+
+    async def cancel_postcard(self, postcard_id: str, user_id: str) -> None:
+        """
+        예약된 엽서 취소 (pending 상태만 가능)
+
+        Args:
+            postcard_id: 엽서 ID
+            user_id: 사용자 ID (권한 체크용)
+
+        Raises:
+            ValueError: 엽서를 찾을 수 없거나 취소 불가능한 상태인 경우
+        """
+        from datetime import datetime
+        from sqlalchemy import update as sql_update
+
+        # 엽서 조회 및 권한 체크
+        stmt = select(Postcard).where(
+            and_(
+                Postcard.id == postcard_id,
+                Postcard.user_id == user_id
+            )
+        )
+        result = await self.db.execute(stmt)
+        postcard = result.scalar_one_or_none()
+
+        if not postcard:
+            raise ValueError("엽서를 찾을 수 없습니다.")
+
+        if postcard.status != "pending":
+            raise ValueError(f"pending 상태의 예약된 엽서만 취소 가능합니다. (현재 상태: {postcard.status})")
+
+        # 스케줄러에서 제거
         if postcard.scheduled_at:
             from app.scheduler_instance import get_scheduler
             scheduler = get_scheduler()
             scheduler.cancel_schedule(postcard_id)
-        
-        # DB 상태 업데이트
+
+        # DB 상태 업데이트 (cancelled로 변경)
         stmt = (
             sql_update(Postcard)
             .where(Postcard.id == postcard_id)
@@ -741,8 +807,8 @@ class PostcardService:
         )
         await self.db.execute(stmt)
         await self.db.commit()
-        
-        logger.info(f"Cancelled postcard {postcard_id}")
+
+        logger.info(f"Cancelled scheduled postcard {postcard_id}")
 
     async def send_postcard(self, postcard_id: str, user_id: str) -> PostcardResponse:
         """
