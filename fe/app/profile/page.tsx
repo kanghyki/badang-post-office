@@ -142,9 +142,7 @@ export default function Profile() {
           />
         </div>
         <div className="container">
-          <main className={styles.profileMain}>
-            <div className={styles.loading}>로딩 중...</div>
-          </main>
+          <main className={styles.profileMain}></main>
         </div>
       </>
     );

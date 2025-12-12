@@ -162,9 +162,7 @@ export default function List() {
             onDeleteAccount={handleDeleteAccount}
           />
         </div>
-        <div className="container">
-          <div style={{ textAlign: "center", padding: "50px" }}>로딩 중...</div>
-        </div>
+        <div className="container"></div>
       </>
     );
   }
