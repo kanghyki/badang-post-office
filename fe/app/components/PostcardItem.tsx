@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 interface PostcardItemProps {
   data: PostcardResponse;
   index: number;
+  onCancel?: (id: string) => void;
   onDelete?: (id: string) => void;
   onClick?: (data: PostcardResponse) => void;
 }
@@ -18,12 +19,12 @@ const STATUS_LABELS: Record<string, string> = {
   pending: "예약됨",
   sent: "발송완료",
   failed: "실패",
-  cancelled: "취소됨",
 };
 
 export default function PostcardItem({
   data,
   index,
+  onCancel,
   onDelete,
   onClick,
 }: PostcardItemProps) {
@@ -49,6 +50,13 @@ export default function PostcardItem({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isDropdownOpen]);
+
+  const handleCancel = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDropdownOpen(false);
+    onCancel?.(data.id);
+  };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -130,26 +138,34 @@ export default function PostcardItem({
             <div className={styles.writeDate}>
               {relativeDate(data.created_at)}
             </div>
-            {(data.status === "writing" || data.status === "pending") && (
-              <div className={styles.menuWrapper} ref={dropdownRef}>
-                <button onClick={handleMenuToggle} className={styles.menuBtn}>
-                  <FaEllipsisV />
-                </button>
-                {isDropdownOpen && (
-                  <div className={styles.dropdown}>
+            <div className={styles.menuWrapper} ref={dropdownRef}>
+              <button onClick={handleMenuToggle} className={styles.menuBtn}>
+                <FaEllipsisV />
+              </button>
+              {isDropdownOpen && (
+                <div className={styles.dropdown}>
+                  {(data.status === "writing" || data.status === "pending") && (
                     <button onClick={handleEdit} className={styles.dropdownItem}>
                       수정
                     </button>
+                  )}
+                  {data.status === "pending" && (
                     <button
-                      onClick={handleDelete}
-                      className={`${styles.dropdownItem} ${styles.danger}`}
+                      onClick={handleCancel}
+                      className={`${styles.dropdownItem} ${styles.warning}`}
                     >
-                      삭제
+                      예약 취소
                     </button>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                  <button
+                    onClick={handleDelete}
+                    className={`${styles.dropdownItem} ${styles.danger}`}
+                  >
+                    삭제
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className={styles.recipient}>

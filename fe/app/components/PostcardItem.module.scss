@@ -145,6 +145,14 @@
           background-color: #f5f5f5;
         }
 
+        &.warning {
+          color: #ff9800;
+
+          &:hover {
+            background-color: #fff3e0;
+          }
+        }
+
         &.danger {
           color: #f44336;
 

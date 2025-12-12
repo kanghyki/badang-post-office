@@ -27,7 +27,6 @@ const STATUS_LABELS: Record<FilterType, string> = {
   pending: "예약됨",
   sent: "발송완료",
   failed: "실패",
-  cancelled: "취소됨",
 };
 
 export default function List() {
@@ -151,10 +150,40 @@ export default function List() {
     setSelectedPostcard(null);
   };
 
+  const handleCancel = async (id: string) => {
+    const confirmed = await showModal({
+      title: "예약 취소",
+      message: "예약된 발송을 취소하시겠습니까?\n취소된 엽서는 목록에서 확인할 수 있습니다.",
+      type: "confirm",
+      confirmText: "예약 취소",
+      cancelText: "돌아가기",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await postcardsApi.cancel(id);
+      // 현재 필터 상태를 유지하며 목록 새로고침
+      if (activeFilter === "all") {
+        fetchPostcards();
+      } else {
+        fetchPostcards(activeFilter);
+      }
+      showToast({ message: "예약이 취소되었습니다.", type: "success" });
+    } catch (error) {
+      console.error("예약 취소 실패:", error);
+      if (error instanceof Error) {
+        showToast({ message: `예약 취소 실패: ${error.message}`, type: "error" });
+      } else {
+        showToast({ message: "예약 취소 중 오류가 발생했습니다.", type: "error" });
+      }
+    }
+  };
+
   const handleDelete = async (id: string) => {
     const confirmed = await showModal({
       title: "엽서 삭제",
-      message: "정말로 삭제하시겠습니까?",
+      message: "이 엽서를 삭제하시겠습니까?\n삭제된 엽서는 복구할 수 없습니다.",
       type: "confirm",
       confirmText: "삭제",
       cancelText: "취소",
@@ -170,6 +199,7 @@ export default function List() {
       } else {
         fetchPostcards(activeFilter);
       }
+      showToast({ message: "엽서가 삭제되었습니다.", type: "success" });
     } catch (error) {
       console.error("삭제 실패:", error);
       if (error instanceof Error) {
@@ -266,6 +296,7 @@ export default function List() {
                   key={item.id}
                   data={item}
                   index={index}
+                  onCancel={handleCancel}
                   onDelete={handleDelete}
                   onClick={handlePostcardClick}
                 />

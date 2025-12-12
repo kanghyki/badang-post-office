@@ -31,6 +31,7 @@ export const POSTCARD_ENDPOINTS = {
   UPDATE: (id: string) => `/v1/postcards/${id}`,
   DELETE: (id: string) => `/v1/postcards/${id}`,
   SEND: (id: string) => `/v1/postcards/${id}/send`,
+  CANCEL: (id: string) => `/v1/postcards/${id}/cancel`,
 } as const;
 
 /**

@@ -9,8 +9,7 @@ export type PostcardStatus =
   | "writing"
   | "pending"
   | "sent"
-  | "failed"
-  | "cancelled";
+  | "failed";
 
 export interface PostcardResponse {
   id: string;
@@ -116,6 +115,14 @@ export const postcardsApi = {
 
   delete: async (id: string): Promise<void> => {
     return apiClient.delete<void>(POSTCARD_ENDPOINTS.DELETE(id), true);
+  },
+
+  cancel: async (id: string): Promise<void> => {
+    return apiClient.post<void>(
+      POSTCARD_ENDPOINTS.CANCEL(id),
+      undefined,
+      true
+    );
   },
 
   translate: async (text: string): Promise<TranslationResponse> => {
