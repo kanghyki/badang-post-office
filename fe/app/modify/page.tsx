@@ -390,7 +390,7 @@ function ModifyContent() {
     }
   };
 
-  if (initialLoading) {
+  if (initialLoading || (loadingTemplates && !selectedTemplateId)) {
     return (
       <>
         <div className="hdrWrap">
