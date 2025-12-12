@@ -180,6 +180,50 @@
   flex-shrink: 0;
 }
 
+.emailDomainSelect {
+  flex: 1;
+  font-size: 1rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  min-width: 0;
+  cursor: pointer;
+  color: #333;
+  padding: 0;
+
+  &:focus {
+    outline: none;
+  }
+
+  option {
+    background: white;
+    color: #333;
+  }
+}
+
+.cancelCustomBtn {
+  background: transparent;
+  border: none;
+  color: #999;
+  font-size: 1.125rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    color: #ff6600;
+  }
+
+  &:focus {
+    outline: none;
+    color: #ff6600;
+  }
+}
+
 .textBox {
   display: flex;
   flex-direction: column;

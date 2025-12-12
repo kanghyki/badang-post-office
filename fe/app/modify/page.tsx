@@ -30,7 +30,12 @@ function ModifyContent() {
   const [recipientName, setRecipientName] = useState("");
   const [emailLocalPart, setEmailLocalPart] = useState("");
   const [emailDomain, setEmailDomain] = useState("");
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
   const [senderName, setSenderName] = useState("");
+
+  // 이메일 도메인 옵션
+  const emailDomains = ["gmail.com", "naver.com", "daum.net", "kakao.com"];
   const [scheduledAt, setScheduledAt] = useState("");
   const [sendType, setSendType] = useState<"immediate" | "scheduled">(
     "immediate"
@@ -46,6 +51,15 @@ function ModifyContent() {
   >({});
   const [selectedTemplateDetail, setSelectedTemplateDetail] =
     useState<TemplateDetailResponse | null>(null);
+
+  // 이메일 도메인 선택 처리
+  useEffect(() => {
+    if (selectedDomain === "custom") {
+      setEmailDomain(customDomain);
+    } else if (selectedDomain) {
+      setEmailDomain(selectedDomain);
+    }
+  }, [selectedDomain, customDomain]);
 
   // 입력값 변경 감지
   useEffect(() => {
@@ -190,6 +204,25 @@ function ModifyContent() {
           const [local, domain] = postcard.recipient_email.split("@");
           setEmailLocalPart(local || "");
           setEmailDomain(domain || "");
+
+          // 도메인이 목록에 있는지 확인하고 설정
+          const domainList = [
+            "gmail.com",
+            "naver.com",
+            "daum.net",
+            "kakao.com",
+            "hanmail.net",
+            "nate.com",
+            "outlook.com",
+            "yahoo.com",
+          ];
+
+          if (domain && domainList.includes(domain)) {
+            setSelectedDomain(domain);
+          } else if (domain) {
+            setSelectedDomain("custom");
+            setCustomDomain(domain);
+          }
         }
 
         setSenderName(postcard.sender_name || "");
@@ -607,14 +640,44 @@ function ModifyContent() {
                       required
                     />
                     <span className={styles.atSymbol}>@</span>
-                    <input
-                      type="text"
-                      value={emailDomain}
-                      onChange={(e) => setEmailDomain(e.target.value)}
-                      placeholder="example.com"
-                      className={styles.emailInput}
-                      required
-                    />
+                    {selectedDomain === "custom" ? (
+                      <>
+                        <input
+                          type="text"
+                          value={customDomain}
+                          onChange={(e) => setCustomDomain(e.target.value)}
+                          placeholder="example.com"
+                          className={styles.emailInput}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedDomain("");
+                            setCustomDomain("");
+                          }}
+                          className={styles.cancelCustomBtn}
+                          title="도메인 선택으로 돌아가기"
+                        >
+                          ✕
+                        </button>
+                      </>
+                    ) : (
+                      <select
+                        value={selectedDomain}
+                        onChange={(e) => setSelectedDomain(e.target.value)}
+                        className={styles.emailDomainSelect}
+                        required
+                      >
+                        <option value="">도메인 선택</option>
+                        {emailDomains.map((domain) => (
+                          <option key={domain} value={domain}>
+                            {domain}
+                          </option>
+                        ))}
+                        <option value="custom">직접 입력</option>
+                      </select>
+                    )}
                   </div>
                 </label>
               </div>
