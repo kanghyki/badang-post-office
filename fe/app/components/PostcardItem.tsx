@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaEllipsisV } from "react-icons/fa";
 import styles from "./PostcardItem.module.scss";
 import { PostcardResponse } from "@/lib/api/postcards";
 import { ROUTES } from "@/lib/constants/urls";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface PostcardItemProps {
   data: PostcardResponse;
@@ -25,10 +27,46 @@ export default function PostcardItem({
   onDelete,
   onClick,
 }: PostcardItemProps) {
+  const router = useRouter();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsDropdownOpen(false);
     onDelete?.(data.id);
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDropdownOpen(false);
+    router.push(ROUTES.MODIFY(data.id));
+  };
+
+  const handleMenuToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   const handleClick = () => {
@@ -91,17 +129,25 @@ export default function PostcardItem({
               {relativeDate(data.created_at)}
             </div>
             {(data.status === "writing" || data.status === "pending") && (
-              <div className={styles.actionButtons}>
-                <Link
-                  href={ROUTES.MODIFY(data.id)}
-                  className={styles.iconBtn}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <FaEdit />
-                </Link>
-                <button onClick={handleDelete} className={styles.iconBtn}>
-                  <FaTrashAlt />
+              <div className={styles.menuWrapper} ref={dropdownRef}>
+                <button onClick={handleMenuToggle} className={styles.menuBtn}>
+                  <FaEllipsisV />
                 </button>
+                {isDropdownOpen && (
+                  <div className={styles.dropdown}>
+                    <button onClick={handleEdit} className={styles.dropdownItem}>
+                      <FaEdit />
+                      <span>수정</span>
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      className={`${styles.dropdownItem} ${styles.danger}`}
+                    >
+                      <FaTrashAlt />
+                      <span>삭제</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
