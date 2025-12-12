@@ -26,6 +26,9 @@ function ModifyContent() {
   const [emailDomain, setEmailDomain] = useState("");
   const [senderName, setSenderName] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
+  const [sendType, setSendType] = useState<"immediate" | "scheduled">(
+    "immediate"
+  );
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -117,6 +120,9 @@ function ModifyContent() {
             .toISOString()
             .slice(0, 16);
           setScheduledAt(localDateTime);
+          setSendType("scheduled");
+        } else {
+          setSendType("immediate");
         }
 
         if (postcard.postcard_path) {
@@ -205,9 +211,10 @@ function ModifyContent() {
         recipient_email: recipientEmail,
         recipient_name: recipientName,
         sender_name: senderName,
-        scheduled_at: scheduledAt
-          ? new Date(scheduledAt).toISOString()
-          : undefined,
+        scheduled_at:
+          sendType === "scheduled" && scheduledAt
+            ? new Date(scheduledAt).toISOString()
+            : undefined,
         image: image || undefined,
       });
 
@@ -257,6 +264,12 @@ function ModifyContent() {
       return;
     }
 
+    // 예약 발송 시 날짜 validation
+    if (sendType === "scheduled" && !scheduledAt) {
+      showToast({ message: "발송 일시를 선택해주세요.", type: "error" });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -269,9 +282,10 @@ function ModifyContent() {
         recipient_email: recipientEmail,
         recipient_name: recipientName,
         sender_name: senderName,
-        scheduled_at: scheduledAt
-          ? new Date(scheduledAt).toISOString()
-          : undefined,
+        scheduled_at:
+          sendType === "scheduled" && scheduledAt
+            ? new Date(scheduledAt).toISOString()
+            : undefined,
         image: image || undefined,
       });
 
@@ -354,9 +368,12 @@ function ModifyContent() {
                     id="imageInput"
                   />
                   <label htmlFor="imageInput" className={styles.fileLabel}>
-                    <span className={styles.uploadIcon}>📷</span>
-                    <span className={styles.uploadText}>사진을 선택해주세요</span>
-                    <span className={styles.uploadHint}>클릭하여 사진 업로드</span>
+                    <span className={styles.uploadText}>
+                      사진을 선택해주세요
+                    </span>
+                    <span className={styles.uploadHint}>
+                      클릭하여 사진 업로드
+                    </span>
                   </label>
                 </div>
               ) : (
@@ -389,9 +406,7 @@ function ModifyContent() {
                       </svg>
                     </button>
                   </div>
-                  {image && (
-                    <p className={styles.imageName}>{image.name}</p>
-                  )}
+                  {image && <p className={styles.imageName}>{image.name}</p>}
                 </div>
               )}
             </div>
@@ -456,22 +471,73 @@ function ModifyContent() {
               </div>
             </div>
 
-            {/* 발송 시간 섹션 */}
+            {/* 발송 방식 섹션 */}
             <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>발송 예약</h3>
-              <div className={styles.inputGroup}>
-                <label className={styles.inputLabel}>
-                  <span className={styles.icon}>📅</span>
+              <h3 className={styles.sectionTitle}>전달 시간</h3>
+
+              <div className={styles.sendTypeOptions}>
+                <label
+                  className={`${styles.sendTypeOption} ${
+                    sendType === "immediate" ? styles.active : ""
+                  }`}
+                >
                   <input
-                    id="scheduled_at"
-                    type="datetime-local"
-                    value={scheduledAt}
-                    onChange={(e) => setScheduledAt(e.target.value)}
-                    className={styles.input}
-                    required
+                    type="radio"
+                    name="sendType"
+                    value="immediate"
+                    checked={sendType === "immediate"}
+                    onChange={(e) => setSendType(e.target.value as "immediate")}
+                    className={styles.radioInput}
                   />
+                  <div className={styles.optionContent}>
+                    <div className={styles.optionText}>
+                      <div className={styles.optionTitle}>바로 전달하기</div>
+                      <div className={styles.optionDescription}>
+                        접수 즉시 전달
+                      </div>
+                    </div>
+                  </div>
+                </label>
+
+                <label
+                  className={`${styles.sendTypeOption} ${
+                    sendType === "scheduled" ? styles.active : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="sendType"
+                    value="scheduled"
+                    checked={sendType === "scheduled"}
+                    onChange={(e) => setSendType(e.target.value as "scheduled")}
+                    className={styles.radioInput}
+                  />
+                  <div className={styles.optionContent}>
+                    <div className={styles.optionText}>
+                      <div className={styles.optionTitle}>예약 전달하기</div>
+                      <div className={styles.optionDescription}>
+                        날짜와 시간 선택
+                      </div>
+                    </div>
+                  </div>
                 </label>
               </div>
+
+              {sendType === "scheduled" && (
+                <div className={styles.scheduledDateWrapper}>
+                  <label className={styles.dateInputLabel}>
+                    <span className={styles.dateLabel}>발송 일시</span>
+                    <input
+                      id="scheduled_at"
+                      type="datetime-local"
+                      value={scheduledAt}
+                      onChange={(e) => setScheduledAt(e.target.value)}
+                      className={styles.dateInput}
+                      required
+                    />
+                  </label>
+                </div>
+              )}
             </div>
           </form>
 
