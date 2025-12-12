@@ -8,6 +8,7 @@ interface PostcardItemProps {
   data: PostcardResponse;
   index: number;
   onDelete?: (id: string) => void;
+  onClick?: (data: PostcardResponse) => void;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -22,10 +23,16 @@ export default function PostcardItem({
   data,
   index,
   onDelete,
+  onClick,
 }: PostcardItemProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     onDelete?.(data.id);
+  };
+
+  const handleClick = () => {
+    onClick?.(data);
   };
 
   const formatDate = (isoDate: string) => {
@@ -66,7 +73,7 @@ export default function PostcardItem({
   };
 
   return (
-    <div className={styles.postcardItem}>
+    <div className={styles.postcardItem} onClick={handleClick}>
       <div className={styles.listBullet}>{index + 1}</div>
 
       <div className={styles.listBox}>
@@ -82,7 +89,11 @@ export default function PostcardItem({
             </div>
             {(data.status === "writing" || data.status === "pending") && (
               <div className={styles.actionButtons}>
-                <Link href={ROUTES.MODIFY(data.id)} className={styles.iconBtn}>
+                <Link
+                  href={ROUTES.MODIFY(data.id)}
+                  className={styles.iconBtn}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <FaEdit />
                 </Link>
                 <button onClick={handleDelete} className={styles.iconBtn}>

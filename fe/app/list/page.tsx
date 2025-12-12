@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Header from "@/app/components/Header";
 import PostcardItem from "@/app/components/PostcardItem";
+import PostcardImageModal from "@/app/components/PostcardImageModal";
 import styles from "./list.module.scss";
 import { useEffect, useState } from "react";
 import {
@@ -37,6 +38,9 @@ export default function List() {
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [userName, setUserName] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPostcard, setSelectedPostcard] =
+    useState<PostcardResponse | null>(null);
 
   const fetchPostcards = async (status?: PostcardStatus) => {
     try {
@@ -119,6 +123,16 @@ export default function List() {
 
   const handleFilterChange = (filter: FilterType) => {
     setActiveFilter(filter);
+  };
+
+  const handlePostcardClick = (postcard: PostcardResponse) => {
+    setSelectedPostcard(postcard);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedPostcard(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -235,6 +249,7 @@ export default function List() {
                   data={item}
                   index={index}
                   onDelete={handleDelete}
+                  onClick={handlePostcardClick}
                 />
               ))
             )}
@@ -250,6 +265,12 @@ export default function List() {
           </div>
         </main>
       </div>
+
+      <PostcardImageModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        postcardPath={selectedPostcard?.postcard_path || null}
+      />
     </>
   );
 }
