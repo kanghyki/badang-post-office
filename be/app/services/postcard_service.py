@@ -488,11 +488,12 @@ class PostcardService:
         recipient_email: Optional[str] = None,
         recipient_name: Optional[str] = None,
         sender_name: Optional[str] = None,
+        template_id: Optional[str] = None,
         scheduled_at: Optional[str] = None
     ) -> PostcardResponse:
         """
         엽서 수정 (writing 또는 pending 상태만 가능)
-        
+
         Args:
             postcard_id: 엽서 ID
             user_id: 사용자 ID (권한 체크용)
@@ -501,11 +502,12 @@ class PostcardService:
             recipient_email: 수신자 이메일
             recipient_name: 수신자 이름
             sender_name: 발신자 이름
+            template_id: 새로운 템플릿 ID
             scheduled_at: 발송 예정 시간 (ISO 8601 형식)
-            
+
         Returns:
             수정된 엽서 정보
-            
+
         Raises:
             ValueError: 엽서를 찾을 수 없거나 수정 불가능한 상태인 경우
         """
@@ -531,10 +533,29 @@ class PostcardService:
         # 업데이트할 필드
         from sqlalchemy import update as sql_update
         update_values = {"updated_at": datetime.utcnow()}
-        
+
+        # 템플릿 변경 처리
+        if template_id:
+            # 템플릿 존재 여부 확인
+            new_template = template_service.get_template_by_id(template_id)
+            if not new_template:
+                raise ValueError(f"템플릿 ID '{template_id}'를 찾을 수 없습니다.")
+
+            update_values["template_id"] = template_id
+            logger.info(f"Template changed from {postcard.template_id} to {template_id}")
+
+            # 템플릿 변경 시 기존 데이터 초기화 (선택 사항)
+            # 사용자가 새 템플릿에 맞춰 다시 입력해야 함
+            if postcard.template_id != template_id:
+                # 기존 텍스트와 이미지 경로는 유지하되, 새 템플릿에 맞춰 재생성 필요
+                # postcard_image_path는 재생성 시 자동으로 업데이트됨
+                logger.info(f"Template changed - postcard image will be regenerated")
+
         # 이미지 업로드 처리
         if image_bytes:
-            template = template_service.get_template_by_id(postcard.template_id)
+            # 새 템플릿 ID가 있으면 사용, 없으면 기존 템플릿 사용
+            current_template_id = template_id if template_id else postcard.template_id
+            template = template_service.get_template_by_id(current_template_id)
             if template:
                 target_photo_id = PostcardService._map_simple_photo(template)
                 logger.info(f"Target photo_id for user image: {target_photo_id}")
@@ -557,7 +578,9 @@ class PostcardService:
         
         # 텍스트 수정 시 번역 수행
         if text:
-            template = template_service.get_template_by_id(postcard.template_id)
+            # 새 템플릿 ID가 있으면 사용, 없으면 기존 템플릿 사용
+            current_template_id = template_id if template_id else postcard.template_id
+            template = template_service.get_template_by_id(current_template_id)
             if template:
                 # 원본 텍스트 매핑
                 original_texts = PostcardService._map_simple_text(template, text)
@@ -590,9 +613,11 @@ class PostcardService:
         if sender_name is not None:
             update_values["sender_name"] = sender_name
         
-        # 엽서 이미지 생성 (텍스트 또는 이미지 변경 시)
-        if text or image_bytes:
-            template = template_service.get_template_by_id(postcard.template_id)
+        # 엽서 이미지 생성 (텍스트, 이미지, 템플릿 변경 시)
+        if text or image_bytes or template_id:
+            # 새 템플릿 ID가 있으면 사용, 없으면 기존 템플릿 사용
+            current_template_id = update_values.get("template_id") or postcard.template_id
+            template = template_service.get_template_by_id(current_template_id)
             if template:
                 # 최신 텍스트 사용
                 texts = update_values.get("text_contents") or postcard.text_contents
@@ -610,7 +635,7 @@ class PostcardService:
 
                     # 엽서 이미지 생성 (임시 레코드)
                     postcard_result = await self.create_postcard(
-                        template_id=postcard.template_id,
+                        template_id=current_template_id,
                         texts=texts,
                         photos=photos if photos else None,
                         sender_name=update_values.get("sender_name") or postcard.sender_name,

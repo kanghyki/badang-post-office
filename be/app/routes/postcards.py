@@ -111,6 +111,7 @@ async def update_postcard(
     recipient_email: Optional[str] = Form(None, description="새로운 수신자 이메일"),
     recipient_name: Optional[str] = Form(None, description="새로운 수신자 이름"),
     sender_name: Optional[str] = Form(None, description="새로운 발신자 이름"),
+    template_id: Optional[str] = Form(None, description="새로운 템플릿 ID"),
     image: Optional[UploadFile] = File(None, description="사용자 사진 (선택)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -143,6 +144,7 @@ async def update_postcard(
             recipient_email=recipient_email,
             recipient_name=recipient_name,
             sender_name=sender_name,
+            template_id=template_id,
             scheduled_at=scheduled_at
         )
         
