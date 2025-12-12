@@ -37,16 +37,14 @@
     }
 
     .logoText {
-      font-family: "YeogiOttaeJalnan";
+      font-family: "YeogiOttaeJalnan", sans-serif;
       font-size: 1rem;
       font-weight: 700;
       color: #f61;
       transition: color 0.2s ease;
       white-space: nowrap;
-
-      @media (max-width: 768px) {
-        display: none;
-      }
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
   }
 

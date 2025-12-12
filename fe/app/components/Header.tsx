@@ -59,7 +59,7 @@ export default function Header({
   };
 
   const handleLogoClick = () => {
-    router.push(ROUTES.HOME);
+    router.push(ROUTES.MAIN);
   };
 
   return (
@@ -75,7 +75,6 @@ export default function Header({
         />
         <span className={styles.logoText}>바당우체국</span>
       </button>
-      <h2 className={styles.pageTitle}>{title}</h2>
       {showUserMenu && (
         <div className={styles.userMenuWrapper} ref={dropdownRef}>
           <button

@@ -1,6 +1,5 @@
 import Image from "next/image";
 import styles from "./logoBox.module.scss";
-import Link from "next/link";
 
 interface LogoBoxProps {
   c_value: string;

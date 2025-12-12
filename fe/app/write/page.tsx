@@ -7,7 +7,7 @@ import Header from "@/app/components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/app/context/NotificationContext";
-import { ROUTES } from "@/lib/constants/urls";
+import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
 
 export default function Write() {
   useAuth(); // 인증 체크
@@ -15,6 +15,7 @@ export default function Write() {
   const { showToast, showModal } = useNotification();
   const [postcardId, setPostcardId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -94,7 +95,7 @@ export default function Write() {
       }
     }
 
-    setLoading(true);
+    setSaving(true);
 
     try {
       let currentPostcardId = postcardId;
@@ -140,7 +141,7 @@ export default function Write() {
         showToast({ message: "저장 중 오류가 발생했습니다.", type: "error" });
       }
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -368,21 +369,20 @@ export default function Write() {
                   router.push(ROUTES.LIST);
                 }
               }}
-              disabled={loading}
+              disabled={loading || saving}
             >
-              <span>←</span>
               <span>나가기</span>
             </button>
             <button
               className={styles.saveBtn}
               type="button"
               onClick={handleSave}
-              disabled={loading}
+              disabled={loading || saving}
             >
-              {loading ? (
+              {saving ? (
                 <>
-                  <span className={styles.spinner}></span>
-                  <span>저장 중...</span>
+                  <span className={styles.smallSpinner}></span>
+                  <span>저장 중</span>
                 </>
               ) : (
                 <span>임시저장</span>
@@ -392,7 +392,7 @@ export default function Write() {
               className={styles.sendBtn}
               type="submit"
               form="postcardForm"
-              disabled={loading}
+              disabled={loading || saving}
             >
               {loading ? (
                 <>

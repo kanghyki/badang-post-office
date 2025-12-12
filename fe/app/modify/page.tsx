@@ -7,7 +7,7 @@ import Header from "@/app/components/Header";
 import { postcardsApi } from "@/lib/api/postcards";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/app/context/NotificationContext";
-import { ROUTES } from "@/lib/constants/urls";
+import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
 
 function ModifyContent() {
   useAuth(); // 인증 체크
@@ -17,6 +17,7 @@ function ModifyContent() {
   const postcardId = searchParams.get("id");
 
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
@@ -119,7 +120,8 @@ function ModifyContent() {
         }
 
         if (postcard.postcard_path) {
-          setImagePreview(postcard.postcard_path);
+          const imagePath = `${API_BASE_URL}${postcard.postcard_path}`;
+          setImagePreview(imagePath);
         }
       } catch (error) {
         console.error("엽서 로드 실패:", error);
@@ -178,7 +180,7 @@ function ModifyContent() {
       }
     }
 
-    setLoading(true);
+    setSaving(true);
 
     try {
       // 이메일 주소 조합
@@ -213,7 +215,7 @@ function ModifyContent() {
         showToast({ message: "저장 중 오류가 발생했습니다.", type: "error" });
       }
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -453,21 +455,20 @@ function ModifyContent() {
                   router.push(ROUTES.LIST);
                 }
               }}
-              disabled={loading}
+              disabled={loading || saving}
             >
-              <span>←</span>
               <span>나가기</span>
             </button>
             <button
               className={styles.saveBtn}
               type="button"
               onClick={handleSave}
-              disabled={loading}
+              disabled={loading || saving}
             >
-              {loading ? (
+              {saving ? (
                 <>
-                  <span className={styles.spinner}></span>
-                  <span>저장 중...</span>
+                  <span className={styles.smallSpinner}></span>
+                  <span>저장 중</span>
                 </>
               ) : (
                 <span>임시저장</span>
@@ -477,7 +478,7 @@ function ModifyContent() {
               className={styles.sendBtn}
               type="submit"
               form="postcardForm"
-              disabled={loading}
+              disabled={loading || saving}
             >
               {loading ? (
                 <>
