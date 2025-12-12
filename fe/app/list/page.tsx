@@ -4,6 +4,7 @@ import Link from "next/link";
 import Header from "@/app/components/Header";
 import PostcardItem from "@/app/components/PostcardItem";
 import PostcardImageModal from "@/app/components/PostcardImageModal";
+import LoadingSkeleton from "@/app/components/LoadingSkeleton";
 import styles from "./list.module.scss";
 import { useEffect, useState } from "react";
 import {
@@ -34,7 +35,8 @@ export default function List() {
   const router = useRouter();
   const { showModal, showToast } = useNotification();
   const [postcards, setPostcards] = useState<PostcardResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [userName, setUserName] = useState<string>("");
@@ -42,9 +44,16 @@ export default function List() {
   const [selectedPostcard, setSelectedPostcard] =
     useState<PostcardResponse | null>(null);
 
-  const fetchPostcards = async (status?: PostcardStatus) => {
+  const fetchPostcards = async (
+    status?: PostcardStatus,
+    isInitial = false
+  ) => {
     try {
-      setLoading(true);
+      if (isInitial) {
+        setInitialLoading(true);
+      } else {
+        setFilterLoading(true);
+      }
       const data = await postcardsApi.getList(status);
       setPostcards(data);
     } catch (err) {
@@ -55,17 +64,24 @@ export default function List() {
         setError("엽서 목록을 불러올 수 없습니다.");
       }
     } finally {
-      setLoading(false);
+      if (isInitial) {
+        setInitialLoading(false);
+      } else {
+        setFilterLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    const isInitial = initialLoading;
     if (activeFilter === "all") {
-      fetchPostcards();
+      fetchPostcards(undefined, isInitial);
     } else {
-      fetchPostcards(activeFilter);
+      fetchPostcards(activeFilter, isInitial);
     }
-    loadUserProfile();
+    if (isInitial) {
+      loadUserProfile();
+    }
   }, [activeFilter]);
 
   const loadUserProfile = async () => {
@@ -164,7 +180,7 @@ export default function List() {
     }
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <>
         <div className="hdrWrap">
@@ -236,7 +252,9 @@ export default function List() {
         </div>
         <main className={styles.listMain}>
           <div className={styles.postcardBox}>
-            {postcards.length === 0 ? (
+            {filterLoading ? (
+              <LoadingSkeleton />
+            ) : postcards.length === 0 ? (
               <div className={styles.emptyState}>
                 <div className={styles.emptyText}>
                   아직 작성한 엽서가 없어요
