@@ -3,9 +3,10 @@
 import Link from "next/link";
 import styles from "./signup.module.scss";
 import Logo from "@/app/components/LogoBox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
+import { authUtils } from "@/lib/utils/auth";
 import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES } from "@/lib/constants/urls";
 
@@ -15,6 +16,13 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+
+  // 이미 로그인되어 있으면 홈으로 리다이렉트
+  useEffect(() => {
+    if (authUtils.getToken()) {
+      router.replace(ROUTES.MAIN);
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

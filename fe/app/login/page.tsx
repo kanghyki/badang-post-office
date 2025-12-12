@@ -18,14 +18,20 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [rememberEmail, setRememberEmail] = useState(false);
 
-  // 컴포넌트 마운트 시 저장된 이메일 불러오기
+  // 컴포넌트 마운트 시 로그인 상태 확인 및 저장된 이메일 불러오기
   useEffect(() => {
+    // 이미 로그인되어 있으면 홈으로 리다이렉트
+    if (authUtils.getToken()) {
+      router.replace(ROUTES.MAIN);
+      return;
+    }
+
     const savedEmail = localStorage.getItem("rememberedEmail");
     if (savedEmail) {
       setEmail(savedEmail);
       setRememberEmail(true);
     }
-  }, []);
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
