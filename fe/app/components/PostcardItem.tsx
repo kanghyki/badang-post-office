@@ -10,6 +10,14 @@ interface PostcardItemProps {
   onDelete?: (id: string) => void;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  writing: "작성중",
+  pending: "예약됨",
+  sent: "발송완료",
+  failed: "실패",
+  cancelled: "취소됨",
+};
+
 export default function PostcardItem({
   data,
   index,
@@ -56,14 +64,17 @@ export default function PostcardItem({
 
     return `${diffYears} years after`;
   };
+
   return (
     <div className={styles.postcardItem}>
       <div className={styles.listBullet}>{index + 1}</div>
 
       <div className={styles.listBox}>
         <div className={styles.postcardDate}>
-          <div className={styles.reservDate}>
-            <span>{getScheduledDateText()}</span>
+          <div className={styles.statusBadge} data-status={data.status}>
+            <span className={styles.statusLabel}>
+              {STATUS_LABELS[data.status]}
+            </span>
           </div>
           <div className={styles.dateRight}>
             <div className={styles.writeDate}>
