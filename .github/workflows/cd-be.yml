@@ -66,19 +66,14 @@ jobs:
               jeju-gtp-be:
                 container_name: jeju-gtp-be
                 image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_BE_TAGNAME }}
-                networks:
-                  - proxy-network
                 restart: unless-stopped
                 env_file:
                   - .env
+                ports:
+                  - "8000:8000"
                 volumes:
                   - ./static:/app/static
                   - ./data:/app/data
-
-            networks:
-              proxy-network:
-                name: proxy-network
-                external: true
 
             EOF
 
