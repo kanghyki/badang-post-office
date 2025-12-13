@@ -65,9 +65,14 @@ jobs:
               jeju-gtp-fe:
                 container_name: jeju-gtp-fe
                 image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_FE_TAGNAME }}
-                ports:
-                  - "3000:3000"
+                networks:
+                  - proxy-network
                 restart: unless-stopped
+
+            networks:
+              proxy-network:
+                name: proxy-network
+                external: true
             EOF
 
             echo "Start updated service"
