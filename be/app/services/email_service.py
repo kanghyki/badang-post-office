@@ -13,7 +13,6 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from pathlib import Path
 from app.config import settings
-from app.services.storage_service import LocalStorageService
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,6 @@ class EmailService:
         self.smtp_password = settings.smtp_password
         self.from_email = settings.smtp_from_email
         self.from_name = settings.smtp_from_name
-        self.storage = LocalStorageService()  # 스토리지 서비스 추가
 
     @staticmethod
     def _mask_email(email: str) -> str:
@@ -93,13 +91,13 @@ class EmailService:
             msg.attach(msg_alternative)
             msg_alternative.attach(MIMEText(html_body, 'html', 'utf-8'))
 
-            # 이미지 읽기 (암호화된 파일은 자동으로 복호화됨)
+            # 이미지 읽기
             path = Path(image_path)
             if not path.exists():
                 raise FileNotFoundError(f"이미지를 찾을 수 없습니다: {image_path}")
 
-            # storage.read_file 사용 (자동 복호화)
-            image_data = await self.storage.read_file(image_path)
+            with open(path, 'rb') as f:
+                image_data = f.read()
 
             # 인라인 이미지 추가 (HTML에서 cid:postcard_image로 참조)
             image = MIMEImage(image_data)

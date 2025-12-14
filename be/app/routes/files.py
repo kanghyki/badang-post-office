@@ -16,7 +16,6 @@ from sqlalchemy import select
 from app.database.database import get_db
 from app.database.models import User, Postcard
 from app.dependencies.auth import get_current_user, get_optional_user
-from app.utils.encryption import get_file_encryptor
 import logging
 
 router = APIRouter(prefix="/v1/files", tags=["Files"])
@@ -129,43 +128,6 @@ async def get_file(
         logger.warning(f"User {current_user.id} attempted unauthorized access to {relative_to_cwd}")
         raise HTTPException(status_code=403, detail="이 파일에 접근할 권한이 없습니다")
 
-    # uploads, generated 디렉토리는 복호화 필요 (암호화되어 저장됨)
-    if "uploads/" in file_path or "generated/" in file_path:
-        try:
-            file_encryptor = get_file_encryptor()
-
-            # 암호화된 파일 읽기
-            with open(requested_path, "rb") as f:
-                encrypted_bytes = f.read()
-
-            # 복호화
-            decrypted_bytes = file_encryptor.decrypt_file(encrypted_bytes)
-
-            # Content-Type 결정
-            file_extension = requested_path.suffix.lower()
-            media_type_map = {
-                ".jpg": "image/jpeg",
-                ".jpeg": "image/jpeg",
-                ".png": "image/png",
-                ".gif": "image/gif",
-                ".webp": "image/webp"
-            }
-            media_type = media_type_map.get(file_extension, "application/octet-stream")
-
-            # 복호화된 바이트 응답
-            return Response(
-                content=decrypted_bytes,
-                media_type=media_type,
-                headers={
-                    "Content-Disposition": f'inline; filename="{requested_path.name}"',
-                    "Cache-Control": "private, max-age=3600"  # 브라우저 캐싱 1시간
-                }
-            )
-        except Exception as e:
-            logger.error(f"File decryption failed for {relative_to_cwd}: {e}")
-            raise HTTPException(status_code=500, detail="파일을 읽는 중 오류가 발생했습니다")
-
-    # templates, generated는 평문이므로 기존대로 FileResponse 사용
     return FileResponse(
         path=str(requested_path),
         media_type="application/octet-stream",
