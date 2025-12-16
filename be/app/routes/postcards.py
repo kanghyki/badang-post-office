@@ -259,6 +259,17 @@ async def send_postcard(
         return await service.send_postcard(postcard_id=postcard_id, user_id=current_user.id)
     except ValueError as e:
         error_msg = str(e)
+
+        # 발송 제한 체크
+        if "발송 제한에 도달했습니다" in error_msg:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "message": error_msg,
+                    "error_code": "POSTCARD_LIMIT_EXCEEDED"
+                }
+            )
+
         if "찾을 수 없습니다" in error_msg:
             raise HTTPException(status_code=404, detail=error_msg)
         elif "이메일 발송에 실패했습니다" in error_msg:
