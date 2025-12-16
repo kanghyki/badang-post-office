@@ -3,6 +3,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    gcc \
+    g++ \
     libjpeg-dev \
     zlib1g-dev \
     libpng-dev \
