@@ -586,7 +586,7 @@ function ModifyContent() {
                   <textarea
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    placeholder="마음을 담아 메시지를 작성해주세요..."
+                    placeholder="메시지를 작성해주세요."
                     maxLength={120}
                     className={styles.textarea}
                     required
@@ -662,7 +662,7 @@ function ModifyContent() {
                     type="text"
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
-                    placeholder="이름을 입력해주세요"
+                    placeholder="~가"
                     className={styles.input}
                   />
                 </label>
@@ -679,7 +679,7 @@ function ModifyContent() {
                     type="text"
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="이름을 입력해주세요"
+                    placeholder="~에게"
                     className={styles.input}
                     required
                   />
@@ -694,7 +694,7 @@ function ModifyContent() {
                       type="text"
                       value={emailLocalPart}
                       onChange={(e) => setEmailLocalPart(e.target.value)}
-                      placeholder="이메일 아이디"
+                      placeholder="이메일"
                       className={styles.emailInput}
                       required
                     />
@@ -716,7 +716,7 @@ function ModifyContent() {
                             setCustomDomain("");
                           }}
                           className={styles.cancelCustomBtn}
-                          title="도메인 선택으로 돌아가기"
+                          title="이메일 선택으로 돌아가기"
                         >
                           ✕
                         </button>
@@ -728,7 +728,7 @@ function ModifyContent() {
                         className={styles.emailDomainSelect}
                         required
                       >
-                        <option value="">도메인 선택</option>
+                        <option value="">이메일</option>
                         {emailDomains.map((domain) => (
                           <option key={domain} value={domain}>
                             {domain}
@@ -762,7 +762,7 @@ function ModifyContent() {
                   />
                   <div className={styles.optionContent}>
                     <div className={styles.optionText}>
-                      <div className={styles.optionTitle}>바로 전달하기</div>
+                      <div className={styles.optionTitle}>바로 전달</div>
                       <div className={styles.optionDescription}>
                         접수 즉시 전달
                       </div>
@@ -785,7 +785,7 @@ function ModifyContent() {
                   />
                   <div className={styles.optionContent}>
                     <div className={styles.optionText}>
-                      <div className={styles.optionTitle}>예약 전달하기</div>
+                      <div className={styles.optionTitle}>예약 전달</div>
                       <div className={styles.optionDescription}>
                         날짜와 시간 선택
                       </div>

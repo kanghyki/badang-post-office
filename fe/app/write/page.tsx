@@ -196,116 +196,119 @@ export default function Write() {
   };
 
   // 임시 저장 (create + update 또는 update만 호출)
-  const handleSave = useCallback(async (isAutoSave = false) => {
-    // 이메일 validation
-    if (emailLocalPart || emailDomain) {
-      if (!emailLocalPart || !emailDomain) {
-        showToast({
-          message: "이메일 주소를 완성해주세요.",
-          type: "error",
-        });
-        return;
-      }
-      if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
-        showToast({
-          message: "유효한 이메일 형식이 아닙니다.",
-          type: "error",
-        });
-        return;
-      }
-      if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
-        showToast({
-          message: "유효한 도메인 형식이 아닙니다.",
-          type: "error",
-        });
-        return;
-      }
-    }
-
-    setSaving(true);
-
-    try {
-      let currentPostcardId = postcardId;
-
-      // postcardId가 없으면 먼저 생성
-      if (!currentPostcardId) {
-        const newPostcard = await postcardsApi.create(selectedTemplateId);
-        currentPostcardId = newPostcard.id;
-        setPostcardId(currentPostcardId);
-        console.log("엽서 생성 완료:", currentPostcardId);
-      }
-
-      // 이메일 주소 조합
-      const recipientEmail =
-        emailLocalPart && emailDomain
-          ? `${emailLocalPart}@${emailDomain}`
-          : undefined;
-
-      // 엽서 내용 업데이트
-      const updatedPostcard = await postcardsApi.update(currentPostcardId, {
-        template_id: selectedTemplateId,
-        text,
-        recipient_email: recipientEmail,
-        recipient_name: recipientName,
-        sender_name: senderName,
-        scheduled_at:
-          sendType === "scheduled" && scheduledAt
-            ? new Date(scheduledAt).toISOString()
-            : undefined,
-        image: image || undefined,
-      });
-
-      // 서버에서 번역된 텍스트를 미리보기에 표시
-      if (updatedPostcard.text) {
-        setTranslatedText(updatedPostcard.text);
-      }
-
-      // 사용자가 업로드한 사진이 서버에 있는 경우 미리보기 표시
-      if (!image && updatedPostcard.user_photo_url && !imagePreview) {
-        try {
-          const imageUrl = `${API_BASE_URL}${updatedPostcard.user_photo_url}`;
-          const blobUrl = await fetchImageWithAuth(imageUrl);
-          setImagePreview(blobUrl);
-        } catch (error) {
-          console.error("사용자 업로드 이미지 로드 실패:", error);
+  const handleSave = useCallback(
+    async (isAutoSave = false) => {
+      // 이메일 validation
+      if (emailLocalPart || emailDomain) {
+        if (!emailLocalPart || !emailDomain) {
+          showToast({
+            message: "이메일 주소를 완성해주세요.",
+            type: "error",
+          });
+          return;
+        }
+        if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
+          showToast({
+            message: "유효한 이메일 형식이 아닙니다.",
+            type: "error",
+          });
+          return;
+        }
+        if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
+          showToast({
+            message: "유효한 도메인 형식이 아닙니다.",
+            type: "error",
+          });
+          return;
         }
       }
 
-      setHasUnsavedChanges(false);
-      if (!isAutoSave) {
-        showToast({ message: "임시 저장되었습니다.", type: "success" });
-      }
-    } catch (error) {
-      console.error("저장 실패:", error);
-      if (!isAutoSave) {
-        if (error instanceof Error) {
-          showToast({
-            message: `저장 실패: ${error.message}`,
-            type: "error",
-          });
-        } else {
-          showToast({
-            message: "저장 중 오류가 발생했습니다.",
-            type: "error",
-          });
+      setSaving(true);
+
+      try {
+        let currentPostcardId = postcardId;
+
+        // postcardId가 없으면 먼저 생성
+        if (!currentPostcardId) {
+          const newPostcard = await postcardsApi.create(selectedTemplateId);
+          currentPostcardId = newPostcard.id;
+          setPostcardId(currentPostcardId);
+          console.log("엽서 생성 완료:", currentPostcardId);
         }
+
+        // 이메일 주소 조합
+        const recipientEmail =
+          emailLocalPart && emailDomain
+            ? `${emailLocalPart}@${emailDomain}`
+            : undefined;
+
+        // 엽서 내용 업데이트
+        const updatedPostcard = await postcardsApi.update(currentPostcardId, {
+          template_id: selectedTemplateId,
+          text,
+          recipient_email: recipientEmail,
+          recipient_name: recipientName,
+          sender_name: senderName,
+          scheduled_at:
+            sendType === "scheduled" && scheduledAt
+              ? new Date(scheduledAt).toISOString()
+              : undefined,
+          image: image || undefined,
+        });
+
+        // 서버에서 번역된 텍스트를 미리보기에 표시
+        if (updatedPostcard.text) {
+          setTranslatedText(updatedPostcard.text);
+        }
+
+        // 사용자가 업로드한 사진이 서버에 있는 경우 미리보기 표시
+        if (!image && updatedPostcard.user_photo_url && !imagePreview) {
+          try {
+            const imageUrl = `${API_BASE_URL}${updatedPostcard.user_photo_url}`;
+            const blobUrl = await fetchImageWithAuth(imageUrl);
+            setImagePreview(blobUrl);
+          } catch (error) {
+            console.error("사용자 업로드 이미지 로드 실패:", error);
+          }
+        }
+
+        setHasUnsavedChanges(false);
+        if (!isAutoSave) {
+          showToast({ message: "임시 저장되었습니다.", type: "success" });
+        }
+      } catch (error) {
+        console.error("저장 실패:", error);
+        if (!isAutoSave) {
+          if (error instanceof Error) {
+            showToast({
+              message: `저장 실패: ${error.message}`,
+              type: "error",
+            });
+          } else {
+            showToast({
+              message: "저장 중 오류가 발생했습니다.",
+              type: "error",
+            });
+          }
+        }
+      } finally {
+        setSaving(false);
       }
-    } finally {
-      setSaving(false);
-    }
-  }, [
-    postcardId,
-    selectedTemplateId,
-    text,
-    recipientName,
-    emailLocalPart,
-    emailDomain,
-    senderName,
-    sendType,
-    scheduledAt,
-    image,
-    showToast,
-  ]);
+    },
+    [
+      postcardId,
+      selectedTemplateId,
+      text,
+      recipientName,
+      emailLocalPart,
+      emailDomain,
+      senderName,
+      sendType,
+      scheduledAt,
+      image,
+      showToast,
+    ]
+  );
 
   // 디바운싱을 적용한 자동 저장
   useEffect(() => {
@@ -505,7 +508,7 @@ export default function Write() {
                   <textarea
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    placeholder="마음을 담아 메시지를 작성해주세요..."
+                    placeholder="메시지를 작성해주세요."
                     maxLength={120}
                     className={styles.textarea}
                     required
@@ -581,7 +584,7 @@ export default function Write() {
                     type="text"
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
-                    placeholder="이름을 입력해주세요"
+                    placeholder="~가"
                     className={styles.input}
                   />
                 </label>
@@ -598,7 +601,7 @@ export default function Write() {
                     type="text"
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="이름을 입력해주세요"
+                    placeholder="~에게"
                     className={styles.input}
                     required
                   />
@@ -613,7 +616,7 @@ export default function Write() {
                       type="text"
                       value={emailLocalPart}
                       onChange={(e) => setEmailLocalPart(e.target.value)}
-                      placeholder="이메일 아이디"
+                      placeholder="이메일"
                       className={styles.emailInput}
                       required
                     />
@@ -635,7 +638,7 @@ export default function Write() {
                             setCustomDomain("");
                           }}
                           className={styles.cancelCustomBtn}
-                          title="도메인 선택으로 돌아가기"
+                          title="이메일 선택으로 돌아가기"
                         >
                           ✕
                         </button>
@@ -647,7 +650,7 @@ export default function Write() {
                         className={styles.emailDomainSelect}
                         required
                       >
-                        <option value="">도메인 선택</option>
+                        <option value="">이메일</option>
                         {emailDomains.map((domain) => (
                           <option key={domain} value={domain}>
                             {domain}
@@ -681,7 +684,7 @@ export default function Write() {
                   />
                   <div className={styles.optionContent}>
                     <div className={styles.optionText}>
-                      <div className={styles.optionTitle}>바로 전달하기</div>
+                      <div className={styles.optionTitle}>바로 전달</div>
                       <div className={styles.optionDescription}>
                         접수 즉시 전달
                       </div>
@@ -704,7 +707,7 @@ export default function Write() {
                   />
                   <div className={styles.optionContent}>
                     <div className={styles.optionText}>
-                      <div className={styles.optionTitle}>예약 전달하기</div>
+                      <div className={styles.optionTitle}>예약 전달</div>
                       <div className={styles.optionDescription}>
                         날짜와 시간 선택
                       </div>
