@@ -4,11 +4,12 @@
 엽서 생성 및 예약 발송 엔드포인트를 제공합니다.
 """
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Query
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Query, BackgroundTasks
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_
 from app.database.database import get_db
-from app.database.models import User
+from app.database.models import User, Postcard
 from app.services.postcard_service import PostcardService
 from app.models.postcard import PostcardResponse
 from app.dependencies.auth import get_current_user
@@ -115,6 +116,7 @@ async def get_postcard(
 @router.patch("/{postcard_id}", response_model=PostcardResponse)
 async def update_postcard(
     postcard_id: str,
+    background_tasks: BackgroundTasks,
     scheduled_at: Optional[str] = Form(None, description="새로운 발송 예정 시간 (ISO 8601 형식)"),
     text: Optional[str] = Form(None, description="새로운 텍스트"),
     recipient_email: Optional[str] = Form(None, description="새로운 수신자 이메일"),
@@ -154,7 +156,8 @@ async def update_postcard(
             recipient_name=recipient_name,
             sender_name=sender_name,
             template_id=template_id,
-            scheduled_at=scheduled_at
+            scheduled_at=scheduled_at,
+            background_tasks=background_tasks
         )
         
     except ValueError as e:
@@ -235,6 +238,7 @@ async def cancel_postcard(
 @router.post("/{postcard_id}/send", response_model=PostcardResponse)
 async def send_postcard(
     postcard_id: str,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -242,7 +246,8 @@ async def send_postcard(
     엽서 발송 (writing 또는 pending 상태의 엽서만 가능)
 
     엽서 이미지가 자동으로 생성되고 발송됩니다.
-    - scheduled_at이 없으면: 즉시 발송 (이메일 발송 → sent 상태)
+    - scheduled_at이 없으면: 백그라운드에서 비동기 발송 (processing → sent 상태)
+      * 진행 상태는 SSE 엔드포인트 (/stream)로 실시간 확인 가능
     - scheduled_at이 설정되어 있으면: pending 상태로 변경 → 스케줄러 등록
 
     ⚠️ 이메일 인증이 필요합니다.
@@ -256,7 +261,11 @@ async def send_postcard(
 
     try:
         service = PostcardService(db)
-        return await service.send_postcard(postcard_id=postcard_id, user_id=current_user.id)
+        return await service.send_postcard(
+            postcard_id=postcard_id,
+            user_id=current_user.id,
+            background_tasks=background_tasks
+        )
     except ValueError as e:
         error_msg = str(e)
 
@@ -282,3 +291,70 @@ async def send_postcard(
             status_code=500,
             detail="엽서 발송 중 오류가 발생했습니다."
         )
+
+
+@router.get("/{postcard_id}/stream")
+async def stream_postcard_status(
+    postcard_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    엽서 변환 상태를 SSE로 실시간 스트리밍
+
+    클라이언트는 EventSource로 연결하여 변환 상태를 실시간으로 받습니다.
+    """
+    from fastapi.responses import StreamingResponse
+    from app.services.redis_service import redis_service
+    import json
+
+    # 엽서 소유권 확인
+    service = PostcardService(db)
+    stmt = select(Postcard).where(
+        and_(
+            Postcard.id == postcard_id,
+            Postcard.user_id == current_user.id
+        )
+    )
+    result = await db.execute(stmt)
+    postcard = result.scalar_one_or_none()
+
+    if not postcard:
+        raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
+
+    async def event_generator():
+        """SSE 이벤트 제너레이터"""
+        try:
+            # 현재 엽서 발송 상태 즉시 전송
+            current_status = postcard.status
+
+            # processing 상태가 아니면 초기 상태 전송하고 종료
+            if current_status != "processing":
+                if current_status == "sent":
+                    yield f"data: {json.dumps({'status': 'completed'})}\n\n"
+                elif current_status == "failed":
+                    yield f"data: {json.dumps({'status': 'failed', 'error': postcard.error_message or '발송 실패'})}\n\n"
+                return
+
+            # processing 상태: Redis Pub/Sub 구독하여 실시간 상태 전송
+            async for message in redis_service.subscribe(f"postcard:{postcard_id}"):
+                yield f"data: {message}\n\n"
+
+                # 완료/실패 시 연결 종료
+                data = json.loads(message)
+                if data.get("status") in ["completed", "failed"]:
+                    break
+
+        except Exception as e:
+            logger.error(f"SSE stream error: {str(e)}")
+            yield f"data: {json.dumps({'status': 'error', 'error': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Nginx 버퍼링 비활성화
+        }
+    )

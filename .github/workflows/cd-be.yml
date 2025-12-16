@@ -63,22 +63,63 @@ jobs:
             echo "Create docker-compose.yml file"
             cat > docker-compose.yml << 'EOF'
             services:
+              redis:
+                image: redis:7-alpine
+                container_name: jeju-redis
+                command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+                volumes:
+                  - redis-data:/data
+                healthcheck:
+                  test: ["CMD", "redis-cli", "ping"]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 5
+                  start_period: 10s
+                restart: unless-stopped
+                networks:
+                  - jeju-network
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+
               jeju-gtp-be:
                 container_name: jeju-gtp-be
                 image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_BE_TAGNAME }}
                 restart: unless-stopped
                 env_file:
                   - .env
+                environment:
+                  - REDIS_HOST=redis
+                  - REDIS_PORT=6379
+                  - REDIS_DB=0
                 networks:
                   - proxy-network
+                  - jeju-network
                 volumes:
                   - ./static:/app/static
                   - ./data:/app/data
+                depends_on:
+                  redis:
+                    condition: service_healthy
+                healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                  start_period: 40s
+
+            volumes:
+              redis-data:
+                driver: local
 
             networks:
               proxy-network:
                 name: proxy-network
                 external: true
+              jeju-network:
+                driver: bridge
 
             EOF
 

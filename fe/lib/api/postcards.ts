@@ -5,7 +5,20 @@ import {
   API_BASE_URL,
 } from "../constants/urls";
 
-export type PostcardStatus = "writing" | "pending" | "sent" | "failed";
+export type PostcardStatus =
+  | "writing"
+  | "pending"
+  | "processing"
+  | "sent"
+  | "failed";
+
+export type SendingStatus =
+  | "translating"
+  | "converting"
+  | "generating"
+  | "sending"
+  | "completed"
+  | "failed";
 
 export interface PostcardResponse {
   id: string;
@@ -20,6 +33,7 @@ export interface PostcardResponse {
   sent_at: string | null;
   postcard_path: string | null;
   user_photo_url: string | null;
+  jeju_photo_url: string | null;
   error_message: string | null;
   created_at: string;
   updated_at: string;
@@ -99,9 +113,11 @@ export const postcardsApi = {
       // detail이 객체인 경우 message 필드 추출
       let errorMessage: string;
       if (typeof errorData.detail === "object" && errorData.detail !== null) {
-        errorMessage = errorData.detail.message || JSON.stringify(errorData.detail);
+        errorMessage =
+          errorData.detail.message || JSON.stringify(errorData.detail);
       } else {
-        errorMessage = errorData.detail || errorData.message || `HTTP ${response.status}`;
+        errorMessage =
+          errorData.detail || errorData.message || `HTTP ${response.status}`;
       }
 
       throw new Error(errorMessage);

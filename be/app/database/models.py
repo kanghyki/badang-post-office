@@ -54,13 +54,16 @@ class Postcard(Base):
     sender_name = Column(String)
 
     # 발송 상태 및 스케줄링
-    status = Column(String, default="writing")  # writing, pending, sent, failed
+    status = Column(String, default="writing")  # writing, pending, processing, sent, failed
     scheduled_at = Column(DateTime)  # 발송 예정 시간 (NULL이면 즉시 발송)
     sent_at = Column(DateTime)  # 실제 발송 시간
 
     # 생성된 엽서 이미지
     postcard_image_path = Column(String)  # NULL이면 아직 생성 안됨
     error_message = Column(Text)  # 실패 시 오류 메시지
+
+    # 제주 스타일 이미지 변환
+    jeju_photo_paths = Column(JSON)  # {"photo_config_id": "jeju_path", ...}
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

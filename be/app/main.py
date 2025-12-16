@@ -45,6 +45,7 @@ security = HTTPBearer()
 os.makedirs("static/templates", exist_ok=True)
 os.makedirs("static/fonts", exist_ok=True)
 os.makedirs("static/uploads", exist_ok=True)
+os.makedirs("static/uploads/jeju", exist_ok=True)  # 제주 스타일 이미지 저장 디렉토리
 os.makedirs("static/generated", exist_ok=True)
 os.makedirs("data", exist_ok=True)
 
@@ -56,11 +57,21 @@ async def lifespan(app: FastAPI):
     On startup:
     - Create necessary directories
     - Initialize database tables
+    - Initialize Redis connection
     - Initialize scheduler and restore scheduled postcards
     """
     # Initialize database (Postcard table)
     await init_db()
     logger.info("✓ Database initialized")
+
+    # Initialize Redis connection
+    from app.services.redis_service import redis_service
+    try:
+        await redis_service.connect()
+        logger.info("✓ Redis connected")
+    except Exception as e:
+        logger.warning(f"⚠ Redis connection failed: {e}")
+        logger.warning("⚠ SSE (Server-Sent Events) will not work")
 
     # Initialize scheduler
     scheduler = init_scheduler()
@@ -73,6 +84,14 @@ async def lifespan(app: FastAPI):
     # 종료 시
     await shutdown_scheduler()
     logger.info("Scheduler shutdown completed")
+
+    # Redis 연결 종료
+    try:
+        await redis_service.close()
+        logger.info("Redis connection closed")
+    except:
+        pass
+
     logger.info("Application shutdown")
 
 

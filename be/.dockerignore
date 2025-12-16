@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Database (로컬 개발용)
+# data/*.db는 포함하되, 불필요한 파일 제외
+*.db-shm
+*.db-wal
+
+# Static files (업로드된 파일들은 제외)
+static/uploads/*
+static/generated/*
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Git
+.git/
+.gitignore
+
+# 기타
+*.md
+.env.example
+tests/

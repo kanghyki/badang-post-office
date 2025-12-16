@@ -69,11 +69,12 @@ class PostcardResponse(BaseModel):
     recipient_email: Optional[str] = None  # 빈 엽서 시 None
     recipient_name: Optional[str] = None
     sender_name: Optional[str] = None
-    status: Literal["writing", "pending", "sent", "failed"]
+    status: Literal["writing", "pending", "processing", "sent", "failed"]
     scheduled_at: Optional[datetime] = None  # NULL이면 즉시 발송
     sent_at: Optional[datetime] = None
     postcard_path: Optional[str] = None  # 생성된 엽서 이미지 경로
     user_photo_url: Optional[str] = None  # 사용자 업로드 사진 URL (첫 번째 사진)
+    jeju_photo_url: Optional[str] = None  # 제주 스타일 변환 이미지 URL
     error_message: Optional[str] = None
     created_at: datetime
     updated_at: datetime

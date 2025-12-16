@@ -55,6 +55,33 @@ class LocalStorageService:
 
         return file_path
 
+    async def save_jeju_photo(self, file_bytes: bytes, file_extension: str) -> str:
+        """
+        제주 스타일 변환 이미지를 로컬에 저장합니다.
+
+        Args:
+            file_bytes: 파일 바이너리 데이터
+            file_extension: 파일 확장자 (예: 'jpg', 'png')
+
+        Returns:
+            str: 저장된 파일 경로
+
+        Example:
+            path = await storage.save_jeju_photo(jeju_bytes, "jpg")
+            # 'static/uploads/jeju/2025/12/16/{uuid}.jpg'
+        """
+        date_path = datetime.now().strftime("%Y/%m/%d")
+        dir_path = f"{self.uploads_dir}/jeju/{date_path}"
+        os.makedirs(dir_path, exist_ok=True)
+
+        file_id = str(uuid.uuid4())
+        file_path = f"{dir_path}/{file_id}.{file_extension}"
+
+        with open(file_path, "wb") as f:
+            f.write(file_bytes)
+
+        return file_path
+
     async def save_generated_postcard(self, image: Image.Image) -> str:
         """
         생성된 엽서를 PNG로 로컬에 저장합니다.

@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     translation_top_p: float = 0.9
     translation_top_k: int = 40
 
+    # Redis (SSE용)
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_password: str = ""
+
     @property
     def origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",")]

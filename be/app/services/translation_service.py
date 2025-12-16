@@ -4,12 +4,15 @@
 싱글톤 패턴을 사용하여 모델을 한 번만 로드하고 재사용합니다.
 """
 import asyncio
+import logging
 import threading
 from typing import Literal, Optional
 
 from llama_cpp import Llama
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class JejumaTranslator:
@@ -26,7 +29,7 @@ You are a helpful assistant for translating between standard Korean and regional
 """
     
     def __init__(
-        self, 
+        self,
         model_path: str,
         n_ctx: int = 512,
         n_gpu_layers: int = 0,
@@ -43,7 +46,7 @@ You are a helpful assistant for translating between standard Korean and regional
             top_p: nucleus sampling threshold
             top_k: top-k sampling
         """
-        print(f"모델 로딩 중: {model_path}")
+        logger.info(f"모델 로딩 중: {model_path}")
         self.llm = Llama(
             model_path=model_path,
             n_ctx=n_ctx,
@@ -53,7 +56,7 @@ You are a helpful assistant for translating between standard Korean and regional
         self.temperature = temperature
         self.top_p = top_p
         self.top_k = top_k
-        print("모델 로딩 완료!")
+        logger.info("모델 로딩 완료!")
     
     def _generate(self, prompt: str, max_tokens: int = 256) -> str:
         """내부 추론 함수"""

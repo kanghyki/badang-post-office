@@ -33,6 +33,7 @@ export const POSTCARD_ENDPOINTS = {
   DELETE: (id: string) => `/v1/postcards/${id}`,
   SEND: (id: string) => `/v1/postcards/${id}/send`,
   CANCEL: (id: string) => `/v1/postcards/${id}/cancel`,
+  STREAM: (id: string) => `/v1/postcards/${id}/stream`,
 } as const;
 
 /**

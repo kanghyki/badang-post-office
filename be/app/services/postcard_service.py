@@ -157,12 +157,10 @@ class PostcardService:
 
             # 사용자 입력 본문만 번역
             try:
-                logger.info(f"Translating text for config_id={config_id}: {original_text[:50]}...")
                 translated_text = await translate_to_jeju_async(original_text)
                 translated_texts[config_id] = translated_text
-                logger.info(f"Translation success: {translated_text[:50]}...")
             except Exception as e:
-                logger.error(f"Translation failed for config_id={config_id}: {str(e)}")
+                logger.error(f"번역 실패 (원본 사용): {str(e)}")
                 # Fallback: 원본 사용
                 translated_texts[config_id] = original_text
 
@@ -216,7 +214,6 @@ class PostcardService:
         user_photo_temp_paths = {}
 
         if photos:
-            logger.info(f"Processing {len(photos)} user photos for template {template_id}")
             for config_id, photo_bytes in photos.items():
                 # 영구 저장
                 saved_path = await self.storage.save_user_photo(photo_bytes, "jpg")
@@ -229,15 +226,12 @@ class PostcardService:
                     with os.fdopen(temp_fd, "wb") as f:
                         f.write(photo_bytes)
                     user_photo_temp_paths[config_id] = temp_path
-                    logger.info(f"Saved user photo for config_id={config_id}: temp={temp_path}, saved={saved_path}")
                 except Exception as e:
                     # 파일 생성 실패 시 즉시 삭제 시도
                     os.close(temp_fd)
                     if os.path.exists(temp_path):
                         os.remove(temp_path)
                     raise
-        else:
-            logger.warning(f"No photos provided for postcard creation")
 
         # 3. PostcardMaker 초기화
         template_path = self.storage.get_template_image_path(
@@ -249,12 +243,9 @@ class PostcardService:
         maker.add_background_image(template_path, opacity=1.0)
 
         # 5. 이미지 영역 추가 (반복문)
-        logger.info(f"Template has {len(template.photo_configs)} photo configs")
         for photo_cfg in template.photo_configs:
             config_id = photo_cfg.id
-            logger.info(f"Processing photo_cfg: id={config_id}, available photos={list(user_photo_temp_paths.keys())}")
             if config_id in user_photo_temp_paths:
-                logger.info(f"Adding user photo to postcard: config_id={config_id}, path={user_photo_temp_paths[config_id]}")
                 maker.add_photo(
                     user_photo_temp_paths[config_id],
                     x=photo_cfg.x,
@@ -263,8 +254,6 @@ class PostcardService:
                     max_height=photo_cfg.max_height,
                     effects=photo_cfg.effects,  # 템플릿에 정의된 효과 적용
                 )
-            else:
-                logger.warning(f"No user photo found for photo_cfg id={config_id}")
 
         # 6. 텍스트 영역 추가 (반복문)
         for text_cfg in template.text_configs:
@@ -489,7 +478,8 @@ class PostcardService:
         recipient_name: Optional[str] = None,
         sender_name: Optional[str] = None,
         template_id: Optional[str] = None,
-        scheduled_at: Optional[str] = None
+        scheduled_at: Optional[str] = None,
+        background_tasks = None
     ) -> PostcardResponse:
         """
         엽서 수정 (writing 또는 pending 상태만 가능)
@@ -635,6 +625,13 @@ class PostcardService:
             if first_photo_path:
                 user_photo_url = convert_static_path_to_url(first_photo_path)
 
+        # 제주 스타일 이미지 경로를 URL로 변환 (첫 번째 사진만)
+        jeju_photo_url = None
+        if postcard.jeju_photo_paths:
+            first_jeju_path = next(iter(postcard.jeju_photo_paths.values()), None)
+            if first_jeju_path:
+                jeju_photo_url = convert_static_path_to_url(first_jeju_path)
+
         return PostcardResponse(
             id=postcard.id,
             template_id=postcard.template_id,
@@ -648,6 +645,7 @@ class PostcardService:
             sent_at=postcard.sent_at,
             postcard_path=convert_static_path_to_url(postcard.postcard_image_path),
             user_photo_url=user_photo_url,
+            jeju_photo_url=jeju_photo_url,
             error_message=postcard.error_message,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
@@ -804,23 +802,233 @@ class PostcardService:
         logger.info(f"User {user_id} postcard count: {count}/{limit}")
         return count
 
-    async def send_postcard(self, postcard_id: str, user_id: str) -> PostcardResponse:
+    async def _send_postcard_background(self, postcard_id: str, user_id: str):
+        """
+        엽서 발송 백그라운드 작업
+
+        각 단계마다 Redis로 진행 상태를 발행합니다:
+        - translating: 제주어 번역 중
+        - converting: 이미지 변환 중
+        - generating: 엽서 생성 중
+        - sending: 이메일 발송 중
+        - completed: 완료
+        - failed: 실패
+        """
+        from datetime import datetime
+        from sqlalchemy import update as sql_update
+        from app.services.email_service import EmailService
+        from app.services.redis_service import redis_service
+        import json
+
+        try:
+            # 엽서 조회
+            stmt = select(Postcard).where(Postcard.id == postcard_id)
+            result = await self.db.execute(stmt)
+            postcard = result.scalar_one_or_none()
+
+            if not postcard:
+                await redis_service.publish(
+                    f"postcard:{postcard_id}",
+                    json.dumps({"status": "failed", "error": "엽서를 찾을 수 없습니다."})
+                )
+                return
+
+            # 템플릿 조회
+            template = template_service.get_template_by_id(postcard.template_id)
+            if not template:
+                await redis_service.publish(
+                    f"postcard:{postcard_id}",
+                    json.dumps({"status": "failed", "error": "템플릿을 찾을 수 없습니다."})
+                )
+                return
+
+            # 1. 제주어 번역
+            await redis_service.publish(
+                f"postcard:{postcard_id}",
+                json.dumps({"status": "translating"})
+            )
+            logger.info(f"📝 제주어 번역 시작: {postcard_id}")
+
+            translated_texts = await PostcardService._translate_user_text_to_jeju(
+                template,
+                postcard.original_text_contents
+            )
+
+            stmt = (
+                sql_update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(text_contents=translated_texts)
+            )
+            await self.db.execute(stmt)
+            await self.db.commit()
+            await self.db.refresh(postcard)
+            logger.info(f"✅ 제주어 번역 완료: {postcard_id}")
+
+            # 2. 제주 스타일 이미지 변환
+            if postcard.user_photo_paths and not postcard.jeju_photo_paths:
+                await redis_service.publish(
+                    f"postcard:{postcard_id}",
+                    json.dumps({"status": "converting"})
+                )
+                logger.info(f"🎨 제주 스타일 이미지 변환 시작: {postcard_id}")
+
+                try:
+                    from app.services.jeju_image_service import JejuImageService
+
+                    # 첫 번째 사용자 사진에 대해 변환 수행
+                    first_photo_id = next(iter(postcard.user_photo_paths.keys()))
+                    first_photo_path = postcard.user_photo_paths[first_photo_id]
+                    
+                    # 원본 이미지 읽기
+                    original_image_bytes = await self.storage.read_file(first_photo_path)
+                    if not original_image_bytes:
+                        raise ValueError("원본 이미지를 읽을 수 없습니다.")
+
+                    # 제주 스타일 변환
+                    jeju_service = JejuImageService()
+                    jeju_bytes = await jeju_service.generate_jeju_style_image(
+                        image_bytes=original_image_bytes,
+                        custom_prompt="",
+                        size="1024x1024"
+                    )
+
+                    # 변환된 이미지 저장
+                    jeju_path = await self.storage.save_jeju_photo(jeju_bytes, "jpg")
+                    logger.info(f"💾 제주 스타일 이미지 저장 완료: {jeju_path}")
+
+                    # DB 업데이트: jeju_photo_paths 저장
+                    stmt = (
+                        sql_update(Postcard)
+                        .where(Postcard.id == postcard_id)
+                        .values(jeju_photo_paths={first_photo_id: jeju_path})
+                    )
+                    await self.db.execute(stmt)
+                    await self.db.commit()
+                    await self.db.refresh(postcard)
+
+                    logger.info(f"✅ 제주 스타일 이미지 변환 완료: {postcard_id}")
+
+                except Exception as e:
+                    # 변환 실패 시 원본 사용
+                    logger.error(f"❌ 제주 스타일 변환 실패 (원본 사용): {postcard_id} - {str(e)}")
+                    await self.db.refresh(postcard)
+
+            # 3. 엽서 이미지 생성
+            await redis_service.publish(
+                f"postcard:{postcard_id}",
+                json.dumps({"status": "generating"})
+            )
+            logger.info(f"🖼️ 엽서 이미지 생성 시작: {postcard_id}")
+
+            # 사진 준비 (제주 스타일 우선, 없으면 원본)
+            photos = {}
+            if postcard.jeju_photo_paths:
+                for photo_id, photo_path in postcard.jeju_photo_paths.items():
+                    photo_bytes = await self.storage.read_file(photo_path)
+                    if photo_bytes:
+                        photos[photo_id] = photo_bytes
+            elif postcard.user_photo_paths:
+                for photo_id, photo_path in postcard.user_photo_paths.items():
+                    photo_bytes = await self.storage.read_file(photo_path)
+                    if photo_bytes:
+                        photos[photo_id] = photo_bytes
+
+            postcard_result = await self.create_postcard(
+                template_id=postcard.template_id,
+                texts=postcard.text_contents,
+                photos=photos if photos else None,
+                sender_name=postcard.sender_name,
+                user_id=user_id,
+                recipient_email=postcard.recipient_email,
+            )
+
+            stmt = (
+                sql_update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(postcard_image_path=postcard_result.postcard_path)
+            )
+            await self.db.execute(stmt)
+            await self.db.commit()
+            await self.db.refresh(postcard)
+
+            # 임시 레코드 삭제
+            temp_postcard = await self.db.get(Postcard, postcard_result.id)
+            if temp_postcard:
+                await self.db.delete(temp_postcard)
+                await self.db.commit()
+
+            logger.info(f"✅ 엽서 이미지 생성 완료: {postcard_id}")
+
+            # 4. 이메일 발송
+            await redis_service.publish(
+                f"postcard:{postcard_id}",
+                json.dumps({"status": "sending"})
+            )
+            logger.info(f"📧 이메일 발송 시작: {postcard_id}")
+
+            email_service = EmailService()
+            await email_service.send_postcard_email(
+                to_email=postcard.recipient_email,
+                to_name=postcard.recipient_name,
+                postcard_image_path=postcard.postcard_image_path,
+                sender_name=postcard.sender_name
+            )
+
+            # 상태 업데이트: sent
+            stmt = (
+                sql_update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(status="sent", sent_at=datetime.utcnow())
+            )
+            await self.db.execute(stmt)
+            await self.db.commit()
+            await self.db.refresh(postcard)
+
+            logger.info(f"✅ 이메일 발송 완료: {postcard_id}")
+
+            # 5. 완료 이벤트 발행
+            await redis_service.publish(
+                f"postcard:{postcard_id}",
+                json.dumps({"status": "completed"})
+            )
+
+        except Exception as e:
+            # 실패 처리
+            logger.error(f"❌ 엽서 발송 실패: {postcard_id} - {str(e)}")
+
+            stmt = (
+                sql_update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(status="failed", error_message=str(e))
+            )
+            await self.db.execute(stmt)
+            await self.db.commit()
+
+            await redis_service.publish(
+                f"postcard:{postcard_id}",
+                json.dumps({"status": "failed", "error": str(e)})
+            )
+
+    async def send_postcard(self, postcard_id: str, user_id: str, background_tasks=None) -> PostcardResponse:
         """
         엽서 발송 (즉시 또는 예약)
-        
+
+        즉시 발송: 백그라운드에서 비동기 처리 (202 Accepted)
+        예약 발송: 스케줄러에 등록
+
         Args:
             postcard_id: 엽서 ID
             user_id: 사용자 ID (권한 체크용)
-            
+            background_tasks: FastAPI BackgroundTasks (즉시 발송 시 필요)
+
         Returns:
             발송/예약된 엽서 정보
-            
+
         Raises:
             ValueError: 엽서를 찾을 수 없거나 발송 불가능한 경우
         """
         from datetime import datetime
         from sqlalchemy import update as sql_update
-        from app.services.email_service import EmailService
         from app.scheduler_instance import get_scheduler
         
         # 엽서 조회 및 권한 체크
@@ -845,106 +1053,32 @@ class PostcardService:
         # 발송 제한 체크
         await self._check_send_limit(user_id, limit=2)
 
-        # 엽서 이미지 생성 (텍스트와 사진이 있어야 함)
-        if not postcard.postcard_image_path:
-            if not postcard.original_text_contents:
-                raise ValueError("텍스트를 입력해야 엽서를 발송할 수 있습니다.")
-
-            # 템플릿 조회
-            template = template_service.get_template_by_id(postcard.template_id)
-            if not template:
-                raise ValueError("템플릿을 찾을 수 없습니다.")
-
-            # 제주어 번역 (발송 시점에 한 번만 수행)
-            logger.info(f"Translating text to Jeju dialect for postcard {postcard_id}")
-            translated_texts = await PostcardService._translate_user_text_to_jeju(
-                template,
-                postcard.original_text_contents
-            )
-
-            # 번역된 텍스트를 DB에 저장
-            stmt = (
-                sql_update(Postcard)
-                .where(Postcard.id == postcard_id)
-                .values(text_contents=translated_texts)
-            )
-            await self.db.execute(stmt)
-            await self.db.commit()
-            await self.db.refresh(postcard)
-            logger.info(f"Saved translated text for postcard {postcard_id}")
-
-            # 사진 바이트 데이터 준비
-            photos = {}
-            if postcard.user_photo_paths:
-                for photo_id, photo_path in postcard.user_photo_paths.items():
-                    photo_bytes = await self.storage.read_file(photo_path)
-                    if photo_bytes:
-                        photos[photo_id] = photo_bytes
-
-            # 엽서 이미지 생성 (임시 레코드)
-            postcard_result = await self.create_postcard(
-                template_id=postcard.template_id,
-                texts=postcard.text_contents,  # 번역된 텍스트 사용
-                photos=photos if photos else None,
-                sender_name=postcard.sender_name,
-                user_id=user_id,
-                recipient_email=postcard.recipient_email,
-            )
-
-            # 생성된 이미지 경로를 현재 엽서에 저장
-            stmt = (
-                sql_update(Postcard)
-                .where(Postcard.id == postcard_id)
-                .values(postcard_image_path=postcard_result.postcard_path)
-            )
-            await self.db.execute(stmt)
-            await self.db.commit()
-            await self.db.refresh(postcard)
-
-            # 임시 레코드 삭제
-            temp_postcard = await self.db.get(Postcard, postcard_result.id)
-            if temp_postcard:
-                await self.db.delete(temp_postcard)
-                await self.db.commit()
-
-            logger.info(f"Generated postcard image for postcard {postcard_id}: {postcard_result.postcard_path}")
+        # 텍스트 필수 확인
+        if not postcard.original_text_contents:
+            raise ValueError("텍스트를 입력해야 엽서를 발송할 수 있습니다.")
 
         # 즉시 발송 (scheduled_at이 없는 경우)
         if not postcard.scheduled_at:
-            try:
-                email_service = EmailService()
-                await email_service.send_postcard_email(
-                    to_email=postcard.recipient_email,
-                    to_name=postcard.recipient_name,
-                    postcard_image_path=postcard.postcard_image_path,
-                    sender_name=postcard.sender_name
+            # 상태를 processing으로 변경
+            stmt = (
+                sql_update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(status="processing", updated_at=datetime.utcnow())
+            )
+            await self.db.execute(stmt)
+            await self.db.commit()
+            await self.db.refresh(postcard)
+
+            # 백그라운드 작업 시작
+            if background_tasks:
+                background_tasks.add_task(
+                    self._send_postcard_background,
+                    postcard_id=postcard_id,
+                    user_id=user_id
                 )
-
-                # 상태 업데이트: sent
-                stmt = (
-                    sql_update(Postcard)
-                    .where(Postcard.id == postcard_id)
-                    .values(status="sent", sent_at=datetime.utcnow())
-                )
-                await self.db.execute(stmt)
-                await self.db.commit()
-                await self.db.refresh(postcard)
-
-                logger.info(f"Postcard {postcard_id} sent immediately to {postcard.recipient_email}")
-
-            except Exception as e:
-                # 이메일 발송 실패
-                stmt = (
-                    sql_update(Postcard)
-                    .where(Postcard.id == postcard_id)
-                    .values(status="failed", error_message=str(e))
-                )
-                await self.db.execute(stmt)
-                await self.db.commit()
-                await self.db.refresh(postcard)
-
-                logger.error(f"Failed to send postcard {postcard_id}: {str(e)}")
-                raise ValueError(f"엽서는 생성되었으나 이메일 발송에 실패했습니다: {str(e)}")
+                logger.info(f"🚀 엽서 발송 백그라운드 작업 시작: {postcard_id}")
+            else:
+                raise ValueError("백그라운드 작업이 필요합니다.")
 
         # 예약 발송 (scheduled_at이 설정된 경우)
         else:
@@ -1056,6 +1190,7 @@ class PostcardService:
             sent_at=None,
             postcard_path=None,
             user_photo_url=None,
+            jeju_photo_url=None,
             error_message=None,
             created_at=postcard.created_at,
             updated_at=postcard.updated_at
