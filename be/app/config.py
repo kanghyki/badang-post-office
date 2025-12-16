@@ -31,6 +31,14 @@ class Settings(BaseSettings):
     smtp_from_email: str = ""
     smtp_from_name: str = "제주 엽서"
 
+    # Translation Model (Jeju Dialect)
+    translation_model_path: str = "static/models/jeju-dialect-model.gguf"
+    translation_n_ctx: int = 2048
+    translation_n_gpu_layers: int = 0
+    translation_temperature: float = 0.3
+    translation_top_p: float = 0.9
+    translation_top_k: int = 40
+
     @property
     def origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",")]
