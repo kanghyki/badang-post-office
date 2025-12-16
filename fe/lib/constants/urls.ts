@@ -101,7 +101,6 @@ export const POSTCARD_STATUS = {
   PENDING: "pending",
   SENT: "sent",
   FAILED: "failed",
-  CANCELLED: "cancelled",
 } as const;
 
 // ==================== 헬퍼 함수 ====================
