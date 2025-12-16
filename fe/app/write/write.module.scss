@@ -4,7 +4,6 @@
   max-width: 43.75rem;
   margin: 0 auto;
   padding: 1rem;
-  padding-bottom: 6.25rem;
 }
 
 .section {
@@ -743,6 +742,7 @@
   overflow-x: auto;
   padding-bottom: 0.5rem;
   scrollbar-width: none;
+  padding: 0.5rem 0rem;
   -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
