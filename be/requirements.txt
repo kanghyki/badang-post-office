@@ -17,6 +17,9 @@ greenlet>=3.0.0
 # File upload
 python-multipart
 
+# Translator model
+llama-cpp-python>=0.2.0
+
 # LangChain & OpenAI
 langchain-openai>=0.1.0
 langchain-core>=0.2.0
