@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     # FastAPI
     env: str = "prod"  # dev, prod
     debug: bool = False
+    domain: str = ""
     allowed_origins: str = ""
 
     # Database
@@ -35,7 +36,7 @@ class Settings(BaseSettings):
     translation_model_path: str = "static/models/jeju-dialect-model.gguf"
     translation_n_ctx: int = 2048
     translation_n_gpu_layers: int = 0
-    translation_temperature: float = 0.3
+    translation_temperature: float = 0.7
     translation_top_p: float = 0.9
     translation_top_k: int = 40
 

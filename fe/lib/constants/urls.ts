@@ -19,6 +19,7 @@ export const AUTH_ENDPOINTS = {
   REFRESH: "/v1/auth/refresh",
   DELETE_ACCOUNT: "/v1/auth/withdrawal",
   ME: "/v1/auth/me",
+  RESEND_VERIFICATION: "/v1/auth/resend-verification",
 } as const;
 
 /**

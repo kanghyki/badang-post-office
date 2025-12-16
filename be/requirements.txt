@@ -28,6 +28,9 @@ langchain-core>=0.2.0
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 
+# Email
+aiosmtplib>=3.0.0
+
 # Task scheduling
 apscheduler>=3.10.0
 pytz>=2023.3

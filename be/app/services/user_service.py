@@ -7,8 +7,10 @@ User Service
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from app.database.models import User, Postcard
+from app.database.models import User, Postcard, EmailVerificationToken
 from app.utils.password import hash_password, verify_password
+from datetime import datetime, timezone, timedelta
+import secrets
 import logging
 
 logger = logging.getLogger(__name__)
@@ -206,3 +208,96 @@ class UserService:
 
         logger.info(f"Successfully deleted user {user_id} with all associated data")
         return True
+
+    @staticmethod
+    async def create_verification_token(
+        db: AsyncSession,
+        user_id: str
+    ) -> str:
+        """
+        이메일 인증 토큰 생성
+
+        Args:
+            db: 데이터베이스 세션
+            user_id: 사용자 ID
+
+        Returns:
+            생성된 토큰 문자열
+        """
+        # 기존 토큰 삭제 (중복 방지)
+        await db.execute(
+            delete(EmailVerificationToken).where(
+                EmailVerificationToken.user_id == user_id
+            )
+        )
+
+        # 새 토큰 생성 (32바이트 랜덤 문자열)
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
+
+        verification_token = EmailVerificationToken(
+            user_id=user_id,
+            token=token,
+            expires_at=expires_at
+        )
+
+        db.add(verification_token)
+        await db.commit()
+
+        logger.info(f"Created verification token for user {user_id}")
+        return token
+
+    @staticmethod
+    async def verify_email_token(
+        db: AsyncSession,
+        token: str
+    ) -> Optional[User]:
+        """
+        이메일 인증 토큰 검증 및 사용자 이메일 인증 완료
+
+        Args:
+            db: 데이터베이스 세션
+            token: 인증 토큰
+
+        Returns:
+            인증 성공 시 사용자 객체, 실패 시 None
+        """
+        # 토큰 조회
+        result = await db.execute(
+            select(EmailVerificationToken).where(
+                EmailVerificationToken.token == token
+            )
+        )
+        verification_token = result.scalar_one_or_none()
+
+        if not verification_token:
+            logger.warning(f"Invalid verification token: {token[:10]}...")
+            return None
+
+        # 토큰 만료 확인
+        # 데이터베이스에서 가져온 시간을 UTC aware로 변환
+        token_expires_at = verification_token.expires_at.replace(tzinfo=timezone.utc) if verification_token.expires_at.tzinfo is None else verification_token.expires_at
+
+        if token_expires_at < datetime.now(timezone.utc):
+            logger.warning(f"Expired verification token for user {verification_token.user_id}")
+            # 만료된 토큰 삭제
+            await db.delete(verification_token)
+            await db.commit()
+            return None
+
+        # 사용자 조회
+        user = await UserService.get_user_by_id(db, verification_token.user_id)
+        if not user:
+            logger.error(f"User not found for verification token: {verification_token.user_id}")
+            return None
+
+        # 이메일 인증 완료
+        user.is_email_verified = True
+
+        # 사용된 토큰 삭제
+        await db.delete(verification_token)
+        await db.commit()
+        await db.refresh(user)
+
+        logger.info(f"Email verified for user {user.id}")
+        return user

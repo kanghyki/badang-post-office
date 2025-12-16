@@ -44,9 +44,10 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({
-          message: "요청 처리 중 오류가 발생했습니다.",
+          detail: "요청 처리 중 오류가 발생했습니다.",
         }));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        // FastAPI는 detail 필드로 에러 메시지를 반환
+        throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}`);
       }
 
       // 응답이 비어있으면 (204 No Content 등) null 반환

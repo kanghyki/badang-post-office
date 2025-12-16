@@ -15,6 +15,7 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   // 이미 로그인되어 있으면 홈으로 리다이렉트
@@ -27,10 +28,18 @@ export default function Signup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isLoading) return; // 중복 클릭 방지
+
+    setIsLoading(true);
     try {
       const response = await authApi.signup({ email, name, password });
 
       console.log("회원가입 성공:", response);
+
+      showToast({
+        message: "회원가입이 완료되었습니다! 이메일을 확인해서 인증을 완료해주세요.",
+        type: "success",
+      });
 
       router.push(ROUTES.LOGIN);
     } catch (error) {
@@ -43,6 +52,8 @@ export default function Signup() {
       } else {
         showToast({ message: "서버에 연결할 수 없습니다.", type: "error" });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -87,8 +98,8 @@ export default function Signup() {
                 />
               </label>
 
-              <button type="submit" className="btnBig">
-                회원가입
+              <button type="submit" className="btnBig" disabled={isLoading}>
+                {isLoading ? "처리 중..." : "회원가입"}
               </button>
             </form>
           </div>

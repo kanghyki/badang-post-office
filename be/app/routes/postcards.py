@@ -30,7 +30,16 @@ async def create_postcard(
     템플릿이 자동으로 선택되며, 빈 엽서가 writing 상태로 생성됩니다.
     PATCH /v1/postcards/{id}로 내용을 입력하고,
     POST /v1/postcards/{id}/send로 발송할 수 있습니다.
+
+    ⚠️ 이메일 인증이 필요합니다.
     """
+    # 이메일 인증 확인
+    if not current_user.is_email_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="엽서를 작성하려면 이메일 인증이 필요합니다. 프로필 페이지에서 인증 메일을 받을 수 있습니다."
+        )
+
     try:
         service = PostcardService(db)
         return await service.create_empty_postcard(user_id=current_user.id)
@@ -235,7 +244,16 @@ async def send_postcard(
     PATCH /v1/postcards/{id}로 엽서 이미지를 먼저 생성한 후 이 API를 호출하세요.
     - scheduled_at이 없으면: 즉시 발송 (이메일 발송 → sent 상태)
     - scheduled_at이 설정되어 있으면: pending 상태로 변경 → 스케줄러 등록
+
+    ⚠️ 이메일 인증이 필요합니다.
     """
+    # 이메일 인증 확인
+    if not current_user.is_email_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="엽서를 발송하려면 이메일 인증이 필요합니다. 프로필 페이지에서 인증 메일을 다시 받을 수 있습니다."
+        )
+
     try:
         service = PostcardService(db)
         return await service.send_postcard(postcard_id=postcard_id, user_id=current_user.id)

@@ -32,10 +32,11 @@ class LoginRequest(BaseModel):
 class UserResponse(BaseModel):
     """사용자 응답"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: str
     email: str
     name: str
+    is_email_verified: bool
     created_at: datetime
 
 

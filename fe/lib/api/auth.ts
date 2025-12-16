@@ -34,6 +34,7 @@ export interface UserProfile {
   id: string;
   email: string;
   name: string;
+  is_email_verified: boolean;
   created_at: string;
 }
 
@@ -63,5 +64,13 @@ export const authApi = {
     data: UpdateProfileRequest
   ): Promise<UserProfile> => {
     return apiClient.patch<UserProfile>(AUTH_ENDPOINTS.ME, data, true);
+  },
+
+  resendVerificationEmail: async (): Promise<{ message: string }> => {
+    return apiClient.post<{ message: string }>(
+      AUTH_ENDPOINTS.RESEND_VERIFICATION,
+      undefined,
+      true
+    );
   },
 };

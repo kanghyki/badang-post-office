@@ -5,6 +5,7 @@ SMTP를 통해 이메일을 발송합니다.
 """
 
 import smtplib
+import aiosmtplib
 import logging
 import random
 from typing import Optional
@@ -267,3 +268,127 @@ class EmailService:
             image_path=postcard_image_path,
             image_filename="postcard.png"
         )
+
+    async def send_verification_email(
+        self,
+        to_email: str,
+        name: str,
+        verification_token: str
+    ) -> bool:
+        """
+        이메일 인증 메일 발송
+
+        Args:
+            to_email: 수신자 이메일
+            name: 사용자 이름
+            verification_token: 인증 토큰
+
+        Returns:
+            발송 성공 여부
+        """
+        try:
+            # 인증 링크 생성 (백엔드 API 직접 호출)
+            # TODO: 배포 시 실제 도메인으로 변경 필요
+            domain = settings.domain
+            verification_url = f"{domain}/v1/auth/verify-email?token={verification_token}"
+
+            subject = "바당우체국 - 이메일 인증"
+
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+                    .content {{ background-color: #f9f9f9; padding: 30px; border-radius: 5px; margin-top: 20px; }}
+                    .button {{
+                        display: inline-block;
+                        padding: 12px 24px;
+                        background-color: #4CAF50;
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin: 20px 0;
+                    }}
+                    .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>바당 우체국</h1>
+                    </div>
+                    <div class="content">
+                        <h2>안녕하세요, {name}님!</h2>
+                        <p>아래 버튼을 클릭하여 이메일 인증을 완료해주세요.</p>
+                        <div style="text-align: center;">
+                            <a href="{verification_url}" class="button">이메일 인증하기</a>
+                        </div>
+                        <p>또는 아래 링크를 복사하여 브라우저에 붙여넣으세요:</p>
+                        <p style="word-break: break-all; background-color: #fff; padding: 10px; border-radius: 3px;">
+                            {verification_url}
+                        </p>
+                        <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                            이 링크는 24시간 동안 유효합니다.
+                        </p>
+                    </div>
+                    <div class="footer">
+                        <p>본 메일은 발신 전용입니다.</p>
+                        <p>&copy; 2025 바당우체국. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            text_content = f"""
+안녕하세요, {name}님!
+
+제주 엽서에 가입해주셔서 감사합니다.
+
+아래 링크를 클릭하여 이메일 인증을 완료해주세요:
+{verification_url}
+
+이 링크는 24시간 동안 유효합니다.
+
+본 메일은 발신 전용입니다.
+© 2025 제주 엽서. All rights reserved.
+            """
+
+            # 이메일 메시지 생성
+            message = MIMEMultipart("alternative")
+            message["From"] = f"{self.from_name} <{self.from_email}>"
+            message["To"] = to_email
+            message["Subject"] = subject
+
+            # 텍스트 본문 추가
+            text_part = MIMEText(text_content, "plain", "utf-8")
+            message.attach(text_part)
+
+            # HTML 본문 추가
+            html_part = MIMEText(html_content, "html", "utf-8")
+            message.attach(html_part)
+
+            # SMTP 서버로 이메일 발송
+            masked_email = self._mask_email(to_email)
+            logger.info(f"Sending verification email to {masked_email}")
+
+            await aiosmtplib.send(
+                message,
+                hostname=self.smtp_host,
+                port=self.smtp_port,
+                username=self.smtp_username,
+                password=self.smtp_password,
+                start_tls=True
+            )
+
+            logger.info(f"Verification email sent successfully to {masked_email}")
+            return True
+
+        except Exception as e:
+            masked_email = self._mask_email(to_email)
+            logger.error(f"Failed to send verification email to {masked_email}: {str(e)}")
+            raise
