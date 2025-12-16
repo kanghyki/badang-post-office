@@ -195,50 +195,63 @@ export default function Profile() {
                     <div className={styles.infoSection}>
                         <div className={styles.infoItem}>
                             <span className={styles.label}>이메일</span>
-                            <span className={styles.value}>
+                            <span
+                                className={styles.value}
+                                style={{
+                                    color: profile?.is_email_verified
+                                        ? "#4CAF50"
+                                        : "#ff9800",
+                                }}
+                            >
                                 {profile?.email}
                             </span>
                         </div>
 
-                        <div className={styles.infoItem}>
-                            <span className={styles.label}>이메일 인증</span>
-                            <span className={styles.value}>
-                                {profile?.is_email_verified ? (
-                                    <span style={{ color: "#4CAF50" }}>
-                                        인증됨
-                                    </span>
-                                ) : (
-                                    <>
-                                        <button
-                                            onClick={handleResendVerification}
-                                            disabled={isResendingEmail}
-                                            style={{
-                                                marginRight: "10px",
-                                                padding: "4px 12px",
-                                                fontSize: "12px",
-                                                backgroundColor: "#4CAF50",
-                                                color: "white",
-                                                border: "none",
-                                                borderRadius: "4px",
-                                                cursor: isResendingEmail
-                                                    ? "not-allowed"
-                                                    : "pointer",
-                                                opacity: isResendingEmail
-                                                    ? 0.6
-                                                    : 1,
-                                            }}
-                                        >
-                                            {isResendingEmail
-                                                ? "발송 중..."
-                                                : "인증 메일 재발송"}
-                                        </button>
-                                        <span style={{ color: "#ff9800" }}>
-                                            미인증
+                        {profile?.is_email_verified || (
+                            <div className={styles.infoItem}>
+                                <span className={styles.label}>
+                                    이메일 상태
+                                </span>
+                                <span className={styles.value}>
+                                    {profile?.is_email_verified ? (
+                                        <span style={{ color: "#4CAF50" }}>
+                                            인증됨
                                         </span>
-                                    </>
-                                )}
-                            </span>
-                        </div>
+                                    ) : (
+                                        <>
+                                            <span style={{ color: "#ff9800" }}>
+                                                미인증
+                                            </span>
+                                            <button
+                                                onClick={
+                                                    handleResendVerification
+                                                }
+                                                disabled={isResendingEmail}
+                                                style={{
+                                                    marginLeft: "10px",
+                                                    padding: "4px 12px",
+                                                    fontSize: "12px",
+                                                    backgroundColor: "#4CAF50",
+                                                    color: "white",
+                                                    border: "none",
+                                                    borderRadius: "4px",
+                                                    cursor: isResendingEmail
+                                                        ? "not-allowed"
+                                                        : "pointer",
+                                                    opacity: isResendingEmail
+                                                        ? 0.6
+                                                        : 1,
+                                                }}
+                                            >
+                                                {isResendingEmail
+                                                    ? "발송 중..."
+                                                    : "인증 메일 재발송"}
+                                            </button>
+                                        </>
+                                    )}
+                                </span>
+                            </div>
+                        )}
 
                         <div className={styles.infoItem}>
                             <span className={styles.label}>가입일</span>
