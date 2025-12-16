@@ -128,7 +128,7 @@ async def update_postcard(
     """
     엽서 수정 (writing 또는 pending 상태만 가능)
 
-    텍스트 수정 시 제주어 번역 + 엽서 이미지 자동 생성
+    텍스트 수정 시 제주어 번역
     """
     try:
         # 이미지 검증 및 변환
@@ -241,7 +241,7 @@ async def send_postcard(
     """
     엽서 발송 (writing 또는 pending 상태의 엽서만 가능)
 
-    PATCH /v1/postcards/{id}로 엽서 이미지를 먼저 생성한 후 이 API를 호출하세요.
+    엽서 이미지가 자동으로 생성되고 발송됩니다.
     - scheduled_at이 없으면: 즉시 발송 (이메일 발송 → sent 상태)
     - scheduled_at이 설정되어 있으면: pending 상태로 변경 → 스케줄러 등록
 

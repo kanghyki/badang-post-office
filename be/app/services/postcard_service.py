@@ -612,45 +612,7 @@ class PostcardService:
             update_values["recipient_name"] = recipient_name
         if sender_name is not None:
             update_values["sender_name"] = sender_name
-        
-        # 엽서 이미지 생성 (텍스트, 이미지, 템플릿 변경 시)
-        if text or image_bytes or template_id:
-            # 새 템플릿 ID가 있으면 사용, 없으면 기존 템플릿 사용
-            current_template_id = update_values.get("template_id") or postcard.template_id
-            template = template_service.get_template_by_id(current_template_id)
-            if template:
-                # 최신 텍스트 사용
-                texts = update_values.get("text_contents") or postcard.text_contents
 
-                if texts:
-                    # 최신 사진 경로 사용
-                    user_photo_paths = update_values.get("user_photo_paths") or postcard.user_photo_paths
-
-                    photos = {}
-                    if user_photo_paths:
-                        for photo_id, photo_path in user_photo_paths.items():
-                            photo_bytes = await self.storage.read_file(photo_path)
-                            if photo_bytes:
-                                photos[photo_id] = photo_bytes
-
-                    # 엽서 이미지 생성 (임시 레코드)
-                    postcard_result = await self.create_postcard(
-                        template_id=current_template_id,
-                        texts=texts,
-                        photos=photos if photos else None,
-                        sender_name=update_values.get("sender_name") or postcard.sender_name,
-                        user_id=user_id,
-                        recipient_email=update_values.get("recipient_email") or postcard.recipient_email,
-                    )
-
-                    # 생성된 이미지 경로 저장
-                    update_values["postcard_image_path"] = postcard_result.postcard_path
-
-                    # 임시 레코드 삭제
-                    temp_postcard = await self.db.get(Postcard, postcard_result.id)
-                    if temp_postcard:
-                        await self.db.delete(temp_postcard)
-        
         # DB 업데이트
         stmt = (
             sql_update(Postcard)
@@ -852,11 +814,54 @@ class PostcardService:
         if postcard.status not in ["writing", "pending"]:
             raise ValueError(f"writing 또는 pending 상태의 엽서만 발송 가능합니다. (현재 상태: {postcard.status})")
 
-        if not postcard.postcard_image_path:
-            raise ValueError("엽서 이미지가 생성되지 않았습니다. 먼저 엽서를 수정하여 이미지를 생성하세요.")
-
         if not postcard.recipient_email:
             raise ValueError("수신자 이메일이 설정되지 않았습니다.")
+
+        # 엽서 이미지 생성 (텍스트와 사진이 있어야 함)
+        if not postcard.postcard_image_path:
+            if not postcard.text_contents:
+                raise ValueError("텍스트를 입력해야 엽서를 발송할 수 있습니다.")
+
+            # 템플릿 조회
+            template = template_service.get_template_by_id(postcard.template_id)
+            if not template:
+                raise ValueError("템플릿을 찾을 수 없습니다.")
+
+            # 사진 바이트 데이터 준비
+            photos = {}
+            if postcard.user_photo_paths:
+                for photo_id, photo_path in postcard.user_photo_paths.items():
+                    photo_bytes = await self.storage.read_file(photo_path)
+                    if photo_bytes:
+                        photos[photo_id] = photo_bytes
+
+            # 엽서 이미지 생성 (임시 레코드)
+            postcard_result = await self.create_postcard(
+                template_id=postcard.template_id,
+                texts=postcard.text_contents,
+                photos=photos if photos else None,
+                sender_name=postcard.sender_name,
+                user_id=user_id,
+                recipient_email=postcard.recipient_email,
+            )
+
+            # 생성된 이미지 경로를 현재 엽서에 저장
+            stmt = (
+                sql_update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(postcard_image_path=postcard_result.postcard_path)
+            )
+            await self.db.execute(stmt)
+            await self.db.commit()
+            await self.db.refresh(postcard)
+
+            # 임시 레코드 삭제
+            temp_postcard = await self.db.get(Postcard, postcard_result.id)
+            if temp_postcard:
+                await self.db.delete(temp_postcard)
+                await self.db.commit()
+
+            logger.info(f"Generated postcard image for postcard {postcard_id}: {postcard_result.postcard_path}")
 
         # 즉시 발송 (scheduled_at이 없는 경우)
         if not postcard.scheduled_at:
