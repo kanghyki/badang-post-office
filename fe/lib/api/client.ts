@@ -46,8 +46,16 @@ class ApiClient {
         const errorData = await response.json().catch(() => ({
           detail: "요청 처리 중 오류가 발생했습니다.",
         }));
-        // FastAPI는 detail 필드로 에러 메시지를 반환
-        throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}`);
+
+        // detail이 객체인 경우 message 필드 추출
+        let errorMessage: string;
+        if (typeof errorData.detail === "object" && errorData.detail !== null) {
+          errorMessage = errorData.detail.message || JSON.stringify(errorData.detail);
+        } else {
+          errorMessage = errorData.detail || errorData.message || `HTTP ${response.status}`;
+        }
+
+        throw new Error(errorMessage);
       }
 
       // 응답이 비어있으면 (204 No Content 등) null 반환

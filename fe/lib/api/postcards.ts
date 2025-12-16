@@ -93,9 +93,18 @@ export const postcardsApi = {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
-        message: "요청 처리 중 오류가 발생했습니다.",
+        detail: "요청 처리 중 오류가 발생했습니다.",
       }));
-      throw new Error(errorData.message || `HTTP ${response.status}`);
+
+      // detail이 객체인 경우 message 필드 추출
+      let errorMessage: string;
+      if (typeof errorData.detail === "object" && errorData.detail !== null) {
+        errorMessage = errorData.detail.message || JSON.stringify(errorData.detail);
+      } else {
+        errorMessage = errorData.detail || errorData.message || `HTTP ${response.status}`;
+      }
+
+      throw new Error(errorMessage);
     }
 
     return await response.json();

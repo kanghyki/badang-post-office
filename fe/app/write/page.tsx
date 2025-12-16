@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./write.module.scss";
 import Header from "@/app/components/Header";
@@ -52,6 +52,7 @@ export default function Write() {
   >({});
   const [selectedTemplateDetail, setSelectedTemplateDetail] =
     useState<TemplateDetailResponse | null>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 템플릿 목록 불러오기
   useEffect(() => {
@@ -195,7 +196,7 @@ export default function Write() {
   };
 
   // 임시 저장 (create + update 또는 update만 호출)
-  const handleSave = async () => {
+  const handleSave = useCallback(async (isAutoSave = false) => {
     // 이메일 validation
     if (emailLocalPart || emailDomain) {
       if (!emailLocalPart || !emailDomain) {
@@ -271,24 +272,75 @@ export default function Write() {
       }
 
       setHasUnsavedChanges(false);
-      showToast({ message: "임시 저장되었습니다.", type: "success" });
+      if (!isAutoSave) {
+        showToast({ message: "임시 저장되었습니다.", type: "success" });
+      }
     } catch (error) {
       console.error("저장 실패:", error);
-      if (error instanceof Error) {
-        showToast({
-          message: `저장 실패: ${error.message}`,
-          type: "error",
-        });
-      } else {
-        showToast({
-          message: "저장 중 오류가 발생했습니다.",
-          type: "error",
-        });
+      if (!isAutoSave) {
+        if (error instanceof Error) {
+          showToast({
+            message: `저장 실패: ${error.message}`,
+            type: "error",
+          });
+        } else {
+          showToast({
+            message: "저장 중 오류가 발생했습니다.",
+            type: "error",
+          });
+        }
       }
     } finally {
       setSaving(false);
     }
-  };
+  }, [
+    postcardId,
+    selectedTemplateId,
+    text,
+    recipientName,
+    emailLocalPart,
+    emailDomain,
+    senderName,
+    sendType,
+    scheduledAt,
+    image,
+    showToast,
+  ]);
+
+  // 디바운싱을 적용한 자동 저장
+  useEffect(() => {
+    // 타이머가 있으면 클리어
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    // 입력된 내용이 있고, 저장 중이 아닐 때만 자동 저장 타이머 설정
+    if (hasUnsavedChanges && !saving && !loading) {
+      autoSaveTimerRef.current = setTimeout(() => {
+        handleSave(true);
+      }, 2000); // 2초 후 자동 저장
+    }
+
+    // cleanup
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [
+    text,
+    recipientName,
+    emailLocalPart,
+    emailDomain,
+    senderName,
+    scheduledAt,
+    image,
+    selectedTemplateId,
+    hasUnsavedChanges,
+    saving,
+    loading,
+    handleSave,
+  ]);
 
   // 접수하기 (update + send 호출)
   const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -459,15 +511,6 @@ export default function Write() {
                     required
                   />
                   <span className={styles.charCount}>{text.length} / 120</span>
-                </div>
-                <div className={styles.translationBox}>
-                  <div className={styles.translationLabel}>
-                    <span className={styles.icon}>🌴</span>
-                    <span>미리보기</span>
-                  </div>
-                  <div className={styles.translatedText}>
-                    {translatedText || ""}
-                  </div>
                 </div>
               </div>
             </div>
@@ -689,42 +732,6 @@ export default function Write() {
           </form>
 
           <div className={styles.buttonSection}>
-            <button
-              className={styles.backBtn}
-              type="button"
-              onClick={async () => {
-                if (hasUnsavedChanges) {
-                  const confirmed = await showModal({
-                    title: "작성 중인 내용이 있습니다",
-                    message: "저장하지 않은 내용은 사라집니다. 나가시겠습니까?",
-                    type: "confirm",
-                  });
-                  if (confirmed) {
-                    router.push(ROUTES.LIST);
-                  }
-                } else {
-                  router.push(ROUTES.LIST);
-                }
-              }}
-              disabled={loading || saving}
-            >
-              <span>나가기</span>
-            </button>
-            <button
-              className={styles.saveBtn}
-              type="button"
-              onClick={handleSave}
-              disabled={loading || saving}
-            >
-              {saving ? (
-                <>
-                  <span className={styles.smallSpinner}></span>
-                  <span>저장 중</span>
-                </>
-              ) : (
-                <span>임시저장</span>
-              )}
-            </button>
             <button
               className={styles.sendBtn}
               type="submit"

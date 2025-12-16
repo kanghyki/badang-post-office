@@ -738,9 +738,16 @@
 }
 
 .templateGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  display: flex;
   gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .templateCard {
@@ -753,6 +760,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 120px;
+  max-width: 120px;
+  flex-shrink: 0;
 
   &:hover {
     border-color: #ff6600;

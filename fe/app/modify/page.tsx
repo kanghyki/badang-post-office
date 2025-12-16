@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../write/write.module.scss";
 import Header from "@/app/components/Header";
@@ -51,6 +51,7 @@ function ModifyContent() {
   >({});
   const [selectedTemplateDetail, setSelectedTemplateDetail] =
     useState<TemplateDetailResponse | null>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 이메일 도메인 선택 처리
   useEffect(() => {
@@ -293,72 +294,139 @@ function ModifyContent() {
   };
 
   // 저장 (update만 호출)
-  const handleSave = async () => {
-    if (!postcardId) {
-      await showModal({
-        title: "오류",
-        message: "엽서 ID가 없습니다.",
-        type: "alert",
-      });
-      return;
-    }
-
-    // 이메일 validation
-    if (emailLocalPart || emailDomain) {
-      if (!emailLocalPart || !emailDomain) {
-        showToast({ message: "이메일 주소를 완성해주세요.", type: "error" });
+  const handleSave = useCallback(
+    async (isAutoSave = false) => {
+      if (!postcardId) {
+        await showModal({
+          title: "오류",
+          message: "엽서 ID가 없습니다.",
+          type: "alert",
+        });
         return;
       }
-      if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
-        showToast({ message: "유효한 이메일 형식이 아닙니다.", type: "error" });
-        return;
+
+      // 이메일 validation
+      if (emailLocalPart || emailDomain) {
+        if (!emailLocalPart || !emailDomain) {
+          showToast({ message: "이메일 주소를 완성해주세요.", type: "error" });
+          return;
+        }
+        if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
+          showToast({
+            message: "유효한 이메일 형식이 아닙니다.",
+            type: "error",
+          });
+          return;
+        }
+        if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
+          showToast({
+            message: "유효한 도메인 형식이 아닙니다.",
+            type: "error",
+          });
+          return;
+        }
       }
-      if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
-        showToast({ message: "유효한 도메인 형식이 아닙니다.", type: "error" });
-        return;
+
+      setSaving(true);
+
+      try {
+        // 이메일 주소 조합
+        const recipientEmail =
+          emailLocalPart && emailDomain
+            ? `${emailLocalPart}@${emailDomain}`
+            : undefined;
+
+        const updatedPostcard = await postcardsApi.update(postcardId, {
+          template_id: selectedTemplateId,
+          text,
+          recipient_email: recipientEmail,
+          recipient_name: recipientName,
+          sender_name: senderName,
+          scheduled_at:
+            sendType === "scheduled" && scheduledAt
+              ? new Date(scheduledAt).toISOString()
+              : undefined,
+          image: image || undefined,
+        });
+
+        // 서버에서 번역된 텍스트를 미리보기에 표시
+        if (updatedPostcard.text) {
+          setTranslatedText(updatedPostcard.text);
+        }
+
+        setHasUnsavedChanges(false);
+        if (!isAutoSave) {
+          showToast({ message: "임시 저장되었습니다.", type: "success" });
+        }
+      } catch (error) {
+        console.error("저장 실패:", error);
+        if (!isAutoSave) {
+          if (error instanceof Error) {
+            showToast({
+              message: `저장 실패: ${error.message}`,
+              type: "error",
+            });
+          } else {
+            showToast({
+              message: "저장 중 오류가 발생했습니다.",
+              type: "error",
+            });
+          }
+        }
+      } finally {
+        setSaving(false);
       }
+    },
+    [
+      postcardId,
+      selectedTemplateId,
+      text,
+      recipientName,
+      emailLocalPart,
+      emailDomain,
+      senderName,
+      sendType,
+      scheduledAt,
+      image,
+      showToast,
+      showModal,
+    ]
+  );
+
+  // 디바운싱을 적용한 자동 저장
+  useEffect(() => {
+    // 타이머가 있으면 클리어
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
     }
 
-    setSaving(true);
-
-    try {
-      // 이메일 주소 조합
-      const recipientEmail =
-        emailLocalPart && emailDomain
-          ? `${emailLocalPart}@${emailDomain}`
-          : undefined;
-
-      const updatedPostcard = await postcardsApi.update(postcardId, {
-        template_id: selectedTemplateId,
-        text,
-        recipient_email: recipientEmail,
-        recipient_name: recipientName,
-        sender_name: senderName,
-        scheduled_at:
-          sendType === "scheduled" && scheduledAt
-            ? new Date(scheduledAt).toISOString()
-            : undefined,
-        image: image || undefined,
-      });
-
-      // 서버에서 번역된 텍스트를 미리보기에 표시
-      if (updatedPostcard.text) {
-        setTranslatedText(updatedPostcard.text);
-      }
-
-      setHasUnsavedChanges(false);
-      showToast({ message: "임시 저장되었습니다.", type: "success" });
-    } catch (error) {
-      console.error("저장 실패:", error);
-      if (error instanceof Error) {
-        showToast({ message: `저장 실패: ${error.message}`, type: "error" });
-      } else {
-        showToast({ message: "저장 중 오류가 발생했습니다.", type: "error" });
-      }
-    } finally {
-      setSaving(false);
+    // 입력된 내용이 있고, 저장 중이 아닐 때만 자동 저장 타이머 설정
+    if (hasUnsavedChanges && !saving && !loading) {
+      autoSaveTimerRef.current = setTimeout(() => {
+        handleSave(true);
+      }, 1000);
     }
-  };
+
+    // cleanup
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [
+    text,
+    recipientName,
+    emailLocalPart,
+    emailDomain,
+    senderName,
+    scheduledAt,
+    image,
+    selectedTemplateId,
+    hasUnsavedChanges,
+    saving,
+    loading,
+    handleSave,
+  ]);
 
   // 다시 접수하기 (update + send 호출)
   const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -524,15 +592,6 @@ function ModifyContent() {
                     required
                   />
                   <span className={styles.charCount}>{text.length} / 120</span>
-                </div>
-                <div className={styles.translationBox}>
-                  <div className={styles.translationLabel}>
-                    <span className={styles.icon}>🌴</span>
-                    <span>미리보기</span>
-                  </div>
-                  <div className={styles.translatedText}>
-                    {translatedText || ""}
-                  </div>
                 </div>
               </div>
             </div>
@@ -754,42 +813,6 @@ function ModifyContent() {
           </form>
 
           <div className={styles.buttonSection}>
-            <button
-              className={styles.backBtn}
-              type="button"
-              onClick={async () => {
-                if (hasUnsavedChanges) {
-                  const confirmed = await showModal({
-                    title: "작성 중인 내용이 있습니다",
-                    message: "저장하지 않은 내용은 사라집니다. 나가시겠습니까?",
-                    type: "confirm",
-                  });
-                  if (confirmed) {
-                    router.push(ROUTES.LIST);
-                  }
-                } else {
-                  router.push(ROUTES.LIST);
-                }
-              }}
-              disabled={loading || saving}
-            >
-              <span>나가기</span>
-            </button>
-            <button
-              className={styles.saveBtn}
-              type="button"
-              onClick={handleSave}
-              disabled={loading || saving}
-            >
-              {saving ? (
-                <>
-                  <span className={styles.smallSpinner}></span>
-                  <span>저장 중</span>
-                </>
-              ) : (
-                <span>임시저장</span>
-              )}
-            </button>
             <button
               className={styles.sendBtn}
               type="submit"

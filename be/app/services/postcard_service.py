@@ -576,7 +576,7 @@ class PostcardService:
             except ValueError as e:
                 raise ValueError(f"scheduled_at 처리 실패: {str(e)}")
         
-        # 텍스트 수정 시 번역 수행
+        # 텍스트 수정 시 원본만 저장 (번역은 send 시점에 수행)
         if text:
             # 새 템플릿 ID가 있으면 사용, 없으면 기존 템플릿 사용
             current_template_id = template_id if template_id else postcard.template_id
@@ -592,18 +592,12 @@ class PostcardService:
                     if sender_config:
                         original_texts[sender_config.id] = sender_name or postcard.sender_name
 
-                # 제주어 번역
-                texts = await PostcardService._translate_user_text_to_jeju(template, original_texts)
-                if sender_name or postcard.sender_name:
-                    sender_config = next(
-                        (cfg for cfg in template.text_configs if cfg.id in ["sender"]),
-                        None
-                    )
-                    if sender_config:
-                        texts[sender_config.id] = sender_name or postcard.sender_name
-
-                update_values["text_contents"] = texts
+                # 원본 텍스트만 저장 (제주어 번역은 send 시점에 수행)
                 update_values["original_text_contents"] = original_texts
+                # text_contents는 null로 설정 (발송 시 번역됨)
+                update_values["text_contents"] = None
+                # postcard_image_path도 초기화 (텍스트 변경 시 이미지 재생성 필요)
+                update_values["postcard_image_path"] = None
         
         # 수신자 정보 업데이트
         if recipient_email:
@@ -853,13 +847,31 @@ class PostcardService:
 
         # 엽서 이미지 생성 (텍스트와 사진이 있어야 함)
         if not postcard.postcard_image_path:
-            if not postcard.text_contents:
+            if not postcard.original_text_contents:
                 raise ValueError("텍스트를 입력해야 엽서를 발송할 수 있습니다.")
 
             # 템플릿 조회
             template = template_service.get_template_by_id(postcard.template_id)
             if not template:
                 raise ValueError("템플릿을 찾을 수 없습니다.")
+
+            # 제주어 번역 (발송 시점에 한 번만 수행)
+            logger.info(f"Translating text to Jeju dialect for postcard {postcard_id}")
+            translated_texts = await PostcardService._translate_user_text_to_jeju(
+                template,
+                postcard.original_text_contents
+            )
+
+            # 번역된 텍스트를 DB에 저장
+            stmt = (
+                sql_update(Postcard)
+                .where(Postcard.id == postcard_id)
+                .values(text_contents=translated_texts)
+            )
+            await self.db.execute(stmt)
+            await self.db.commit()
+            await self.db.refresh(postcard)
+            logger.info(f"Saved translated text for postcard {postcard_id}")
 
             # 사진 바이트 데이터 준비
             photos = {}
@@ -872,7 +884,7 @@ class PostcardService:
             # 엽서 이미지 생성 (임시 레코드)
             postcard_result = await self.create_postcard(
                 template_id=postcard.template_id,
-                texts=postcard.text_contents,
+                texts=postcard.text_contents,  # 번역된 텍스트 사용
                 photos=photos if photos else None,
                 sender_name=postcard.sender_name,
                 user_id=user_id,
