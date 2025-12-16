@@ -18,7 +18,7 @@ class JejumaTranslator:
     PROMPT_TEMPLATE = """<|start_header_id|>system<|end_header_id|>
 
 You are a helpful assistant for translating between standard Korean and regional dialects.
-<|eot_id|><|start_header_id|>user<|end_header_id|}
+<|eot_id|><|start_header_id|>user<|end_header_id|>
 
 {prompt}
 <|eot_id|><|start_header_id|>assistant<|end_header_id|>
