@@ -788,37 +788,6 @@ class PostcardService:
 
         logger.info(f"Cancelled scheduled postcard {postcard_id}, reverted to writing state")
 
-    async def _check_send_limit(self, user_id: str, limit: int = 5) -> int:
-        """
-        사용자의 발송 제한 체크
-
-        Args:
-            user_id: 사용자 ID
-            limit: 최대 발송 가능 개수 (기본 5개)
-
-        Returns:
-            현재 발송 개수
-
-        Raises:
-            ValueError: 제한 초과 시
-        """
-        stmt = select(func.count(Postcard.id)).where(
-            and_(
-                Postcard.user_id == user_id,
-                Postcard.status.in_(["sent", "pending", "failed"])
-            )
-        )
-        result = await self.db.execute(stmt)
-        count = result.scalar() or 0
-
-        if count >= limit:
-            raise ValueError(
-                f"엽서 발송 제한에 도달했습니다. (최대 {limit}개, 현재 {count}개)"
-            )
-
-        logger.info(f"User {user_id} postcard count: {count}/{limit}")
-        return count
-
     async def _send_postcard_background(self, postcard_id: str, user_id: str):
         """
         엽서 발송 백그라운드 작업
@@ -1146,9 +1115,6 @@ class PostcardService:
 
         if not postcard.recipient_email:
             raise ValueError("수신자 이메일이 설정되지 않았습니다.")
-
-        # 발송 제한 체크
-        await self._check_send_limit(user_id, limit=2)
 
         # 텍스트 필수 확인
         if not postcard.original_text_contents:
