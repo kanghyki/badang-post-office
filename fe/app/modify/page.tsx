@@ -707,7 +707,7 @@ function ModifyContent() {
                     type="text"
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="~에게"
+                    placeholder="예) 사랑하는 어머니 (수신자명) + '에게'"
                     className={styles.input}
                     required
                   />
@@ -780,7 +780,7 @@ function ModifyContent() {
                     type="text"
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
-                    placeholder="* 미작성 시 계정 이름 사용"
+                    placeholder="예) 바당이 (발신자명) + '가'"
                     className={styles.input}
                   />
                 </label>
