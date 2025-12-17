@@ -155,6 +155,11 @@ class PostcardService:
                 translated_texts[config_id] = original_text
                 continue
 
+            # 수신자 이름은 번역하지 않음
+            if config_id == "recipient":
+                translated_texts[config_id] = original_text
+                continue
+
             # 사용자 입력 본문만 번역
             try:
                 translated_text = await translate_to_jeju_async(original_text)

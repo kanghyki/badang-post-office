@@ -213,18 +213,9 @@ class SchedulerService:
         """
         예약된 엽서 발송 (스케줄러에서 호출)
 
-        즉시 발송 로직(_send_postcard_background)과 동일한 프로세스:
-        1. 제주어 번역 (original_text_contents → text_contents)
-        2. 제주 스타일 이미지 변환 (user_photo_paths → jeju_photo_paths)
-        3. 엽서 이미지 생성
-        4. 이메일 발송
-
         Args:
             scheduled_id: Postcard ID
         """
-        from app.services import template_service
-        from app.services.jeju_image_service import JejuImageService
-
         async with get_db_session() as db:
             try:
                 # 예약 정보 조회
@@ -240,167 +231,22 @@ class SchedulerService:
                     logger.warning(f"Scheduled postcard {scheduled_id} is not pending (status: {scheduled.status})")
                     return
 
-                # 템플릿 조회
-                template = template_service.get_template_by_id(scheduled.template_id)
-                if not template:
-                    raise ValueError(f"템플릿을 찾을 수 없습니다: {scheduled.template_id}")
+                logger.info(f"🚀 [예약발송] 발송 시작: {scheduled_id}")
 
-                # 1. 제주어 번역 (original_text_contents 사용)
-                logger.info(f"📝 [예약발송] 제주어 번역 시작: {scheduled_id}")
-                translated_texts = await PostcardService._translate_user_text_to_jeju(
-                    template,
-                    scheduled.original_text_contents
-                )
-
-                # 번역된 텍스트 저장
+                # 상태를 processing으로 변경 (예약 중 → 발송 중)
                 stmt = (
                     update(Postcard)
                     .where(Postcard.id == scheduled_id)
-                    .values(text_contents=translated_texts)
+                    .values(status="processing", updated_at=datetime.utcnow())
                 )
                 await db.execute(stmt)
                 await db.commit()
-                logger.info(f"✅ [예약발송] 제주어 번역 완료: {scheduled_id}")
 
-                # 2. 제주 스타일 이미지 변환 (user_photo_paths 있고 jeju_photo_paths 없는 경우)
-                if scheduled.user_photo_paths and not scheduled.jeju_photo_paths:
-                    logger.info(f"🎨 [예약발송] 제주 스타일 이미지 변환 시작: {scheduled_id}")
-                    try:
-                        # 첫 번째 사용자 사진에 대해 변환 수행
-                        first_photo_id = next(iter(scheduled.user_photo_paths.keys()))
-                        first_photo_path = scheduled.user_photo_paths[first_photo_id]
-
-                        # 원본 이미지 읽기
-                        original_image_bytes = await self.storage.read_file(first_photo_path)
-                        if not original_image_bytes:
-                            raise ValueError("원본 이미지를 읽을 수 없습니다.")
-
-                        # AI 전송용 이미지 압축
-                        compressed_image_bytes = self.storage.compress_image_for_ai(
-                            image_bytes=original_image_bytes,
-                            max_long_edge=512,
-                            jpeg_quality=75
-                        )
-
-                        # 템플릿의 photo_config에서 크기 정보 추출
-                        photo_config = next(
-                            (cfg for cfg in template.photo_configs if cfg.id == first_photo_id),
-                            None
-                        )
-
-                        # OpenAI API 지원 크기 계산
-                        ai_size = "1024x1024"
-                        if photo_config and photo_config.max_width and photo_config.max_height:
-                            if photo_config.max_width > photo_config.max_height:
-                                ai_size = "1536x1024"
-                            elif photo_config.max_height > photo_config.max_width:
-                                ai_size = "1024x1536"
-
-                        # 제주 스타일 변환
-                        jeju_service = JejuImageService()
-                        jeju_bytes = await jeju_service.generate_jeju_style_image(
-                            image_bytes=compressed_image_bytes,
-                            custom_prompt="",
-                            size=ai_size
-                        )
-
-                        # 변환된 이미지 저장
-                        jeju_path = await self.storage.save_jeju_photo(jeju_bytes, "jpg")
-
-                        # DB 업데이트: jeju_photo_paths 저장
-                        stmt = (
-                            update(Postcard)
-                            .where(Postcard.id == scheduled_id)
-                            .values(jeju_photo_paths={first_photo_id: jeju_path})
-                        )
-                        await db.execute(stmt)
-                        await db.commit()
-
-                        # scheduled 객체 갱신
-                        stmt = select(Postcard).where(Postcard.id == scheduled_id)
-                        result = await db.execute(stmt)
-                        scheduled = result.scalar_one_or_none()
-
-                        logger.info(f"✅ [예약발송] 제주 스타일 이미지 변환 완료: {scheduled_id}")
-
-                    except Exception as e:
-                        logger.error(f"❌ [예약발송] 제주 스타일 변환 실패 (원본 사용): {scheduled_id} - {str(e)}")
-
-                # 3. 사진 데이터 준비 (제주 스타일 우선, 없으면 원본)
-                photos = None
-                if scheduled.jeju_photo_paths:
-                    photos = {}
-                    for photo_id, photo_path in scheduled.jeju_photo_paths.items():
-                        try:
-                            photo_bytes = await self.storage.read_file(photo_path)
-                            if photo_bytes:
-                                photos[photo_id] = photo_bytes
-                        except Exception as e:
-                            logger.error(f"Failed to read jeju photo {photo_path}: {str(e)}")
-                elif scheduled.user_photo_paths:
-                    photos = {}
-                    for photo_id, photo_path in scheduled.user_photo_paths.items():
-                        try:
-                            photo_bytes = await self.storage.read_file(photo_path)
-                            if photo_bytes:
-                                photos[photo_id] = photo_bytes
-                        except Exception as e:
-                            logger.error(f"Failed to read photo {photo_path}: {str(e)}")
-
-                # 4. 엽서 이미지 생성
-                logger.info(f"🖼️ [예약발송] 엽서 이미지 생성 시작: {scheduled_id}")
+                # PostcardService의 즉시 발송 로직 재사용
                 postcard_service = PostcardService(db)
-                postcard = await postcard_service.create_postcard(
-                    template_id=scheduled.template_id,
-                    texts=translated_texts,
-                    photos=photos,
-                    sender_name=scheduled.sender_name,
-                    user_id=scheduled.user_id,
-                    recipient_email=scheduled.recipient_email,
-                )
-                logger.info(f"✅ [예약발송] 엽서 이미지 생성 완료: {scheduled_id}")
-
-                # 5. 이메일 발송
-                logger.info(f"📧 [예약발송] 이메일 발송 시작: {scheduled_id}")
-                email_service = EmailService()
-                await email_service.send_postcard_email(
-                    to_email=scheduled.recipient_email,
-                    to_name=scheduled.recipient_name,
-                    postcard_image_path=postcard.postcard_path,
-                    sender_name=scheduled.sender_name
-                )
-
-                # 상태 업데이트: sent
-                stmt = (
-                    update(Postcard)
-                    .where(Postcard.id == scheduled_id)
-                    .values(
-                        status="sent",
-                        postcard_image_path=postcard.postcard_path,
-                        sent_at=datetime.utcnow(),
-                        updated_at=datetime.utcnow()
-                    )
-                )
-                await db.execute(stmt)
-                await db.commit()
+                await postcard_service._send_postcard_background(scheduled_id, scheduled.user_id)
 
                 logger.info(f"✅ [예약발송] 발송 완료: {scheduled_id}")
 
             except Exception as e:
                 logger.error(f"❌ [예약발송] 발송 실패: {scheduled_id}: {str(e)}")
-
-                # 상태 업데이트: failed
-                try:
-                    stmt = (
-                        update(Postcard)
-                        .where(Postcard.id == scheduled_id)
-                        .values(
-                            status="failed",
-                            error_message=str(e),
-                            updated_at=datetime.utcnow()
-                        )
-                    )
-                    await db.execute(stmt)
-                    await db.commit()
-                except Exception as update_error:
-                    logger.error(f"Failed to update status for {scheduled_id}: {str(update_error)}")
