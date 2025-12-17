@@ -15,7 +15,7 @@ const ONBOARDING_SLIDES = [
     id: 1,
     image: "/images/onboarding/slide1.png",
     title: "제주의 감성을 담은 엽서",
-    description: "바당우체국 입장해서 편지 작성!",
+    description: "바당우체국 입장해서 엽서 작성!",
   },
   {
     id: 2,
