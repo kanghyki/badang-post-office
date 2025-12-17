@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../write/write.module.scss";
 import Header from "@/app/components/Header";
+import TemplateImageModal from "@/app/components/TemplateImageModal";
 import { postcardsApi } from "@/lib/api/postcards";
 import {
     templatesApi,
@@ -52,6 +53,10 @@ function ModifyContent() {
     const [selectedTemplateDetail, setSelectedTemplateDetail] =
         useState<TemplateDetailResponse | null>(null);
     const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // 템플릿 확대 모달 상태
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+    const [selectedTemplateImageUrl, setSelectedTemplateImageUrl] = useState<string | null>(null);
 
     // 이메일 도메인 선택 처리
     useEffect(() => {
@@ -600,17 +605,40 @@ function ModifyContent() {
                                                 {templateImageUrls[
                                                     template.id
                                                 ] ? (
-                                                    <img
-                                                        src={
-                                                            templateImageUrls[
-                                                                template.id
-                                                            ]
-                                                        }
-                                                        alt={template.name}
-                                                        className={
-                                                            styles.templateImage
-                                                        }
-                                                    />
+                                                    <>
+                                                        <img
+                                                            src={
+                                                                templateImageUrls[
+                                                                    template.id
+                                                                ]
+                                                            }
+                                                            alt={template.name}
+                                                            className={
+                                                                styles.templateImage
+                                                            }
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className={
+                                                                styles.expandButton
+                                                            }
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                setSelectedTemplateImageUrl(
+                                                                    templateImageUrls[
+                                                                        template.id
+                                                                    ]
+                                                                );
+                                                                setIsTemplateModalOpen(
+                                                                    true
+                                                                );
+                                                            }}
+                                                            aria-label="템플릿 확대"
+                                                        >
+                                                            ⤢
+                                                        </button>
+                                                    </>
                                                 ) : (
                                                     <div
                                                         className={
@@ -971,6 +999,13 @@ function ModifyContent() {
                         </button>
                     </div>
                 </main>
+
+                {/* 템플릿 확대 모달 */}
+                <TemplateImageModal
+                    isOpen={isTemplateModalOpen}
+                    onClose={() => setIsTemplateModalOpen(false)}
+                    templateImageUrl={selectedTemplateImageUrl}
+                />
             </div>
         </>
     );

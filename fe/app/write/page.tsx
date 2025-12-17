@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/app/context/NotificationContext";
 import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
 import { fetchImageWithAuth } from "@/lib/utils/image";
+import TemplateImageModal from "@/app/components/TemplateImageModal";
 
 export default function Write() {
     useAuth(); // 인증 체크
@@ -53,6 +54,12 @@ export default function Write() {
     const [selectedTemplateDetail, setSelectedTemplateDetail] =
         useState<TemplateDetailResponse | null>(null);
     const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // 템플릿 확대 모달
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+    const [selectedTemplateImageUrl, setSelectedTemplateImageUrl] = useState<
+        string | null
+    >(null);
 
     // 템플릿 목록 불러오기
     useEffect(() => {
@@ -505,17 +512,41 @@ export default function Write() {
                                                 {templateImageUrls[
                                                     template.id
                                                 ] ? (
-                                                    <img
-                                                        src={
-                                                            templateImageUrls[
-                                                                template.id
-                                                            ]
-                                                        }
-                                                        alt={template.name}
-                                                        className={
-                                                            styles.templateImage
-                                                        }
-                                                    />
+                                                    <>
+                                                        <img
+                                                            src={
+                                                                templateImageUrls[
+                                                                    template.id
+                                                                ]
+                                                            }
+                                                            alt={template.name}
+                                                            className={
+                                                                styles.templateImage
+                                                            }
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className={
+                                                                styles.expandButton
+                                                            }
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                setSelectedTemplateImageUrl(
+                                                                    templateImageUrls[
+                                                                        template
+                                                                            .id
+                                                                    ]
+                                                                );
+                                                                setIsTemplateModalOpen(
+                                                                    true
+                                                                );
+                                                            }}
+                                                            aria-label="템플릿 확대"
+                                                        >
+                                                            ⤢
+                                                        </button>
+                                                    </>
                                                 ) : (
                                                     <div
                                                         className={
@@ -876,6 +907,12 @@ export default function Write() {
                     </div>
                 </main>
             </div>
+
+            <TemplateImageModal
+                isOpen={isTemplateModalOpen}
+                onClose={() => setIsTemplateModalOpen(false)}
+                templateImageUrl={selectedTemplateImageUrl}
+            />
         </>
     );
 }
