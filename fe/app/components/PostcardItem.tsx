@@ -185,9 +185,6 @@ export default function PostcardItem({
                 {sendingStatus && SENDING_STATUS_LABELS[sendingStatus]}
               </div>
             )}
-            {data.status === "failed" && data.error_message && (
-              <div className={styles.errorMessage}>{data.error_message}</div>
-            )}
           </div>
           <div className={styles.dateRight}>
             <div className={styles.writeDate}>
