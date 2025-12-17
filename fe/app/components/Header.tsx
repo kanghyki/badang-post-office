@@ -65,14 +65,16 @@ export default function Header({
   return (
     <header className={styles.header}>
       <button onClick={handleLogoClick} className={styles.logoBtn}>
-        <Image
-          src="/images/logoImg.png"
-          alt="바당우체국"
-          width={40}
-          height={40}
-          className={styles.logo}
-          priority
-        />
+        <div className={styles.logoImageWrapper}>
+          <Image
+            src="/images/logoImg.png"
+            alt="바당우체국"
+            fill
+            style={{ objectFit: "contain" }}
+            priority
+            unoptimized
+          />
+        </div>
         <span className={styles.logoText}>바당우체국</span>
       </button>
       {showUserMenu && (

@@ -6,7 +6,7 @@ import { ROUTES } from "@/lib/constants/urls";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [targetRoute, setTargetRoute] = useState(ROUTES.LOGIN);
+  const [targetRoute, setTargetRoute] = useState<string>(ROUTES.LOGIN);
 
   useEffect(() => {
     // 온보딩을 본 적이 없으면 온보딩으로, 봤으면 로그인으로
@@ -23,11 +23,9 @@ export default function Home() {
           <Logo c_value="#FFF" bg_value="#fff" />
         </div>
         <p className={styles.headCopy}>
-          시간을 담아 보내는
+          작은 마음 담은 엽서 한 통
           <br />
-          제주방언 느영나영 편지,
-          <br />
-          미래에 도착해서 만나.
+          바당우체국이 전해드려요
         </p>
         <div className={styles.buttonSection}>
           <Link href={targetRoute} className={styles.moveBtn}>

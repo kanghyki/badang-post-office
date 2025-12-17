@@ -4,12 +4,13 @@
   align-items: center;
   flex-direction: column;
 
-  figure {
-    @include flex-center;
+  .logoImage {
+    position: relative;
     width: 15rem;
     height: 15rem;
-
     border-radius: 2.5rem;
+    overflow: hidden;
+    background: transparent;
   }
   h1 {
     font-family: "YeogiOttaeJalnan", sans-serif;
