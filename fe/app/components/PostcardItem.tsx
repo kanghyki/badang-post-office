@@ -26,9 +26,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const SENDING_STATUS_LABELS: Record<string, string> = {
-  translating: "알약우체부가 제주어로 번역하는 중...",
+  translating: "제주어로 번역하는 중...",
   converting: "사진에 귤빛 입히는 중...",
-  generating: "엽서에 사진을 꼼꼼히 붙이는 중...",
+  generating: "사진을 꼼꼼히 붙이는 중...",
   sending: "알약우체부가 배달 중...",
   completed: "우체통에 엽서 쏙! 배달 완료!",
   failed: "알약우체부가 길을 헤매고 있는 중...",
@@ -181,9 +181,7 @@ export default function PostcardItem({
               </div>
             )}
             {data.status === "failed" && data.error_message && (
-              <div className={styles.errorMessage}>
-                {data.error_message}
-              </div>
+              <div className={styles.errorMessage}>{data.error_message}</div>
             )}
           </div>
           <div className={styles.dateRight}>
@@ -194,7 +192,7 @@ export default function PostcardItem({
               <button onClick={handleMenuToggle} className={styles.menuBtn}>
                 <FaEllipsisV />
               </button>
-                {isDropdownOpen && (
+              {isDropdownOpen && (
                 <div className={styles.dropdown}>
                   {(data.status === "writing" || data.status === "pending") && (
                     <button
