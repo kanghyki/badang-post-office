@@ -126,7 +126,7 @@ class EmailService:
                 username=self.smtp_username,
                 password=self.smtp_password,
                 start_tls=True,
-                timeout=5  # 5초 타임아웃 (빠른 실패)
+                timeout=30  # 5초 타임아웃 (빠른 실패)
             )
 
             logger.info(f"Email sent successfully to {masked_email}")
