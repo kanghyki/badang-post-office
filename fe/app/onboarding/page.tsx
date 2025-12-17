@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./onboarding.module.scss";
@@ -15,27 +15,26 @@ const ONBOARDING_SLIDES = [
     id: 1,
     image: "/images/onboarding/slide1.png",
     title: "제주의 감성을 담은 엽서",
-    description: "특별한 추억을 제주 감성 가득한 엽서로 전해보세요",
+    description: "바당우체국 입장해서 편지 작성!",
   },
   {
     id: 2,
     image: "/images/onboarding/slide2.png",
     title: "AI가 만드는 제주어 번역",
-    description: "당신의 메시지를 따뜻한 제주어로 번역해드려요",
+    description: "바당우체부가 제주어로 번역해줘요",
   },
   {
     id: 3,
     image: "/images/onboarding/slide3.png",
     title: "사진을 제주 스타일로",
-    description: "소중한 사진이 제주의 감성으로 새롭게 태어나요",
+    description: "제주빛으로 엽서 꾸미고 바당우체부가 배달!",
   },
 ];
 
 export default function Onboarding() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 이미 로그인되어 있으면 메인으로 리다이렉트
   useEffect(() => {
@@ -51,9 +50,23 @@ export default function Onboarding() {
     }
   }, [router]);
 
+  // 스크롤 이벤트 핸들러 - 현재 슬라이드 인덱스 업데이트
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+
+    const container = scrollContainerRef.current;
+    const scrollLeft = container.scrollLeft;
+    const slideWidth = container.offsetWidth;
+    const newSlide = Math.round(scrollLeft / slideWidth);
+
+    if (newSlide !== currentSlide) {
+      setCurrentSlide(newSlide);
+    }
+  };
+
   const handleNext = () => {
     if (currentSlide < ONBOARDING_SLIDES.length - 1) {
-      setCurrentSlide(currentSlide + 1);
+      scrollToSlide(currentSlide + 1);
     } else {
       completeOnboarding();
     }
@@ -68,39 +81,18 @@ export default function Onboarding() {
     router.push(ROUTES.SIGNUP);
   };
 
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
+  const scrollToSlide = (index: number) => {
+    if (!scrollContainerRef.current) return;
 
-  // 터치 스와이프 핸들러
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && currentSlide < ONBOARDING_SLIDES.length - 1) {
-      setCurrentSlide(currentSlide + 1);
-    }
-    if (isRightSwipe && currentSlide > 0) {
-      setCurrentSlide(currentSlide - 1);
-    }
+    const container = scrollContainerRef.current;
+    const slideWidth = container.offsetWidth;
+    container.scrollTo({
+      left: slideWidth * index,
+      behavior: "smooth",
+    });
   };
 
   const isLastSlide = currentSlide === ONBOARDING_SLIDES.length - 1;
-  const currentData = ONBOARDING_SLIDES[currentSlide];
 
   return (
     <div className={styles.onboardingContainer}>
@@ -111,37 +103,39 @@ export default function Onboarding() {
         </button>
       )}
 
-      {/* 슬라이드 영역 */}
+      {/* 가로 스크롤 컨테이너 */}
       <div
-        className={styles.slideArea}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+        ref={scrollContainerRef}
+        className={styles.scrollContainer}
+        onScroll={handleScroll}
       >
-        {/* 이미지 영역 */}
-        <div className={styles.imageWrapper}>
-          <div className={styles.imagePlaceholder}>
-            {/* 실제 이미지로 교체하세요 */}
-            <Image
-              src={currentData.image}
-              alt={currentData.title}
-              fill
-              style={{ objectFit: "contain" }}
-              priority
-              onError={(e) => {
-                // 이미지 로드 실패 시 플레이스홀더 표시
-                const target = e.target as HTMLImageElement;
-                target.style.display = "none";
-              }}
-            />
-          </div>
-        </div>
+        {ONBOARDING_SLIDES.map((slide) => (
+          <div key={slide.id} className={styles.slideArea}>
+            {/* 이미지 영역 */}
+            <div className={styles.imageWrapper}>
+              <div className={styles.imagePlaceholder}>
+                <Image
+                  src={slide.image}
+                  alt={slide.title}
+                  fill
+                  style={{ objectFit: "contain" }}
+                  priority
+                  onError={(e) => {
+                    // 이미지 로드 실패 시 플레이스홀더 표시
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                  }}
+                />
+              </div>
+            </div>
 
-        {/* 텍스트 영역 */}
-        <div className={styles.textWrapper}>
-          <h1 className={styles.title}>{currentData.title}</h1>
-          <p className={styles.description}>{currentData.description}</p>
-        </div>
+            {/* 텍스트 영역 */}
+            <div className={styles.textWrapper}>
+              <h1 className={styles.title}>{slide.title}</h1>
+              <p className={styles.description}>{slide.description}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* 하단 컨트롤 영역 */}
@@ -154,7 +148,7 @@ export default function Onboarding() {
               className={`${styles.indicator} ${
                 index === currentSlide ? styles.active : ""
               }`}
-              onClick={() => goToSlide(index)}
+              onClick={() => scrollToSlide(index)}
               aria-label={`슬라이드 ${index + 1}로 이동`}
             />
           ))}
