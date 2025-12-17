@@ -84,7 +84,16 @@ export default function Header({
             className={styles.userMenuBtn}
           >
             {userName && <span className={styles.userName}>{userName}</span>}
-            <IoPersonCircle />
+            <div className={styles.profileImageWrapper}>
+              <Image
+                src="/images/profile.png"
+                alt="프로필"
+                width={40}
+                height={40}
+                style={{ objectFit: "cover", borderRadius: "50%" }}
+                priority
+              />
+            </div>
           </button>
           {isDropdownOpen && (
             <div className={styles.dropdown}>
