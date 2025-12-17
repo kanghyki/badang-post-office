@@ -62,8 +62,8 @@ jobs:
             echo "Create docker-compose.yml file"
             cat > docker-compose.yml << 'EOF'
             services:
-              jeju-gtp-fe:
-                container_name: jeju-gtp-fe
+              badang-fe:
+                container_name: badang-fe
                 image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_FE_TAGNAME }}
                 networks:
                   - proxy-network

@@ -84,8 +84,8 @@ jobs:
                     max-size: "10m"
                     max-file: "3"
 
-              jeju-gtp-be:
-                container_name: jeju-gtp-be
+              badang-be:
+                container_name: badang-be
                 image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_BE_TAGNAME }}
                 restart: unless-stopped
                 env_file:
