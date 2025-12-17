@@ -3,16 +3,25 @@ import styles from "./home.module.scss";
 import Link from "next/link";
 import Logo from "@/app/components/LogoBox";
 import { ROUTES } from "@/lib/constants/urls";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
 export default function Home() {
-  const pageTitle = "시작";
+  const [targetRoute, setTargetRoute] = useState(ROUTES.LOGIN);
+
   useEffect(() => {
     document.body.style.backgroundColor = "#FE6716"; // 시작화면 배경색
+
+    // 온보딩을 본 적이 없으면 온보딩으로, 봤으면 로그인으로
+    const hasSeenOnboarding = localStorage.getItem("hasSeenOnboarding");
+    if (!hasSeenOnboarding) {
+      setTargetRoute(ROUTES.ONBOARDING);
+    }
 
     return () => {
       document.body.style.backgroundColor = ""; // 나갈 때 초기화
     };
   }, []);
+
   return (
     <>
       <main className={styles.homeMain}>
@@ -25,7 +34,7 @@ export default function Home() {
           미래에 도착해서 만나.
         </p>
         <div className={styles.buttonSection}>
-          <Link href={ROUTES.LOGIN} className={styles.moveBtn}>
+          <Link href={targetRoute} className={styles.moveBtn}>
             문 열고 들어가기
           </Link>
         </div>

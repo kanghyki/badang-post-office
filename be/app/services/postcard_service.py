@@ -574,13 +574,25 @@ class PostcardService:
             if template:
                 # 원본 텍스트 매핑
                 original_texts = PostcardService._map_simple_text(template, text)
+                
+                # sender 처리: "{sender}가" 형식
                 if sender_name or postcard.sender_name:
                     sender_config = next(
-                        (cfg for cfg in template.text_configs if cfg.id in ["sender"]),
+                        (cfg for cfg in template.text_configs if cfg.id == "sender"),
                         None
                     )
                     if sender_config:
-                        original_texts[sender_config.id] = sender_name or postcard.sender_name
+                        original_texts[sender_config.id] = f"{sender_name or postcard.sender_name}가"
+
+                # recipient 처리: "{recipient}에게" 형식
+                effective_recipient_name = recipient_name if recipient_name is not None else postcard.recipient_name
+                if effective_recipient_name:
+                    recipient_config = next(
+                        (cfg for cfg in template.text_configs if cfg.id == "recipient"),
+                        None
+                    )
+                    if recipient_config:
+                        original_texts[recipient_config.id] = f"{effective_recipient_name}에게"
 
                 # 원본 텍스트만 저장 (제주어 번역은 send 시점에 수행)
                 update_values["original_text_contents"] = original_texts
@@ -813,11 +825,15 @@ class PostcardService:
         - sending: 이메일 발송 중
         - completed: 완료
         - failed: 실패
+
+        재발송 최적화:
+        - postcard_image_path가 이미 있으면 이메일만 재전송 (번역/변환/생성 스킵)
         """
         from datetime import datetime
         from sqlalchemy import update as sql_update
         from app.services.email_service import EmailService
         from app.services.redis_service import redis_service
+        from app.services.postcard_event_service import PostcardEventService
         import json
 
         try:
@@ -833,6 +849,44 @@ class PostcardService:
                 )
                 return
 
+            # 이미 엽서 이미지가 생성되어 있으면 이메일만 재전송 (재발송 최적화)
+            if postcard.postcard_image_path:
+                logger.info(f"🔄 [재발송] 이미 생성된 엽서 이미지 발견, 이메일만 재전송: {postcard_id}")
+                
+                await PostcardEventService.publish_and_save(
+                    self.db,
+                    postcard_id,
+                    "sending"
+                )
+                logger.info(f"📧 [재발송] 이메일 발송 시작: {postcard_id}")
+
+                email_service = EmailService()
+                await email_service.send_postcard_email(
+                    to_email=postcard.recipient_email,
+                    to_name=postcard.recipient_name,
+                    postcard_image_path=postcard.postcard_image_path,
+                    sender_name=postcard.sender_name
+                )
+
+                # 상태 업데이트: sent
+                stmt = (
+                    sql_update(Postcard)
+                    .where(Postcard.id == postcard_id)
+                    .values(status="sent", sent_at=datetime.utcnow())
+                )
+                await self.db.execute(stmt)
+                await self.db.commit()
+                await self.db.refresh(postcard)
+
+                logger.info(f"✅ [재발송] 이메일 발송 완료: {postcard_id}")
+
+                await PostcardEventService.publish_and_save(
+                    self.db,
+                    postcard_id,
+                    "completed"
+                )
+                return
+
             # 템플릿 조회
             template = template_service.get_template_by_id(postcard.template_id)
             if not template:
@@ -843,8 +897,6 @@ class PostcardService:
                 return
 
             # 1. 제주어 번역
-            from app.services.postcard_event_service import PostcardEventService
-
             await PostcardEventService.publish_and_save(
                 self.db,
                 postcard_id,
@@ -1084,14 +1136,15 @@ class PostcardService:
         if not postcard:
             raise ValueError("엽서를 찾을 수 없습니다.")
 
-        if postcard.status not in ["writing", "pending"]:
-            raise ValueError(f"writing 또는 pending 상태의 엽서만 발송 가능합니다. (현재 상태: {postcard.status})")
+        if postcard.status not in ["writing", "pending", "failed"]:
+            raise ValueError(f"writing, pending, 또는 failed 상태의 엽서만 발송 가능합니다. (현재 상태: {postcard.status})")
 
         if not postcard.recipient_email:
             raise ValueError("수신자 이메일이 설정되지 않았습니다.")
 
-        # 발송 제한 체크
-        await self._check_send_limit(user_id, limit=2)
+        # 발송 제한 체크 (failed 상태 재발송은 제한에서 제외)
+        if postcard.status != "failed":
+            await self._check_send_limit(user_id, limit=2)
 
         # 텍스트 필수 확인
         if not postcard.original_text_contents:
@@ -1099,11 +1152,11 @@ class PostcardService:
 
         # 즉시 발송 (scheduled_at이 없는 경우)
         if not postcard.scheduled_at:
-            # 상태를 processing으로 변경
+            # 상태를 processing으로 변경, error_message 초기화 (재발송 시)
             stmt = (
                 sql_update(Postcard)
                 .where(Postcard.id == postcard_id)
-                .values(status="processing", updated_at=datetime.utcnow())
+                .values(status="processing", error_message=None, updated_at=datetime.utcnow())
             )
             await self.db.execute(stmt)
             await self.db.commit()

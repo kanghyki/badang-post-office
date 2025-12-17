@@ -12,6 +12,7 @@ interface PostcardItemProps {
   index: number;
   onCancel?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onRetry?: (id: string) => void;
   onClick?: (data: PostcardResponse) => void;
   onStatusUpdate?: (id: string) => void;
 }
@@ -38,6 +39,7 @@ export default function PostcardItem({
   index,
   onCancel,
   onDelete,
+  onRetry,
   onClick,
   onStatusUpdate,
 }: PostcardItemProps) {
@@ -94,6 +96,13 @@ export default function PostcardItem({
     e.stopPropagation();
     setIsDropdownOpen(false);
     onDelete?.(data.id);
+  };
+
+  const handleRetry = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDropdownOpen(false);
+    onRetry?.(data.id);
   };
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -171,6 +180,11 @@ export default function PostcardItem({
                 {sendingStatus && SENDING_STATUS_LABELS[sendingStatus]}
               </div>
             )}
+            {data.status === "failed" && data.error_message && (
+              <div className={styles.errorMessage}>
+                {data.error_message}
+              </div>
+            )}
           </div>
           <div className={styles.dateRight}>
             <div className={styles.writeDate}>
@@ -180,7 +194,7 @@ export default function PostcardItem({
               <button onClick={handleMenuToggle} className={styles.menuBtn}>
                 <FaEllipsisV />
               </button>
-              {isDropdownOpen && (
+                {isDropdownOpen && (
                 <div className={styles.dropdown}>
                   {(data.status === "writing" || data.status === "pending") && (
                     <button
@@ -188,6 +202,14 @@ export default function PostcardItem({
                       className={styles.dropdownItem}
                     >
                       수정
+                    </button>
+                  )}
+                  {data.status === "failed" && (
+                    <button
+                      onClick={handleRetry}
+                      className={`${styles.dropdownItem} ${styles.primary}`}
+                    >
+                      재발송
                     </button>
                   )}
                   {data.status === "pending" && (

@@ -58,6 +58,7 @@ export const TEMPLATE_ENDPOINTS = {
  */
 export const ROUTES = {
   HOME: "/",
+  ONBOARDING: "/onboarding",
   LOGIN: "/login",
   SIGNUP: "/signup",
   LIST: "/list",

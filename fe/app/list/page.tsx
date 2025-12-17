@@ -230,6 +230,42 @@ export default function List() {
     }
   };
 
+  const handleRetry = async (id: string) => {
+    const confirmed = await showModal({
+      title: "엽서 재발송",
+      message: "이 엽서를 다시 발송하시겠습니까?",
+      type: "confirm",
+      confirmText: "재발송",
+      cancelText: "취소",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await postcardsApi.send(id);
+      // 현재 필터 상태를 유지하며 목록 새로고침
+      if (activeFilter === "all") {
+        fetchPostcards();
+      } else {
+        fetchPostcards(activeFilter);
+      }
+      showToast({ message: "엽서 재발송이 시작되었습니다.", type: "success" });
+    } catch (error) {
+      console.error("재발송 실패:", error);
+      if (error instanceof Error) {
+        showToast({
+          message: `재발송 실패: ${error.message}`,
+          type: "error",
+        });
+      } else {
+        showToast({
+          message: "재발송 중 오류가 발생했습니다.",
+          type: "error",
+        });
+      }
+    }
+  };
+
   if (initialLoading) {
     return (
       <>
@@ -318,6 +354,7 @@ export default function List() {
                   index={index}
                   onCancel={handleCancel}
                   onDelete={handleDelete}
+                  onRetry={handleRetry}
                   onClick={handlePostcardClick}
                   onStatusUpdate={handleStatusUpdate}
                 />

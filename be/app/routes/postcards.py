@@ -243,12 +243,16 @@ async def send_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 발송 (writing 또는 pending 상태의 엽서만 가능)
+    엽서 발송 (writing, pending, 또는 failed 상태의 엽서만 가능)
 
     엽서 이미지가 자동으로 생성되고 발송됩니다.
     - scheduled_at이 없으면: 백그라운드에서 비동기 발송 (processing → sent 상태)
       * 진행 상태는 SSE 엔드포인트 (/stream)로 실시간 확인 가능
     - scheduled_at이 설정되어 있으면: pending 상태로 변경 → 스케줄러 등록
+
+    재발송 (failed 상태):
+    - 이미 엽서 이미지가 생성된 경우: 이메일만 재전송 (빠른 재발송)
+    - 엽서 이미지가 없는 경우: 전체 프로세스 재실행 (번역 → 변환 → 생성 → 발송)
 
     ⚠️ 이메일 인증이 필요합니다.
     """

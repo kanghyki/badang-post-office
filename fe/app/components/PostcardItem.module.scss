@@ -99,6 +99,16 @@
         white-space: nowrap;
       }
 
+      .errorMessage {
+        font-size: 0.7rem;
+        color: #dc2626;
+        font-weight: 500;
+        max-width: 12rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       .dateRight {
         display: flex;
         align-items: center;
@@ -178,6 +188,15 @@
 
           &:hover {
             background-color: #ffebee;
+          }
+        }
+
+        &.primary {
+          color: #ff6600;
+          font-weight: 600;
+
+          &:hover {
+            background-color: #fff5eb;
           }
         }
       }
