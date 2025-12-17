@@ -168,9 +168,7 @@ export default function PostcardItem({
             </div>
             {data.status === "processing" && (
               <div className={styles.sendingStatus}>
-                {sendingStatus && SENDING_STATUS_LABELS[sendingStatus]
-                  ? SENDING_STATUS_LABELS[sendingStatus]
-                  : "예쁜 편지 봉투 찾는중..."}
+                {sendingStatus && SENDING_STATUS_LABELS[sendingStatus]}
               </div>
             )}
           </div>

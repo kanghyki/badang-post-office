@@ -903,20 +903,19 @@ class PostcardService:
                         None
                     )
 
-                    # OpenAI API 지원 크기 계산 (256x256, 512x512, 1024x1024, 1024x1792, 1792x1024)
+                    # OpenAI API 지원 크기 계산 (1024x1024, 1024x1536, 1536x1024, auto)
                     ai_size = "1024x1024"  # 기본값
                     if photo_config and photo_config.max_width and photo_config.max_height:
-                        max_dim = max(photo_config.max_width, photo_config.max_height)
-                        if max_dim <= 256:
-                            ai_size = "256x256"
-                        elif max_dim <= 512:
-                            ai_size = "512x512"
-                        elif photo_config.max_width > photo_config.max_height and max_dim <= 1792:
-                            ai_size = "1792x1024"  # 가로형
-                        elif photo_config.max_height > photo_config.max_width and max_dim <= 1792:
-                            ai_size = "1024x1792"  # 세로형
+                        # 가로/세로 비율로 판단
+                        if photo_config.max_width > photo_config.max_height:
+                            # 가로형: 1536x1024
+                            ai_size = "1536x1024"
+                        elif photo_config.max_height > photo_config.max_width:
+                            # 세로형: 1024x1536
+                            ai_size = "1024x1536"
                         else:
-                            ai_size = "1024x1024"  # 정사각형
+                            # 정사각형: 1024x1024
+                            ai_size = "1024x1024"
 
                     logger.info(f"🎨 AI 이미지 생성 크기: {ai_size} (템플릿: {photo_config.max_width if photo_config else 'N/A'}x{photo_config.max_height if photo_config else 'N/A'})")
 
