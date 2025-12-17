@@ -13,19 +13,19 @@ import { ROUTES } from "@/lib/constants/urls";
 const ONBOARDING_SLIDES = [
   {
     id: 1,
-    image: "/images/onboarding/slide1.svg",
+    image: "/images/onboarding/slide1.png",
     title: "제주의 감성을 담은 엽서",
     description: "특별한 추억을 제주 감성 가득한 엽서로 전해보세요",
   },
   {
     id: 2,
-    image: "/images/onboarding/slide2.svg",
+    image: "/images/onboarding/slide2.png",
     title: "AI가 만드는 제주어 번역",
     description: "당신의 메시지를 따뜻한 제주어로 번역해드려요",
   },
   {
     id: 3,
-    image: "/images/onboarding/slide3.svg",
+    image: "/images/onboarding/slide3.png",
     title: "사진을 제주 스타일로",
     description: "소중한 사진이 제주의 감성으로 새롭게 태어나요",
   },
@@ -134,13 +134,6 @@ export default function Onboarding() {
                 target.style.display = "none";
               }}
             />
-            {/* 이미지가 없을 때 보이는 플레이스홀더 */}
-            <div className={styles.placeholderContent}>
-              <span className={styles.placeholderIcon}>🍊</span>
-              <span className={styles.placeholderText}>
-                이미지 {currentSlide + 1}
-              </span>
-            </div>
           </div>
         </div>
 

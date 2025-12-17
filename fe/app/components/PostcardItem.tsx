@@ -204,14 +204,6 @@ export default function PostcardItem({
                       수정
                     </button>
                   )}
-                  {data.status === "failed" && (
-                    <button
-                      onClick={handleRetry}
-                      className={`${styles.dropdownItem} ${styles.primary}`}
-                    >
-                      재발송
-                    </button>
-                  )}
                   {data.status === "pending" && (
                     <button
                       onClick={handleCancel}

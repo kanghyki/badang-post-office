@@ -1141,15 +1141,14 @@ class PostcardService:
         if not postcard:
             raise ValueError("엽서를 찾을 수 없습니다.")
 
-        if postcard.status not in ["writing", "pending", "failed"]:
-            raise ValueError(f"writing, pending, 또는 failed 상태의 엽서만 발송 가능합니다. (현재 상태: {postcard.status})")
+        if postcard.status not in ["writing", "pending"]:
+            raise ValueError(f"writing 또는 pending 상태의 엽서만 발송 가능합니다. (현재 상태: {postcard.status})")
 
         if not postcard.recipient_email:
             raise ValueError("수신자 이메일이 설정되지 않았습니다.")
 
-        # 발송 제한 체크 (failed 상태 재발송은 제한에서 제외)
-        if postcard.status != "failed":
-            await self._check_send_limit(user_id, limit=2)
+        # 발송 제한 체크
+        await self._check_send_limit(user_id, limit=2)
 
         # 텍스트 필수 확인
         if not postcard.original_text_contents:

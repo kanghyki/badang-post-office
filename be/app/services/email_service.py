@@ -4,10 +4,10 @@
 SMTP를 통해 이메일을 발송합니다.
 """
 
-import smtplib
 import aiosmtplib
 import logging
 import random
+import socket
 from typing import Optional
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -115,13 +115,19 @@ class EmailService:
             )
             msg.attach(image_attachment)
 
-            # SMTP 서버 연결 및 전송
+            # SMTP 서버 연결 및 전송 (비동기 + 짧은 타임아웃)
             masked_email = self._mask_email(to_email)
             logger.info(f"Sending email to {masked_email} (Subject: {subject})")
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
-                server.starttls()  # TLS 암호화
-                server.login(self.smtp_username, self.smtp_password)
-                server.send_message(msg)
+
+            await aiosmtplib.send(
+                msg,
+                hostname=self.smtp_host,
+                port=self.smtp_port,
+                username=self.smtp_username,
+                password=self.smtp_password,
+                start_tls=True,
+                timeout=5  # 5초 타임아웃 (빠른 실패)
+            )
 
             logger.info(f"Email sent successfully to {masked_email}")
             return True

@@ -36,11 +36,17 @@ class RedisService:
 
     async def publish(self, channel: str, message: str):
         """메시지 발행"""
-        if self.redis:
-            try:
-                await self.redis.publish(channel, message)
-            except Exception as e:
-                logger.error(f"❌ Redis publish failed: {str(e)}")
+        if not self.redis:
+            logger.error(f"❌ Redis not connected. Cannot publish to {channel}")
+            return
+
+        try:
+            await self.redis.publish(channel, message)
+            logger.debug(f"📤 Published to {channel}: {message[:100]}...")
+        except Exception as e:
+            logger.error(f"❌ Redis publish failed: {str(e)}")
+            # Redis 실패는 치명적이지 않으므로 예외를 전파하지 않음
+            # DB에는 저장되므로 새로고침 시 확인 가능
 
     async def subscribe(self, channel: str):
         """채널 구독 (제너레이터)"""

@@ -243,16 +243,12 @@ async def send_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 발송 (writing, pending, 또는 failed 상태의 엽서만 가능)
+    엽서 발송 (writing 또는 pending 상태의 엽서만 가능)
 
     엽서 이미지가 자동으로 생성되고 발송됩니다.
     - scheduled_at이 없으면: 백그라운드에서 비동기 발송 (processing → sent 상태)
       * 진행 상태는 SSE 엔드포인트 (/stream)로 실시간 확인 가능
     - scheduled_at이 설정되어 있으면: pending 상태로 변경 → 스케줄러 등록
-
-    재발송 (failed 상태):
-    - 이미 엽서 이미지가 생성된 경우: 이메일만 재전송 (빠른 재발송)
-    - 엽서 이미지가 없는 경우: 전체 프로세스 재실행 (번역 → 변환 → 생성 → 발송)
 
     ⚠️ 이메일 인증이 필요합니다.
     """
@@ -333,7 +329,7 @@ async def stream_postcard_status(
             # 현재 엽서 발송 상태
             current_status = postcard.status
 
-            # 1. 과거 이벤트 재생 (processing 상태인 경우)
+            # 1. 과거 이벤트 재생 (processing 또는 빠르게 완료/실패한 경우)
             if current_status == "processing":
                 # DB에서 과거 이벤트 조회
                 past_events = await PostcardEventService.get_events(db, postcard_id)
@@ -351,12 +347,24 @@ async def stream_postcard_status(
                     if data.get("status") in ["completed", "failed"]:
                         break
 
-            # processing 아닌 경우: 최종 상태만 전송
-            else:
+            # 이미 완료/실패한 경우: 과거 이벤트 전체 재생
+            elif current_status in ["sent", "failed"]:
+                # DB에서 과거 이벤트 조회
+                past_events = await PostcardEventService.get_events(db, postcard_id)
+
+                logger.info(f"📼 완료된 작업 이벤트 재생: {postcard_id} - {len(past_events)}개")
+                for event in past_events:
+                    yield f"data: {json.dumps(event)}\n\n"
+
+                # 최종 상태 전송
                 if current_status == "sent":
                     yield f"data: {json.dumps({'status': 'completed'})}\n\n"
                 elif current_status == "failed":
                     yield f"data: {json.dumps({'status': 'failed', 'error': postcard.error_message or '발송 실패'})}\n\n"
+
+            # 기타 상태 (writing, pending 등): 아무것도 전송하지 않음
+            else:
+                pass
 
         except Exception as e:
             logger.error(f"SSE stream error: {str(e)}")
