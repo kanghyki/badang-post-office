@@ -198,7 +198,8 @@ body {
     "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR",
     "Malgun Gothic", sans-serif;
   line-height: 24px;
-  background-color: #ffefef;
+  background: linear-gradient(180deg, #fff9f5 0%, #ffffff 100%);
+  background-attachment: fixed; /* 스크롤 시에도 그라데이션 고정 */
   overflow-y: auto;
   min-height: 100vh;
 
