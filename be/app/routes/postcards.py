@@ -300,12 +300,13 @@ async def stream_postcard_status(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 변환 상태를 SSE로 실시간 스트리밍
+    엽서 변환 상태를 SSE로 실시간 스트리밍 (과거 이벤트 재생 지원)
 
     클라이언트는 EventSource로 연결하여 변환 상태를 실시간으로 받습니다.
     """
     from fastapi.responses import StreamingResponse
     from app.services.redis_service import redis_service
+    from app.services.postcard_event_service import PostcardEventService
     import json
 
     # 엽서 소유권 확인
@@ -323,27 +324,35 @@ async def stream_postcard_status(
         raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
 
     async def event_generator():
-        """SSE 이벤트 제너레이터"""
+        """SSE 이벤트 제너레이터 (과거 이벤트 재생 포함)"""
         try:
-            # 현재 엽서 발송 상태 즉시 전송
+            # 현재 엽서 발송 상태
             current_status = postcard.status
 
-            # processing 상태가 아니면 초기 상태 전송하고 종료
-            if current_status != "processing":
+            # 1. 과거 이벤트 재생 (processing 상태인 경우)
+            if current_status == "processing":
+                # DB에서 과거 이벤트 조회
+                past_events = await PostcardEventService.get_events(db, postcard_id)
+
+                logger.info(f"📼 과거 이벤트 재생: {postcard_id} - {len(past_events)}개")
+                for event in past_events:
+                    yield f"data: {json.dumps(event)}\n\n"
+
+                # 2. Redis Pub/Sub 구독하여 실시간 상태 수신
+                async for message in redis_service.subscribe(f"postcard:{postcard_id}"):
+                    yield f"data: {message}\n\n"
+
+                    # 완료/실패 시 연결 종료
+                    data = json.loads(message)
+                    if data.get("status") in ["completed", "failed"]:
+                        break
+
+            # processing 아닌 경우: 최종 상태만 전송
+            else:
                 if current_status == "sent":
                     yield f"data: {json.dumps({'status': 'completed'})}\n\n"
                 elif current_status == "failed":
                     yield f"data: {json.dumps({'status': 'failed', 'error': postcard.error_message or '발송 실패'})}\n\n"
-                return
-
-            # processing 상태: Redis Pub/Sub 구독하여 실시간 상태 전송
-            async for message in redis_service.subscribe(f"postcard:{postcard_id}"):
-                yield f"data: {message}\n\n"
-
-                # 완료/실패 시 연결 종료
-                data = json.loads(message)
-                if data.get("status") in ["completed", "failed"]:
-                    break
 
         except Exception as e:
             logger.error(f"SSE stream error: {str(e)}")

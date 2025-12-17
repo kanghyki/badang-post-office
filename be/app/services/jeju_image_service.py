@@ -65,7 +65,7 @@ STRICT RULES:
         self,
         image_bytes: bytes,
         custom_prompt: str = "",
-        size: str = "1024x1024"
+        size: Optional[str] = None
     ) -> bytes:
         """원본 이미지를 제주 스타일 애니메이션으로 변환"""
 
@@ -73,6 +73,10 @@ STRICT RULES:
         logger.info(f"🎨 제주 스타일 변환 시작 (크기: {len(image_bytes)} bytes)")
 
         prompt = self._create_jeju_style_prompt(custom_prompt)
+
+        # OpenAI API 지원 크기로 기본값 설정
+        if size is None:
+            size = "1024x1024"
 
         # 원본 이미지를 BytesIO로 감싸서 tuple 형태로 전달
         image_file = io.BytesIO(image_bytes)

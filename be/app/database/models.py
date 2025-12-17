@@ -69,3 +69,14 @@ class Postcard(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
+class PostcardEvent(Base):
+    """엽서 발송 이벤트 테이블 (SSE 재생용)"""
+    __tablename__ = "postcard_events"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    postcard_id = Column(String, ForeignKey("postcards.id", ondelete="CASCADE"), nullable=False, index=True)
+    event_type = Column(String, nullable=False)  # translating, converting, generating, sending, completed, failed
+    event_data = Column(JSON)  # 메타데이터 (에러 메시지 등)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+

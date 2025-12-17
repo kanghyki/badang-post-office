@@ -843,9 +843,12 @@ class PostcardService:
                 return
 
             # 1. 제주어 번역
-            await redis_service.publish(
-                f"postcard:{postcard_id}",
-                json.dumps({"status": "translating"})
+            from app.services.postcard_event_service import PostcardEventService
+
+            await PostcardEventService.publish_and_save(
+                self.db,
+                postcard_id,
+                "translating"
             )
             logger.info(f"📝 제주어 번역 시작: {postcard_id}")
 
@@ -866,9 +869,10 @@ class PostcardService:
 
             # 2. 제주 스타일 이미지 변환
             if postcard.user_photo_paths and not postcard.jeju_photo_paths:
-                await redis_service.publish(
-                    f"postcard:{postcard_id}",
-                    json.dumps({"status": "converting"})
+                await PostcardEventService.publish_and_save(
+                    self.db,
+                    postcard_id,
+                    "converting"
                 )
                 logger.info(f"🎨 제주 스타일 이미지 변환 시작: {postcard_id}")
 
@@ -884,12 +888,44 @@ class PostcardService:
                     if not original_image_bytes:
                         raise ValueError("원본 이미지를 읽을 수 없습니다.")
 
-                    # 제주 스타일 변환
+                    # AI 전송용 이미지 압축 (적극적 압축: 512px, 품질 75%)
+                    logger.info(f"📦 원본 이미지 크기: {len(original_image_bytes)} bytes")
+                    compressed_image_bytes = self.storage.compress_image_for_ai(
+                        image_bytes=original_image_bytes,
+                        max_long_edge=512,
+                        jpeg_quality=75
+                    )
+                    logger.info(f"📦 압축 후 크기: {len(compressed_image_bytes)} bytes (압축률: {len(compressed_image_bytes)/len(original_image_bytes)*100:.1f}%)")
+
+                    # 템플릿의 photo_config에서 크기 정보 추출
+                    photo_config = next(
+                        (cfg for cfg in template.photo_configs if cfg.id == first_photo_id),
+                        None
+                    )
+
+                    # OpenAI API 지원 크기 계산 (256x256, 512x512, 1024x1024, 1024x1792, 1792x1024)
+                    ai_size = "1024x1024"  # 기본값
+                    if photo_config and photo_config.max_width and photo_config.max_height:
+                        max_dim = max(photo_config.max_width, photo_config.max_height)
+                        if max_dim <= 256:
+                            ai_size = "256x256"
+                        elif max_dim <= 512:
+                            ai_size = "512x512"
+                        elif photo_config.max_width > photo_config.max_height and max_dim <= 1792:
+                            ai_size = "1792x1024"  # 가로형
+                        elif photo_config.max_height > photo_config.max_width and max_dim <= 1792:
+                            ai_size = "1024x1792"  # 세로형
+                        else:
+                            ai_size = "1024x1024"  # 정사각형
+
+                    logger.info(f"🎨 AI 이미지 생성 크기: {ai_size} (템플릿: {photo_config.max_width if photo_config else 'N/A'}x{photo_config.max_height if photo_config else 'N/A'})")
+
+                    # 제주 스타일 변환 (압축된 이미지 사용)
                     jeju_service = JejuImageService()
                     jeju_bytes = await jeju_service.generate_jeju_style_image(
-                        image_bytes=original_image_bytes,
+                        image_bytes=compressed_image_bytes,
                         custom_prompt="",
-                        size="1024x1024"
+                        size=ai_size  # 계산된 크기 전달
                     )
 
                     # 변환된 이미지 저장
@@ -914,9 +950,10 @@ class PostcardService:
                     await self.db.refresh(postcard)
 
             # 3. 엽서 이미지 생성
-            await redis_service.publish(
-                f"postcard:{postcard_id}",
-                json.dumps({"status": "generating"})
+            await PostcardEventService.publish_and_save(
+                self.db,
+                postcard_id,
+                "generating"
             )
             logger.info(f"🖼️ 엽서 이미지 생성 시작: {postcard_id}")
 
@@ -960,9 +997,10 @@ class PostcardService:
             logger.info(f"✅ 엽서 이미지 생성 완료: {postcard_id}")
 
             # 4. 이메일 발송
-            await redis_service.publish(
-                f"postcard:{postcard_id}",
-                json.dumps({"status": "sending"})
+            await PostcardEventService.publish_and_save(
+                self.db,
+                postcard_id,
+                "sending"
             )
             logger.info(f"📧 이메일 발송 시작: {postcard_id}")
 
@@ -987,9 +1025,10 @@ class PostcardService:
             logger.info(f"✅ 이메일 발송 완료: {postcard_id}")
 
             # 5. 완료 이벤트 발행
-            await redis_service.publish(
-                f"postcard:{postcard_id}",
-                json.dumps({"status": "completed"})
+            await PostcardEventService.publish_and_save(
+                self.db,
+                postcard_id,
+                "completed"
             )
 
         except Exception as e:
@@ -1004,9 +1043,11 @@ class PostcardService:
             await self.db.execute(stmt)
             await self.db.commit()
 
-            await redis_service.publish(
-                f"postcard:{postcard_id}",
-                json.dumps({"status": "failed", "error": str(e)})
+            await PostcardEventService.publish_and_save(
+                self.db,
+                postcard_id,
+                "failed",
+                {"error": str(e)}
             )
 
     async def send_postcard(self, postcard_id: str, user_id: str, background_tasks=None) -> PostcardResponse:

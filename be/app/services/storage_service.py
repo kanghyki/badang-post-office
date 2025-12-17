@@ -166,3 +166,58 @@ class LocalStorageService:
             logger = logging.getLogger(__name__)
             logger.warning(f"Failed to delete file {file_path}: {str(e)}")
             return False
+
+    def compress_image_for_ai(
+        self,
+        image_bytes: bytes,
+        max_long_edge: int = 512,
+        jpeg_quality: int = 75
+    ) -> bytes:
+        """
+        AI API 전송용 이미지 압축
+
+        긴 변을 max_long_edge로 리사이징하고 JPEG 품질을 낮춰 압축합니다.
+
+        Args:
+            image_bytes: 원본 이미지 바이트
+            max_long_edge: 긴 변 최대 픽셀 (기본 512px)
+            jpeg_quality: JPEG 품질 (1-100, 기본 75)
+
+        Returns:
+            압축된 이미지 바이트
+
+        Example:
+            compressed = storage.compress_image_for_ai(
+                image_bytes=original_bytes,
+                max_long_edge=512,
+                jpeg_quality=75
+            )
+        """
+        import io
+
+        # 이미지 로드
+        image = Image.open(io.BytesIO(image_bytes))
+
+        # RGB로 변환 (RGBA, P 모드 등 처리)
+        if image.mode in ('RGBA', 'LA', 'P'):
+            background = Image.new('RGB', image.size, (255, 255, 255))
+            if image.mode == 'P':
+                image = image.convert('RGBA')
+            background.paste(image, mask=image.split()[-1] if image.mode in ('RGBA', 'LA') else None)
+            image = background
+        elif image.mode != 'RGB':
+            image = image.convert('RGB')
+
+        # 긴 변 기준 리사이징
+        width, height = image.size
+        if max(width, height) > max_long_edge:
+            ratio = max_long_edge / max(width, height)
+            new_width = int(width * ratio)
+            new_height = int(height * ratio)
+            image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+        # JPEG로 압축
+        output = io.BytesIO()
+        image.save(output, format='JPEG', quality=jpeg_quality, optimize=True)
+
+        return output.getvalue()
