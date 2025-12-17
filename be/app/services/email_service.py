@@ -287,62 +287,82 @@ class EmailService:
             발송 성공 여부
         """
         try:
-            # 인증 링크 생성 (백엔드 API 직접 호출)
-            # TODO: 배포 시 실제 도메인으로 변경 필요
             domain = settings.domain
             verification_url = f"{domain}/v1/auth/verify-email?token={verification_token}"
 
             subject = "바당우체국 - 이메일 인증"
 
-            html_content = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                    .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
-                    .content {{ background-color: #f9f9f9; padding: 30px; border-radius: 5px; margin-top: 20px; }}
-                    .button {{
-                        display: inline-block;
-                        padding: 12px 24px;
-                        background-color: #4CAF50;
-                        color: white;
-                        text-decoration: none;
-                        border-radius: 5px;
-                        margin: 20px 0;
-                    }}
-                    .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>바당 우체국</h1>
-                    </div>
-                    <div class="content">
-                        <h2>안녕하세요, {name}님!</h2>
-                        <p>아래 버튼을 클릭하여 이메일 인증을 완료해주세요.</p>
-                        <div style="text-align: center;">
-                            <a href="{verification_url}" class="button">이메일 인증하기</a>
-                        </div>
-                        <p>또는 아래 링크를 복사하여 브라우저에 붙여넣으세요:</p>
-                        <p style="word-break: break-all; background-color: #fff; padding: 10px; border-radius: 3px;">
-                            {verification_url}
-                        </p>
-                        <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                            이 링크는 24시간 동안 유효합니다.
-                        </p>
-                    </div>
-                    <div class="footer">
-                        <p>본 메일은 발신 전용입니다.</p>
-                        <p>&copy; 2025 바당우체국. All rights reserved.</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """
+            html_content = f"""<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>이메일 인증</title>
+  </head>
+  <body style="margin:0; padding:0; font-family:Arial, sans-serif; line-height:1.6; color:#333333; background-color:#ffffff;">
+    <div style="max-width:600px; margin:0 auto; padding:20px;">
+
+      <!-- Header -->
+      <div style="background-color:#4CAF50; color:#ffffff; padding:20px; text-align:center;">
+        <h1 style="margin:0; font-size:24px;">바당 우체국</h1>
+      </div>
+
+      <!-- Content -->
+      <div style="background-color:#f9f9f9; padding:30px; border-radius:5px; margin-top:20px;">
+
+        <h2 style="margin-top:0; font-size:20px;">
+          안녕하세요, {name}님!
+        </h2>
+
+        <p style="margin:16px 0;">
+          아래 버튼을 클릭하여 이메일 인증을 완료해주세요.
+        </p>
+
+        <!-- Button -->
+        <div style="text-align:center; margin:20px 0;">
+          <a href="{verification_url}"
+             style="
+               display:inline-block;
+               padding:12px 24px;
+               background-color:#4CAF50;
+               color:#ffffff;
+               text-decoration:none;
+               border-radius:5px;
+               font-size:16px;
+               font-weight:bold;
+             ">
+            이메일 인증하기
+          </a>
+        </div>
+
+        <p style="margin:16px 0;">
+          또는 아래 링크를 복사하여 브라우저에 붙여넣으세요:
+        </p>
+
+        <p style="
+             word-break:break-all;
+             background-color:#ffffff;
+             padding:10px;
+             border-radius:3px;
+             font-size:14px;
+             margin:10px 0;
+           ">
+          {verification_url}
+        </p>
+
+        <p style="color:#666666; font-size:14px; margin-top:20px;">
+          이 링크는 24시간 동안 유효합니다.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div style="text-align:center; margin-top:20px; color:#666666; font-size:12px;">
+        <p style="margin:4px 0;">본 메일은 발신 전용입니다.</p>
+        <p style="margin:4px 0;">&copy; 2025 바당우체국. All rights reserved.</p>
+      </div>
+
+    </div>
+  </body>
+</html>"""
 
             text_content = f"""
 안녕하세요, {name}님!
