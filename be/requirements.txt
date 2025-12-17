@@ -20,9 +20,7 @@ python-multipart
 # Translator model
 llama-cpp-python>=0.2.0
 
-# LangChain & OpenAI
-langchain-openai>=0.1.0
-langchain-core>=0.2.0
+# OpenAI
 openai>=1.0.0
 
 # JWT & 비밀번호 해싱
@@ -40,7 +38,7 @@ pytz>=2023.3
 redis>=5.0.0
 
 # HTTP client (for Jeju image service)
-# aiohttp>=3.9.0
+aiohttp>=3.9.0
 
 # Testing
 pytest>=7.4.0
