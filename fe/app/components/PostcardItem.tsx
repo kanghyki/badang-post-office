@@ -25,12 +25,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const SENDING_STATUS_LABELS: Record<string, string> = {
-  translating: "열심히 제주어 번역하는 중...",
-  converting: "사진에 볼터치 추가하는 중...",
-  generating: "엽서에 사진 붙이는 중...",
-  sending: "우체부 아저씨 차에 시동 거는중...",
-  completed: "엽서 배달 완료!",
-  failed: "길가다 편지 잃어버려서 찾는중...",
+  translating: "알약우체부가 제주어로 번역하는 중...",
+  converting: "사진에 귤빛 입히는 중...",
+  generating: "엽서에 사진을 꼼꼼히 붙이는 중...",
+  sending: "알약우체부가 배달 중...",
+  completed: "우체통에 엽서 쏙! 배달 완료!",
+  failed: "알약우체부가 길을 헤매고 있는 중...",
 };
 
 export default function PostcardItem({
