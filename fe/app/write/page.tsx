@@ -611,7 +611,7 @@ export default function Write() {
                     type="text"
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="예) 사랑하는 어머니 (수신자명) + '에게'"
+                    placeholder="예) 사랑하는 어머니 (수신자명)"
                     className={styles.input}
                     required
                   />
@@ -683,7 +683,7 @@ export default function Write() {
                     type="text"
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
-                    placeholder="예) 바당이 (발신자명) + '가'"
+                    placeholder="예) 바당이 (발신자명)"
                     className={styles.input}
                   />
                 </label>
