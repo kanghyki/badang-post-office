@@ -82,7 +82,6 @@ const User = observer(() => {
     <>
       <div className="hdrWrap">
         <Header
-          title=""
           showUserMenu={true}
           userName={userName}
           onLogout={handleLogout}

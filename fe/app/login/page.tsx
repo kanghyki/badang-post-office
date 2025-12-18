@@ -15,11 +15,17 @@ export default function Login() {
   const { showToast } = useNotification();
 
   const [email, setEmail] = useState(() => {
-    return localStorage.getItem('rememberedEmail') || '';
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('rememberedEmail') || '';
+    }
+    return '';
   });
   const [password, setPassword] = useState('');
   const [rememberEmail, setRememberEmail] = useState(() => {
-    return !!localStorage.getItem('rememberedEmail');
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('rememberedEmail');
+    }
+    return false;
   });
 
   // 컴포넌트 마운트 시 로그인 상태 확인

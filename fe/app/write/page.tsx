@@ -448,7 +448,7 @@ export default function Write() {
   return (
     <>
       <div className="hdrWrap">
-        <Header title="엽서 작성하기" />
+        <Header />
       </div>
 
       <div className="container">

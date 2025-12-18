@@ -8,8 +8,11 @@ import { useEffect, useState } from 'react';
 export default function Home() {
   const [targetRoute] = useState<string>(() => {
     // 온보딩을 본 적이 없으면 온보딩으로, 봤으면 로그인으로
-    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    return hasSeenOnboarding ? ROUTES.LOGIN : ROUTES.ONBOARDING;
+    if (typeof window !== 'undefined') {
+      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+      return hasSeenOnboarding ? ROUTES.LOGIN : ROUTES.ONBOARDING;
+    }
+    return ROUTES.ONBOARDING;
   });
 
   useEffect(() => {

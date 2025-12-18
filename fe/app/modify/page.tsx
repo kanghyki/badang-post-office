@@ -534,7 +534,7 @@ function ModifyContent() {
     return (
       <>
         <div className="hdrWrap">
-          <Header title="엽서 수정하기" />
+          <Header />
         </div>
         <div className="container"></div>
       </>
@@ -544,7 +544,7 @@ function ModifyContent() {
   return (
     <>
       <div className="hdrWrap">
-        <Header title="엽서 수정하기" />
+        <Header />
       </div>
 
       <div className="container">
@@ -907,7 +907,7 @@ export default function Modify() {
       fallback={
         <>
           <div className="hdrWrap">
-            <Header title="엽서 수정하기" />
+            <Header />
           </div>
           <div className="container"></div>
         </>

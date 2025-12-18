@@ -163,7 +163,6 @@ export default function Profile() {
       <>
         <div className="hdrWrap">
           <Header
-            title="내 정보"
             showUserMenu={true}
             userName={profile?.name}
             onLogout={handleLogout}
@@ -181,7 +180,6 @@ export default function Profile() {
     <>
       <div className="hdrWrap">
         <Header
-          title="내 정보"
           showUserMenu={true}
           userName={profile?.name}
           onLogout={handleLogout}

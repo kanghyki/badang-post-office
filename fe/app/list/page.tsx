@@ -271,7 +271,6 @@ export default function List() {
       <>
         <div className="hdrWrap">
           <Header
-            title="예약엽서목록"
             showUserMenu={true}
             userName={userName}
             onLogout={handleLogout}
@@ -288,7 +287,6 @@ export default function List() {
       <>
         <div className="hdrWrap">
           <Header
-            title="예약엽서목록"
             showUserMenu={true}
             userName={userName}
             onLogout={handleLogout}
@@ -314,7 +312,6 @@ export default function List() {
     <>
       <div className="hdWrap">
         <Header
-          title="예약엽서목록"
           showUserMenu={true}
           userName={userName}
           onLogout={handleLogout}
