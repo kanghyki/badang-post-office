@@ -35,7 +35,11 @@ export default function Home() {
           미래에 도착해서 만나.
         </p>
         <div className={styles.buttonSection}>
-          <Link href={targetRoute} className={styles.moveBtn}>
+          <Link
+            href={targetRoute}
+            className={styles.moveBtn}
+            suppressHydrationWarning
+          >
             문 열고 들어가기
           </Link>
         </div>
