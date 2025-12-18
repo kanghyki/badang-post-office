@@ -10,9 +10,5 @@ export default function Template({ children }: { children: React.ReactNode }) {
     setIsVisible(true);
   }, []);
 
-  return (
-    <div className={`${styles.template} ${isVisible ? styles.visible : ''}`}>
-      {children}
-    </div>
-  );
+  return <div className={`${styles.template} ${isVisible ? styles.visible : ''}`}>{children}</div>;
 }

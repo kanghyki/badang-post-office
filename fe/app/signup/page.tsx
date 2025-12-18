@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import styles from "./signup.module.scss";
-import Logo from "@/app/components/LogoBox";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { authApi } from "@/lib/api/auth";
-import { authUtils } from "@/lib/utils/auth";
-import { useNotification } from "@/app/context/NotificationContext";
-import { ROUTES } from "@/lib/constants/urls";
+import Link from 'next/link';
+import styles from './signup.module.scss';
+import Logo from '@/app/components/LogoBox';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { authApi } from '@/lib/api/auth';
+import { authUtils } from '@/lib/utils/auth';
+import { useNotification } from '@/app/context/NotificationContext';
+import { ROUTES } from '@/lib/constants/urls';
 
 export default function Signup() {
   const { showToast } = useNotification();
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -34,23 +34,23 @@ export default function Signup() {
     try {
       const response = await authApi.signup({ email, name, password });
 
-      console.log("회원가입 성공:", response);
+      console.log('회원가입 성공:', response);
 
       showToast({
-        message: "회원가입이 완료되었습니다! 이메일을 확인해서 인증을 완료해주세요.",
-        type: "success",
+        message: '회원가입이 완료되었습니다! 이메일을 확인해서 인증을 완료해주세요.',
+        type: 'success',
       });
 
       router.push(ROUTES.LOGIN);
     } catch (error) {
-      console.error("회원가입 에러:", error);
+      console.error('회원가입 에러:', error);
       if (error instanceof Error) {
         showToast({
           message: `회원가입 실패: ${error.message}`,
-          type: "error",
+          type: 'error',
         });
       } else {
-        showToast({ message: "서버에 연결할 수 없습니다.", type: "error" });
+        showToast({ message: '서버에 연결할 수 없습니다.', type: 'error' });
       }
     } finally {
       setIsLoading(false);
@@ -70,7 +70,7 @@ export default function Signup() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="이메일을 입력하세요"
                   required
                 />
@@ -81,7 +81,7 @@ export default function Signup() {
                 <input
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
                   placeholder="닉네임을 입력하세요"
                   required
                 />
@@ -92,14 +92,14 @@ export default function Signup() {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="비밀번호를 입력하세요"
                   required
                 />
               </label>
 
               <button type="submit" className="btnBig" disabled={isLoading}>
-                {isLoading ? "처리 중..." : "회원가입"}
+                {isLoading ? '처리 중...' : '회원가입'}
               </button>
             </form>
           </div>

@@ -1,5 +1,5 @@
-import { apiClient } from "./client";
-import { TEMPLATE_ENDPOINTS } from "../constants/urls";
+import { apiClient } from './client';
+import { TEMPLATE_ENDPOINTS } from '../constants/urls';
 
 export interface TemplateResponse {
   id: string;
@@ -62,16 +62,10 @@ export interface TemplateDetailResponse {
 
 export const templatesApi = {
   getList: async (): Promise<TemplateListResponse> => {
-    return apiClient.get<TemplateListResponse>(
-      TEMPLATE_ENDPOINTS.LIST,
-      true
-    );
+    return apiClient.get<TemplateListResponse>(TEMPLATE_ENDPOINTS.LIST, true);
   },
 
   getById: async (id: string): Promise<TemplateDetailResponse> => {
-    return apiClient.get<TemplateDetailResponse>(
-      TEMPLATE_ENDPOINTS.DETAIL(id),
-      true
-    );
+    return apiClient.get<TemplateDetailResponse>(TEMPLATE_ENDPOINTS.DETAIL(id), true);
   },
 };

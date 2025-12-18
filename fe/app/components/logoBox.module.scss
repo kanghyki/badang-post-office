@@ -1,4 +1,4 @@
-@use "@/styles/mixin" as *;
+@use '@/styles/mixin' as *;
 .logoBox {
   display: flex;
   align-items: center;
@@ -12,7 +12,7 @@
     background-color: white;
   }
   h1 {
-    font-family: "YeogiOttaeJalnan", sans-serif;
+    font-family: 'YeogiOttaeJalnan', sans-serif;
     font-size: 2rem;
     line-height: 2.5rem;
     text-align: center;

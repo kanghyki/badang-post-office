@@ -1,21 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import styles from "./Toast.module.scss";
+import { useEffect } from 'react';
+import styles from './Toast.module.scss';
 
 interface ToastProps {
   message: string;
-  type?: "success" | "error" | "info";
+  type?: 'success' | 'error' | 'info';
   onClose: () => void;
   duration?: number;
 }
 
-export default function Toast({
-  message,
-  type = "info",
-  onClose,
-  duration = 3000,
-}: ToastProps) {
+export default function Toast({ message, type = 'info', onClose, duration = 3000 }: ToastProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -27,9 +22,9 @@ export default function Toast({
   return (
     <div className={`${styles.toast} ${styles[type]}`}>
       <div className={styles.icon}>
-        {type === "success" && "✓"}
-        {type === "error" && "✕"}
-        {type === "info" && "ℹ"}
+        {type === 'success' && '✓'}
+        {type === 'error' && '✕'}
+        {type === 'info' && 'ℹ'}
       </div>
       <p className={styles.message}>{message}</p>
       <button className={styles.closeBtn} onClick={onClose}>

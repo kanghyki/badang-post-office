@@ -1,24 +1,24 @@
-"use client";
-import styles from "./home.module.scss";
-import Header from "@/app/components/Header";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { TbEdit } from "react-icons/tb";
-import { authUtils } from "@/lib/utils/auth";
-import { useAuth } from "@/hooks/useAuth";
-import { observer } from "mobx-react-lite";
-import { useStore } from "@/store/StoreProvider";
-import { useNotification } from "@/app/context/NotificationContext";
-import { ROUTES } from "@/lib/constants/urls";
-import { authApi } from "@/lib/api/auth";
-import { useState } from "react";
+'use client';
+import styles from './home.module.scss';
+import Header from '@/app/components/Header';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { TbEdit } from 'react-icons/tb';
+import { authUtils } from '@/lib/utils/auth';
+import { useAuth } from '@/hooks/useAuth';
+import { observer } from 'mobx-react-lite';
+import { useStore } from '@/store/StoreProvider';
+import { useNotification } from '@/app/context/NotificationContext';
+import { ROUTES } from '@/lib/constants/urls';
+import { authApi } from '@/lib/api/auth';
+import { useState } from 'react';
 
 const User = observer(() => {
   useAuth(); // 인증 체크
   const router = useRouter();
   const { postcardStore } = useStore();
   const { showModal } = useNotification();
-  const [userName, setUserName] = useState<string>("");
+  const [userName, setUserName] = useState<string>('');
 
   useEffect(() => {
     postcardStore.fetchPostcards();
@@ -36,11 +36,11 @@ const User = observer(() => {
 
   const handleLogout = async () => {
     const confirmed = await showModal({
-      title: "로그아웃",
-      message: "로그아웃 하시겠습니까?",
-      type: "confirm",
-      confirmText: "로그아웃",
-      cancelText: "취소",
+      title: '로그아웃',
+      message: '로그아웃 하시겠습니까?',
+      type: 'confirm',
+      confirmText: '로그아웃',
+      cancelText: '취소',
     });
 
     if (confirmed) {
@@ -51,11 +51,11 @@ const User = observer(() => {
 
   const handleDeleteAccount = async () => {
     const confirmed = await showModal({
-      title: "회원 탈퇴",
-      message: "정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-      type: "confirm",
-      confirmText: "탈퇴",
-      cancelText: "취소",
+      title: '회원 탈퇴',
+      message: '정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+      type: 'confirm',
+      confirmText: '탈퇴',
+      cancelText: '취소',
     });
 
     if (confirmed) {
@@ -63,16 +63,16 @@ const User = observer(() => {
         await authApi.deleteAccount();
         authUtils.removeToken();
         await showModal({
-          title: "탈퇴 완료",
-          message: "회원 탈퇴가 완료되었습니다.",
-          type: "alert",
+          title: '탈퇴 완료',
+          message: '회원 탈퇴가 완료되었습니다.',
+          type: 'alert',
         });
         router.push(ROUTES.LOGIN);
       } catch {
         await showModal({
-          title: "오류",
-          message: "회원 탈퇴 중 오류가 발생했습니다.",
-          type: "alert",
+          title: '오류',
+          message: '회원 탈퇴 중 오류가 발생했습니다.',
+          type: 'alert',
         });
       }
     }
@@ -92,10 +92,7 @@ const User = observer(() => {
       <div className={styles.homeContainer}>
         <main className={styles.userMain}>
           <div className={styles.inputBox}>
-            <button
-              className={styles.menuItem}
-              onClick={() => router.push(ROUTES.LIST)}
-            >
+            <button className={styles.menuItem} onClick={() => router.push(ROUTES.LIST)}>
               <span className={styles.boxTxt}>
                 <b>엽서목록보기</b>
               </span>
@@ -105,10 +102,7 @@ const User = observer(() => {
               </span>
             </button>
 
-            <button
-              className={styles.menuItem}
-              onClick={() => router.push(ROUTES.WRITE)}
-            >
+            <button className={styles.menuItem} onClick={() => router.push(ROUTES.WRITE)}>
               <span className={styles.boxTxt}>
                 <b>엽서작성하기</b>
               </span>

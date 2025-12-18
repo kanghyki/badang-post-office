@@ -1,4 +1,4 @@
-@use "@/styles/mixin" as *;
+@use '@/styles/mixin' as *;
 
 .homeMain {
   display: flex;
@@ -7,7 +7,7 @@
   align-items: center;
   min-height: 100vh;
   gap: 5vh;
-  background-color: #FE6716;
+  background-color: #fe6716;
 
   .headCopy {
     font-size: clamp(16px, 4vw, 18px);

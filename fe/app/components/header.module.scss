@@ -1,4 +1,4 @@
-@use "@/styles/mixin" as *;
+@use '@/styles/mixin' as *;
 .header {
   height: 3.75rem;
   margin: 0 auto;
@@ -38,7 +38,7 @@
     }
 
     .logoText {
-      font-family: "YeogiOttaeJalnan", sans-serif;
+      font-family: 'YeogiOttaeJalnan', sans-serif;
       font-size: 1rem;
       font-weight: 700;
       color: #f61;

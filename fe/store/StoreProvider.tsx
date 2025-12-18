@@ -1,6 +1,6 @@
-"use client";
-import { createContext, useContext } from "react";
-import { postcardStore } from "./postcardStore";
+'use client';
+import { createContext, useContext } from 'react';
+import { postcardStore } from './postcardStore';
 
 const StoreContext = createContext({
   postcardStore,
@@ -11,9 +11,5 @@ export const useStore = () => {
 };
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <StoreContext.Provider value={{ postcardStore }}>
-      {children}
-    </StoreContext.Provider>
-  );
+  return <StoreContext.Provider value={{ postcardStore }}>{children}</StoreContext.Provider>;
 };

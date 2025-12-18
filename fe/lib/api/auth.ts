@@ -1,5 +1,5 @@
-import { apiClient } from "./client";
-import { AUTH_ENDPOINTS } from "../constants/urls";
+import { apiClient } from './client';
+import { AUTH_ENDPOINTS } from '../constants/urls';
 
 export interface SignupRequest {
   email: string;
@@ -60,17 +60,11 @@ export const authApi = {
     return apiClient.get<UserProfile>(AUTH_ENDPOINTS.ME, true);
   },
 
-  updateUserProfile: async (
-    data: UpdateProfileRequest
-  ): Promise<UserProfile> => {
+  updateUserProfile: async (data: UpdateProfileRequest): Promise<UserProfile> => {
     return apiClient.patch<UserProfile>(AUTH_ENDPOINTS.ME, data, true);
   },
 
   resendVerificationEmail: async (): Promise<{ message: string }> => {
-    return apiClient.post<{ message: string }>(
-      AUTH_ENDPOINTS.RESEND_VERIFICATION,
-      undefined,
-      true
-    );
+    return apiClient.post<{ message: string }>(AUTH_ENDPOINTS.RESEND_VERIFICATION, undefined, true);
   },
 };

@@ -1,33 +1,29 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Header from "@/app/components/Header";
-import PostcardItem from "@/app/components/PostcardItem";
-import PostcardImageModal from "@/app/components/PostcardImageModal";
-import LoadingSkeleton from "@/app/components/LoadingSkeleton";
-import styles from "./list.module.scss";
-import { useEffect, useState } from "react";
-import {
-  postcardsApi,
-  PostcardResponse,
-  PostcardStatus,
-} from "@/lib/api/postcards";
-import { useAuth } from "@/hooks/useAuth";
-import { useNotification } from "@/app/context/NotificationContext";
-import { ROUTES } from "@/lib/constants/urls";
-import { authUtils } from "@/lib/utils/auth";
-import { authApi } from "@/lib/api/auth";
-import { useRouter } from "next/navigation";
+import Link from 'next/link';
+import Header from '@/app/components/Header';
+import PostcardItem from '@/app/components/PostcardItem';
+import PostcardImageModal from '@/app/components/PostcardImageModal';
+import LoadingSkeleton from '@/app/components/LoadingSkeleton';
+import styles from './list.module.scss';
+import { useEffect, useState } from 'react';
+import { postcardsApi, PostcardResponse, PostcardStatus } from '@/lib/api/postcards';
+import { useAuth } from '@/hooks/useAuth';
+import { useNotification } from '@/app/context/NotificationContext';
+import { ROUTES } from '@/lib/constants/urls';
+import { authUtils } from '@/lib/utils/auth';
+import { authApi } from '@/lib/api/auth';
+import { useRouter } from 'next/navigation';
 
-type FilterType = "all" | PostcardStatus;
+type FilterType = 'all' | PostcardStatus;
 
 const STATUS_LABELS: Record<FilterType, string> = {
-  all: "전체",
-  writing: "작성중",
-  pending: "예약됨",
-  processing: "발송중",
-  sent: "발송완료",
-  failed: "실패",
+  all: '전체',
+  writing: '작성중',
+  pending: '예약됨',
+  processing: '발송중',
+  sent: '발송완료',
+  failed: '실패',
 };
 
 export default function List() {
@@ -38,11 +34,10 @@ export default function List() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [filterLoading, setFilterLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const [userName, setUserName] = useState<string>("");
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [userName, setUserName] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPostcard, setSelectedPostcard] =
-    useState<PostcardResponse | null>(null);
+  const [selectedPostcard, setSelectedPostcard] = useState<PostcardResponse | null>(null);
 
   const fetchPostcards = async (status?: PostcardStatus, isInitial = false) => {
     try {
@@ -54,11 +49,11 @@ export default function List() {
       const data = await postcardsApi.getList(status);
       setPostcards(data);
     } catch (err) {
-      console.error("엽서 목록 조회 실패:", err);
+      console.error('엽서 목록 조회 실패:', err);
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("엽서 목록을 불러올 수 없습니다.");
+        setError('엽서 목록을 불러올 수 없습니다.');
       }
     } finally {
       if (isInitial) {
@@ -71,7 +66,7 @@ export default function List() {
 
   useEffect(() => {
     const isInitial = initialLoading;
-    if (activeFilter === "all") {
+    if (activeFilter === 'all') {
       fetchPostcards(undefined, isInitial);
     } else {
       fetchPostcards(activeFilter, isInitial);
@@ -92,11 +87,11 @@ export default function List() {
 
   const handleLogout = async () => {
     const confirmed = await showModal({
-      title: "로그아웃",
-      message: "로그아웃 하시겠습니까?",
-      type: "confirm",
-      confirmText: "로그아웃",
-      cancelText: "취소",
+      title: '로그아웃',
+      message: '로그아웃 하시겠습니까?',
+      type: 'confirm',
+      confirmText: '로그아웃',
+      cancelText: '취소',
     });
 
     if (confirmed) {
@@ -107,11 +102,11 @@ export default function List() {
 
   const handleDeleteAccount = async () => {
     const confirmed = await showModal({
-      title: "회원 탈퇴",
-      message: "정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-      type: "confirm",
-      confirmText: "탈퇴",
-      cancelText: "취소",
+      title: '회원 탈퇴',
+      message: '정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+      type: 'confirm',
+      confirmText: '탈퇴',
+      cancelText: '취소',
     });
 
     if (confirmed) {
@@ -119,16 +114,16 @@ export default function List() {
         await authApi.deleteAccount();
         authUtils.removeToken();
         await showModal({
-          title: "탈퇴 완료",
-          message: "회원 탈퇴가 완료되었습니다.",
-          type: "alert",
+          title: '탈퇴 완료',
+          message: '회원 탈퇴가 완료되었습니다.',
+          type: 'alert',
         });
         router.push(ROUTES.LOGIN);
       } catch {
         await showModal({
-          title: "오류",
-          message: "회원 탈퇴 중 오류가 발생했습니다.",
-          type: "alert",
+          title: '오류',
+          message: '회원 탈퇴 중 오류가 발생했습니다.',
+          type: 'alert',
         });
       }
     }
@@ -150,7 +145,7 @@ export default function List() {
 
   const handleStatusUpdate = async (id: string) => {
     // 발송 완료 시 목록 새로고침
-    if (activeFilter === "all") {
+    if (activeFilter === 'all') {
       fetchPostcards();
     } else {
       fetchPostcards(activeFilter);
@@ -159,12 +154,11 @@ export default function List() {
 
   const handleCancel = async (id: string) => {
     const confirmed = await showModal({
-      title: "예약 취소",
-      message:
-        "예약된 발송을 취소하시겠습니까?\n취소된 엽서는 목록에서 확인할 수 있습니다.",
-      type: "confirm",
-      confirmText: "예약 취소",
-      cancelText: "돌아가기",
+      title: '예약 취소',
+      message: '예약된 발송을 취소하시겠습니까?\n취소된 엽서는 목록에서 확인할 수 있습니다.',
+      type: 'confirm',
+      confirmText: '예약 취소',
+      cancelText: '돌아가기',
     });
 
     if (!confirmed) return;
@@ -172,23 +166,23 @@ export default function List() {
     try {
       await postcardsApi.cancel(id);
       // 현재 필터 상태를 유지하며 목록 새로고침
-      if (activeFilter === "all") {
+      if (activeFilter === 'all') {
         fetchPostcards();
       } else {
         fetchPostcards(activeFilter);
       }
-      showToast({ message: "예약이 취소되었습니다.", type: "success" });
+      showToast({ message: '예약이 취소되었습니다.', type: 'success' });
     } catch (error) {
-      console.error("예약 취소 실패:", error);
+      console.error('예약 취소 실패:', error);
       if (error instanceof Error) {
         showToast({
           message: `예약 취소 실패: ${error.message}`,
-          type: "error",
+          type: 'error',
         });
       } else {
         showToast({
-          message: "예약 취소 중 오류가 발생했습니다.",
-          type: "error",
+          message: '예약 취소 중 오류가 발생했습니다.',
+          type: 'error',
         });
       }
     }
@@ -196,11 +190,11 @@ export default function List() {
 
   const handleDelete = async (id: string) => {
     const confirmed = await showModal({
-      title: "엽서 삭제",
-      message: "이 엽서를 삭제하시겠습니까?\n삭제된 엽서는 복구할 수 없습니다.",
-      type: "confirm",
-      confirmText: "삭제",
-      cancelText: "취소",
+      title: '엽서 삭제',
+      message: '이 엽서를 삭제하시겠습니까?\n삭제된 엽서는 복구할 수 없습니다.',
+      type: 'confirm',
+      confirmText: '삭제',
+      cancelText: '취소',
     });
 
     if (!confirmed) return;
@@ -208,23 +202,23 @@ export default function List() {
     try {
       await postcardsApi.delete(id);
       // 현재 필터 상태를 유지하며 목록 새로고침
-      if (activeFilter === "all") {
+      if (activeFilter === 'all') {
         fetchPostcards();
       } else {
         fetchPostcards(activeFilter);
       }
-      showToast({ message: "엽서가 삭제되었습니다.", type: "success" });
+      showToast({ message: '엽서가 삭제되었습니다.', type: 'success' });
     } catch (error) {
-      console.error("삭제 실패:", error);
+      console.error('삭제 실패:', error);
       if (error instanceof Error) {
         showToast({
           message: `삭제 실패: ${error.message}`,
-          type: "error",
+          type: 'error',
         });
       } else {
         showToast({
-          message: "삭제 중 오류가 발생했습니다.",
-          type: "error",
+          message: '삭제 중 오류가 발생했습니다.',
+          type: 'error',
         });
       }
     }
@@ -232,11 +226,11 @@ export default function List() {
 
   const handleRetry = async (id: string) => {
     const confirmed = await showModal({
-      title: "엽서 재발송",
-      message: "이 엽서를 다시 발송하시겠습니까?",
-      type: "confirm",
-      confirmText: "재발송",
-      cancelText: "취소",
+      title: '엽서 재발송',
+      message: '이 엽서를 다시 발송하시겠습니까?',
+      type: 'confirm',
+      confirmText: '재발송',
+      cancelText: '취소',
     });
 
     if (!confirmed) return;
@@ -244,23 +238,23 @@ export default function List() {
     try {
       await postcardsApi.send(id);
       // 현재 필터 상태를 유지하며 목록 새로고침
-      if (activeFilter === "all") {
+      if (activeFilter === 'all') {
         fetchPostcards();
       } else {
         fetchPostcards(activeFilter);
       }
-      showToast({ message: "엽서 재발송이 시작되었습니다.", type: "success" });
+      showToast({ message: '엽서 재발송이 시작되었습니다.', type: 'success' });
     } catch (error) {
-      console.error("재발송 실패:", error);
+      console.error('재발송 실패:', error);
       if (error instanceof Error) {
         showToast({
           message: `재발송 실패: ${error.message}`,
-          type: "error",
+          type: 'error',
         });
       } else {
         showToast({
-          message: "재발송 중 오류가 발생했습니다.",
-          type: "error",
+          message: '재발송 중 오류가 발생했습니다.',
+          type: 'error',
         });
       }
     }
@@ -298,9 +292,9 @@ export default function List() {
         <div className="container">
           <div
             style={{
-              textAlign: "center",
-              padding: "50px",
-              color: "red",
+              textAlign: 'center',
+              padding: '50px',
+              color: 'red',
             }}
           >
             {error}
@@ -324,12 +318,10 @@ export default function List() {
 
       <div className="container">
         <div className={styles.filterContainer}>
-          {(Object.keys(STATUS_LABELS) as FilterType[]).map((filter) => (
+          {(Object.keys(STATUS_LABELS) as FilterType[]).map(filter => (
             <button
               key={filter}
-              className={`${styles.filterButton} ${
-                activeFilter === filter ? styles.active : ""
-              }`}
+              className={`${styles.filterButton} ${activeFilter === filter ? styles.active : ''}`}
               onClick={() => handleFilterChange(filter)}
             >
               {STATUS_LABELS[filter]}
@@ -342,9 +334,7 @@ export default function List() {
               <LoadingSkeleton />
             ) : postcards.length === 0 ? (
               <div className={styles.emptyState}>
-                <div className={styles.emptyText}>
-                  아직 작성한 엽서가 없어요
-                </div>
+                <div className={styles.emptyText}>아직 작성한 엽서가 없어요</div>
               </div>
             ) : (
               postcards.map((item, index) => (

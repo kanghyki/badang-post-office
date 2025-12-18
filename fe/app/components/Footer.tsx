@@ -1,6 +1,6 @@
-import styles from "./footer.module.scss";
-import Link from "next/link";
-import { ROUTES } from "@/lib/constants/urls";
+import styles from './footer.module.scss';
+import Link from 'next/link';
+import { ROUTES } from '@/lib/constants/urls';
 
 export default function Footer() {
   return (

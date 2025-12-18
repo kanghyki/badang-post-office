@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import styles from "./PostcardImageModal.module.scss";
-import { API_BASE_URL } from "@/lib/constants/urls";
+import { useEffect, useState } from 'react';
+import styles from './PostcardImageModal.module.scss';
+import { API_BASE_URL } from '@/lib/constants/urls';
 
 interface PostcardImageModalProps {
   isOpen: boolean;
@@ -10,24 +10,20 @@ interface PostcardImageModalProps {
   postcardPath: string | null;
 }
 
-export default function PostcardImageModal({
-  isOpen,
-  onClose,
-  postcardPath,
-}: PostcardImageModalProps) {
+export default function PostcardImageModal({ isOpen, onClose, postcardPath }: PostcardImageModalProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     }
 
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
 
@@ -39,10 +35,8 @@ export default function PostcardImageModal({
       setError(false);
 
       try {
-        const token = localStorage.getItem("accessToken");
-        const fullUrl = postcardPath.startsWith("http")
-          ? postcardPath
-          : `${API_BASE_URL}${postcardPath}`;
+        const token = localStorage.getItem('accessToken');
+        const fullUrl = postcardPath.startsWith('http') ? postcardPath : `${API_BASE_URL}${postcardPath}`;
 
         const response = await fetch(fullUrl, {
           headers: {
@@ -51,14 +45,14 @@ export default function PostcardImageModal({
         });
 
         if (!response.ok) {
-          throw new Error("이미지를 불러오는데 실패했습니다");
+          throw new Error('이미지를 불러오는데 실패했습니다');
         }
 
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         setImageUrl(url);
       } catch (err) {
-        console.error("이미지 로드 실패:", err);
+        console.error('이미지 로드 실패:', err);
         setError(true);
       } finally {
         setLoading(false);
@@ -94,7 +88,7 @@ export default function PostcardImageModal({
 
       // 다운로드 링크 생성
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
       link.download = `jeju-postcard-${Date.now()}.png`;
       document.body.appendChild(link);
@@ -102,8 +96,8 @@ export default function PostcardImageModal({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("다운로드 실패:", error);
-      alert("다운로드에 실패했습니다.");
+      console.error('다운로드 실패:', error);
+      alert('다운로드에 실패했습니다.');
     }
   };
 
@@ -114,11 +108,7 @@ export default function PostcardImageModal({
           ✕
         </button>
         {postcardPath && imageUrl && !loading && !error && (
-          <button
-            className={styles.downloadButton}
-            onClick={handleDownload}
-            aria-label="엽서 사진 저장"
-          >
+          <button className={styles.downloadButton} onClick={handleDownload} aria-label="엽서 사진 저장">
             ⬇ 저장
           </button>
         )}
@@ -128,9 +118,7 @@ export default function PostcardImageModal({
           </div>
         ) : error ? (
           <div className={styles.noImageContainer}>
-            <p className={styles.noImageText}>
-              이미지를 불러오는데 실패했습니다
-            </p>
+            <p className={styles.noImageText}>이미지를 불러오는데 실패했습니다</p>
           </div>
         ) : postcardPath && imageUrl ? (
           <div className={styles.imageContainer}>
@@ -138,9 +126,7 @@ export default function PostcardImageModal({
           </div>
         ) : (
           <div className={styles.noImageContainer}>
-            <p className={styles.noImageText}>
-              엽서는 접수 후에 만들어져요! 🍊
-            </p>
+            <p className={styles.noImageText}>엽서는 접수 후에 만들어져요! 🍊</p>
           </div>
         )}
       </div>

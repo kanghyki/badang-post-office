@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import styles from "./login.module.scss";
-import Logo from "@/app/components/LogoBox";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { authApi } from "@/lib/api/auth";
-import { authUtils } from "@/lib/utils/auth";
-import { useNotification } from "@/app/context/NotificationContext";
-import { ROUTES } from "@/lib/constants/urls";
+import Link from 'next/link';
+import styles from './login.module.scss';
+import Logo from '@/app/components/LogoBox';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { authApi } from '@/lib/api/auth';
+import { authUtils } from '@/lib/utils/auth';
+import { useNotification } from '@/app/context/NotificationContext';
+import { ROUTES } from '@/lib/constants/urls';
 
 export default function Login() {
   const router = useRouter();
   const { showToast } = useNotification();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberEmail, setRememberEmail] = useState(false);
 
   // 컴포넌트 마운트 시 로그인 상태 확인 및 저장된 이메일 불러오기
@@ -26,7 +26,7 @@ export default function Login() {
       return;
     }
 
-    const savedEmail = localStorage.getItem("rememberedEmail");
+    const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
       setEmail(savedEmail);
       setRememberEmail(true);
@@ -39,26 +39,26 @@ export default function Login() {
     try {
       const response = await authApi.login({ email, password });
 
-      console.log("로그인 응답:", response);
+      console.log('로그인 응답:', response);
 
       if (response.access_token) {
         authUtils.setToken(response.access_token);
 
         // 아이디 기억하기 처리
         if (rememberEmail) {
-          localStorage.setItem("rememberedEmail", email);
+          localStorage.setItem('rememberedEmail', email);
         } else {
-          localStorage.removeItem("rememberedEmail");
+          localStorage.removeItem('rememberedEmail');
         }
 
         router.push(ROUTES.MAIN);
       }
     } catch (error) {
-      console.error("로그인 에러:", error);
+      console.error('로그인 에러:', error);
       if (error instanceof Error) {
-        showToast({ message: `로그인 실패: ${error.message}`, type: "error" });
+        showToast({ message: `로그인 실패: ${error.message}`, type: 'error' });
       } else {
-        showToast({ message: "서버에 연결할 수 없습니다.", type: "error" });
+        showToast({ message: '서버에 연결할 수 없습니다.', type: 'error' });
       }
     }
   };
@@ -76,7 +76,7 @@ export default function Login() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="이메일을 입력하세요"
                   required
                 />
@@ -87,18 +87,14 @@ export default function Login() {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="비밀번호를 입력하세요"
                   required
                 />
               </label>
 
               <label className={styles.rememberEmail}>
-                <input
-                  type="checkbox"
-                  checked={rememberEmail}
-                  onChange={(e) => setRememberEmail(e.target.checked)}
-                />
+                <input type="checkbox" checked={rememberEmail} onChange={e => setRememberEmail(e.target.checked)} />
                 <span>이메일 기억하기</span>
               </label>
 

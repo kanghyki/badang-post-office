@@ -1,4 +1,4 @@
-@use "@/styles/mixin" as *;
+@use '@/styles/mixin' as *;
 
 .loginMain {
   @include flex-center;
@@ -97,7 +97,7 @@
         gap: 0.5rem;
         margin-top: -0.5rem;
 
-        input[type="checkbox"] {
+        input[type='checkbox'] {
           width: 1.125rem;
           height: 1.125rem;
           cursor: pointer;
@@ -137,7 +137,7 @@
     position: relative;
 
     &::after {
-      content: "";
+      content: '';
       position: absolute;
       width: 0;
       height: 2px;

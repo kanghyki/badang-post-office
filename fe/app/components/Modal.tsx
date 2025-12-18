@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import styles from "./Modal.module.scss";
+import { useEffect } from 'react';
+import styles from './Modal.module.scss';
 
 interface ModalProps {
   title: string;
   message: string;
-  type?: "confirm" | "alert";
+  type?: 'confirm' | 'alert';
   onConfirm: () => void;
   onCancel?: () => void;
   confirmText?: string;
@@ -16,17 +16,17 @@ interface ModalProps {
 export default function Modal({
   title,
   message,
-  type = "alert",
+  type = 'alert',
   onConfirm,
   onCancel,
-  confirmText = "확인",
-  cancelText = "취소",
+  confirmText = '확인',
+  cancelText = '취소',
 }: ModalProps) {
   useEffect(() => {
     // 모달이 열릴 때 body 스크롤 방지
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     };
   }, []);
 
@@ -42,7 +42,7 @@ export default function Modal({
         <h3 className={styles.modalTitle}>{title}</h3>
         <p className={styles.modalMessage}>{message}</p>
         <div className={styles.modalButtons}>
-          {type === "confirm" && onCancel && (
+          {type === 'confirm' && onCancel && (
             <button className={styles.cancelBtn} onClick={onCancel}>
               {cancelText}
             </button>

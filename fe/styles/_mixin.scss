@@ -2,28 +2,28 @@
 // 색상 변수
 // ============================================
 $bg-gradient-start: #fff9f5; // 연한 피치/크림색
-$bg-gradient-end: #ffffff;   // 흰색
+$bg-gradient-end: #ffffff; // 흰색
 $bg-gradient: linear-gradient(180deg, $bg-gradient-start 0%, $bg-gradient-end 100%);
 
 // ============================================
 // Mixin
 // ============================================
-@mixin flex-center{
+@mixin flex-center {
   display: flex;
   justify-content: center;
   align-items: center;
 }
-@mixin flex-left{
+@mixin flex-left {
   display: flex;
   justify-content: left;
   align-items: center;
 }
-@mixin flex-right{
+@mixin flex-right {
   display: flex;
   justify-content: right;
   align-items: center;
 }
-@mixin flex-between{
+@mixin flex-between {
   display: flex;
   justify-content: space-between;
   align-items: center;

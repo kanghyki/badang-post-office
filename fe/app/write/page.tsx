@@ -1,20 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import styles from "./write.module.scss";
-import Header from "@/app/components/Header";
-import { postcardsApi } from "@/lib/api/postcards";
-import {
-  templatesApi,
-  TemplateResponse,
-  TemplateDetailResponse,
-} from "@/lib/api/templates";
-import { useAuth } from "@/hooks/useAuth";
-import { useNotification } from "@/app/context/NotificationContext";
-import { ROUTES, API_BASE_URL } from "@/lib/constants/urls";
-import { fetchImageWithAuth } from "@/lib/utils/image";
-import TemplateImageModal from "@/app/components/TemplateImageModal";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import styles from './write.module.scss';
+import Header from '@/app/components/Header';
+import { postcardsApi } from '@/lib/api/postcards';
+import { templatesApi, TemplateResponse, TemplateDetailResponse } from '@/lib/api/templates';
+import { useAuth } from '@/hooks/useAuth';
+import { useNotification } from '@/app/context/NotificationContext';
+import { ROUTES, API_BASE_URL } from '@/lib/constants/urls';
+import { fetchImageWithAuth } from '@/lib/utils/image';
+import TemplateImageModal from '@/app/components/TemplateImageModal';
 
 export default function Write() {
   useAuth(); // 인증 체크
@@ -23,43 +19,36 @@ export default function Write() {
   const [postcardId, setPostcardId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [text, setText] = useState("");
-  const [translatedText, setTranslatedText] = useState("");
-  const [recipientName, setRecipientName] = useState("");
-  const [emailLocalPart, setEmailLocalPart] = useState("");
-  const [emailDomain, setEmailDomain] = useState("");
-  const [selectedDomain, setSelectedDomain] = useState("");
-  const [customDomain, setCustomDomain] = useState("");
-  const [senderName, setSenderName] = useState("");
+  const [text, setText] = useState('');
+  const [translatedText, setTranslatedText] = useState('');
+  const [recipientName, setRecipientName] = useState('');
+  const [emailLocalPart, setEmailLocalPart] = useState('');
+  const [emailDomain, setEmailDomain] = useState('');
+  const [selectedDomain, setSelectedDomain] = useState('');
+  const [customDomain, setCustomDomain] = useState('');
+  const [senderName, setSenderName] = useState('');
 
   // 이메일 도메인 옵션
-  const emailDomains = ["gmail.com", "naver.com", "daum.net", "kakao.com"];
+  const emailDomains = ['gmail.com', 'naver.com', 'daum.net', 'kakao.com'];
   const [scheduledAt, setScheduledAt] = useState(() => {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     return now.toISOString().slice(0, 16);
   });
-  const [sendType, setSendType] = useState<"immediate" | "scheduled">(
-    "immediate"
-  );
+  const [sendType, setSendType] = useState<'immediate' | 'scheduled'>('immediate');
   const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [templates, setTemplates] = useState<TemplateResponse[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [loadingTemplates, setLoadingTemplates] = useState(true);
-  const [templateImageUrls, setTemplateImageUrls] = useState<
-    Record<string, string>
-  >({});
-  const [selectedTemplateDetail, setSelectedTemplateDetail] =
-    useState<TemplateDetailResponse | null>(null);
+  const [templateImageUrls, setTemplateImageUrls] = useState<Record<string, string>>({});
+  const [selectedTemplateDetail, setSelectedTemplateDetail] = useState<TemplateDetailResponse | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 템플릿 확대 모달
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [selectedTemplateImageUrl, setSelectedTemplateImageUrl] = useState<
-    string | null
-  >(null);
+  const [selectedTemplateImageUrl, setSelectedTemplateImageUrl] = useState<string | null>(null);
 
   // 템플릿 목록 불러오기
   useEffect(() => {
@@ -77,7 +66,7 @@ export default function Write() {
         // 각 템플릿의 이미지를 인증과 함께 불러오기
         const imageUrls: Record<string, string> = {};
         await Promise.all(
-          response.templates.map(async (template) => {
+          response.templates.map(async template => {
             try {
               const imageUrl = `${API_BASE_URL}${template.template_image_path}`;
               const blobUrl = await fetchImageWithAuth(imageUrl);
@@ -89,10 +78,10 @@ export default function Write() {
         );
         setTemplateImageUrls(imageUrls);
       } catch (error) {
-        console.error("템플릿 목록 불러오기 실패:", error);
+        console.error('템플릿 목록 불러오기 실패:', error);
         showToast({
-          message: "템플릿을 불러오는데 실패했습니다.",
-          type: "error",
+          message: '템플릿을 불러오는데 실패했습니다.',
+          type: 'error',
         });
       } finally {
         setLoadingTemplates(false);
@@ -103,7 +92,7 @@ export default function Write() {
 
     // cleanup: blob URL 해제
     return () => {
-      Object.values(templateImageUrls).forEach((url) => {
+      Object.values(templateImageUrls).forEach(url => {
         if (url) {
           URL.revokeObjectURL(url);
         }
@@ -119,12 +108,12 @@ export default function Write() {
       try {
         const detail = await templatesApi.getById(selectedTemplateId);
         setSelectedTemplateDetail(detail);
-        console.log("템플릿 상세 정보:", detail);
+        console.log('템플릿 상세 정보:', detail);
       } catch (error) {
-        console.error("템플릿 상세 정보 로드 실패:", error);
+        console.error('템플릿 상세 정보 로드 실패:', error);
         showToast({
-          message: "템플릿 설정을 불러오는데 실패했습니다.",
-          type: "error",
+          message: '템플릿 설정을 불러오는데 실패했습니다.',
+          type: 'error',
         });
       }
     };
@@ -134,7 +123,7 @@ export default function Write() {
 
   // 이메일 도메인 선택 처리
   useEffect(() => {
-    if (selectedDomain === "custom") {
+    if (selectedDomain === 'custom') {
       setEmailDomain(customDomain);
     } else if (selectedDomain) {
       setEmailDomain(selectedDomain);
@@ -143,38 +132,22 @@ export default function Write() {
 
   // 입력값 변경 감지
   useEffect(() => {
-    if (
-      text ||
-      recipientName ||
-      emailLocalPart ||
-      emailDomain ||
-      senderName ||
-      scheduledAt ||
-      image
-    ) {
+    if (text || recipientName || emailLocalPart || emailDomain || senderName || scheduledAt || image) {
       setHasUnsavedChanges(true);
     }
-  }, [
-    text,
-    recipientName,
-    emailLocalPart,
-    emailDomain,
-    senderName,
-    scheduledAt,
-    image,
-  ]);
+  }, [text, recipientName, emailLocalPart, emailDomain, senderName, scheduledAt, image]);
 
   // 뒤로가기 시 경고
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         e.preventDefault();
-        e.returnValue = "";
+        e.returnValue = '';
       }
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
   // 이미지 파일 선택
@@ -194,11 +167,11 @@ export default function Write() {
   // 이미지 삭제
   const handleImageRemove = () => {
     setImage(null);
-    setImagePreview("");
+    setImagePreview('');
     // input 파일도 초기화
-    const fileInput = document.getElementById("imageInput") as HTMLInputElement;
+    const fileInput = document.getElementById('imageInput') as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = "";
+      fileInput.value = '';
     }
   };
 
@@ -209,22 +182,22 @@ export default function Write() {
       if (emailLocalPart || emailDomain) {
         if (!emailLocalPart || !emailDomain) {
           showToast({
-            message: "이메일 주소를 완성해주세요.",
-            type: "error",
+            message: '이메일 주소를 완성해주세요.',
+            type: 'error',
           });
           return;
         }
         if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
           showToast({
-            message: "유효한 이메일 형식이 아닙니다.",
-            type: "error",
+            message: '유효한 이메일 형식이 아닙니다.',
+            type: 'error',
           });
           return;
         }
         if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
           showToast({
-            message: "유효한 도메인 형식이 아닙니다.",
-            type: "error",
+            message: '유효한 도메인 형식이 아닙니다.',
+            type: 'error',
           });
           return;
         }
@@ -240,14 +213,11 @@ export default function Write() {
           const newPostcard = await postcardsApi.create(selectedTemplateId);
           currentPostcardId = newPostcard.id;
           setPostcardId(currentPostcardId);
-          console.log("엽서 생성 완료:", currentPostcardId);
+          console.log('엽서 생성 완료:', currentPostcardId);
         }
 
         // 이메일 주소 조합
-        const recipientEmail =
-          emailLocalPart && emailDomain
-            ? `${emailLocalPart}@${emailDomain}`
-            : undefined;
+        const recipientEmail = emailLocalPart && emailDomain ? `${emailLocalPart}@${emailDomain}` : undefined;
 
         // 엽서 내용 업데이트
         const updatedPostcard = await postcardsApi.update(currentPostcardId, {
@@ -256,10 +226,7 @@ export default function Write() {
           recipient_email: recipientEmail,
           recipient_name: recipientName,
           sender_name: senderName,
-          scheduled_at:
-            sendType === "scheduled" && scheduledAt
-              ? new Date(scheduledAt).toISOString()
-              : undefined,
+          scheduled_at: sendType === 'scheduled' && scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
           image: image || undefined,
         });
 
@@ -275,29 +242,29 @@ export default function Write() {
             const blobUrl = await fetchImageWithAuth(imageUrl);
             setImagePreview(blobUrl);
           } catch (error) {
-            console.error("사용자 업로드 이미지 로드 실패:", error);
+            console.error('사용자 업로드 이미지 로드 실패:', error);
           }
         }
 
         setHasUnsavedChanges(false);
         if (!isAutoSave) {
           showToast({
-            message: "임시 저장되었습니다.",
-            type: "success",
+            message: '임시 저장되었습니다.',
+            type: 'success',
           });
         }
       } catch (error) {
-        console.error("저장 실패:", error);
+        console.error('저장 실패:', error);
         if (!isAutoSave) {
           if (error instanceof Error) {
             showToast({
               message: `저장 실패: ${error.message}`,
-              type: "error",
+              type: 'error',
             });
           } else {
             showToast({
-              message: "저장 중 오류가 발생했습니다.",
-              type: "error",
+              message: '저장 중 오류가 발생했습니다.',
+              type: 'error',
             });
           }
         }
@@ -362,29 +329,29 @@ export default function Write() {
     // 이메일 validation
     if (!emailLocalPart || !emailDomain) {
       showToast({
-        message: "이메일 주소를 입력해주세요.",
-        type: "error",
+        message: '이메일 주소를 입력해주세요.',
+        type: 'error',
       });
       return;
     }
     if (!/^[a-zA-Z0-9._-]+$/.test(emailLocalPart)) {
       showToast({
-        message: "유효한 이메일 형식이 아닙니다.",
-        type: "error",
+        message: '유효한 이메일 형식이 아닙니다.',
+        type: 'error',
       });
       return;
     }
     if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailDomain)) {
       showToast({
-        message: "유효한 도메인 형식이 아닙니다.",
-        type: "error",
+        message: '유효한 도메인 형식이 아닙니다.',
+        type: 'error',
       });
       return;
     }
 
     // 예약 발송 시 날짜 validation
-    if (sendType === "scheduled" && !scheduledAt) {
-      showToast({ message: "발송 일시를 선택해주세요.", type: "error" });
+    if (sendType === 'scheduled' && !scheduledAt) {
+      showToast({ message: '발송 일시를 선택해주세요.', type: 'error' });
       return;
     }
 
@@ -398,7 +365,7 @@ export default function Write() {
         const newPostcard = await postcardsApi.create(selectedTemplateId);
         currentPostcardId = newPostcard.id;
         setPostcardId(currentPostcardId);
-        console.log("엽서 생성 완료:", currentPostcardId);
+        console.log('엽서 생성 완료:', currentPostcardId);
       }
 
       // 이메일 주소 조합
@@ -411,10 +378,7 @@ export default function Write() {
         recipient_email: recipientEmail,
         recipient_name: recipientName,
         sender_name: senderName,
-        scheduled_at:
-          sendType === "scheduled" && scheduledAt
-            ? new Date(scheduledAt).toISOString()
-            : undefined,
+        scheduled_at: sendType === 'scheduled' && scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
         image: image || undefined,
       });
 
@@ -424,16 +388,16 @@ export default function Write() {
       setHasUnsavedChanges(false);
       router.push(ROUTES.LIST);
     } catch (error) {
-      console.error("엽서 전송 실패:", error);
+      console.error('엽서 전송 실패:', error);
       if (error instanceof Error) {
         showToast({
           message: `전송 실패: ${error.message}`,
-          type: "error",
+          type: 'error',
         });
       } else {
         showToast({
-          message: "요청 중 오류가 발생했습니다.",
-          type: "error",
+          message: '요청 중 오류가 발생했습니다.',
+          type: 'error',
         });
       }
     } finally {
@@ -459,26 +423,20 @@ export default function Write() {
                   <span>템플릿을 불러오는 중...</span>
                 </div>
               ) : templates.length === 0 ? (
-                <div className={styles.templateEmpty}>
-                  사용 가능한 템플릿이 없습니다.
-                </div>
+                <div className={styles.templateEmpty}>사용 가능한 템플릿이 없습니다.</div>
               ) : (
                 <div className={styles.templateGrid}>
-                  {templates.map((template) => (
+                  {templates.map(template => (
                     <label
                       key={template.id}
-                      className={`${styles.templateCard} ${
-                        selectedTemplateId === template.id
-                          ? styles.selected
-                          : ""
-                      }`}
+                      className={`${styles.templateCard} ${selectedTemplateId === template.id ? styles.selected : ''}`}
                     >
                       <input
                         type="radio"
                         name="template"
                         value={template.id}
                         checked={selectedTemplateId === template.id}
-                        onChange={(e) => setSelectedTemplateId(e.target.value)}
+                        onChange={e => setSelectedTemplateId(e.target.value)}
                         className={styles.templateRadio}
                       />
                       <div className={styles.templateImageWrapper}>
@@ -492,12 +450,10 @@ export default function Write() {
                             <button
                               type="button"
                               className={styles.expandButton}
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setSelectedTemplateImageUrl(
-                                  templateImageUrls[template.id]
-                                );
+                                setSelectedTemplateImageUrl(templateImageUrls[template.id]);
                                 setIsTemplateModalOpen(true);
                               }}
                               aria-label="템플릿 확대"
@@ -512,13 +468,9 @@ export default function Write() {
                         )}
                       </div>
                       <div className={styles.templateInfo}>
-                        <div className={styles.templateName}>
-                          {template.name}
-                        </div>
+                        <div className={styles.templateName}>{template.name}</div>
                         {template.description && (
-                          <div className={styles.templateDescription}>
-                            {template.description}
-                          </div>
+                          <div className={styles.templateDescription}>{template.description}</div>
                         )}
                       </div>
                     </label>
@@ -534,7 +486,7 @@ export default function Write() {
                 <div className={styles.textareaWrapper}>
                   <textarea
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={e => setText(e.target.value)}
                     placeholder="내용을 작성해주세요."
                     maxLength={120}
                     className={styles.textarea}
@@ -558,41 +510,22 @@ export default function Write() {
                     id="imageInput"
                   />
                   <label htmlFor="imageInput" className={styles.fileLabel}>
-                    <span className={styles.uploadText}>
-                      사진을 선택해주세요
-                    </span>
-                    <span className={styles.uploadHint}>
-                      클릭하여 사진 업로드
-                    </span>
+                    <span className={styles.uploadText}>사진을 선택해주세요</span>
+                    <span className={styles.uploadHint}>클릭하여 사진 업로드</span>
                   </label>
                 </div>
               ) : (
                 <div className={styles.imagePreviewContainer}>
                   <div className={styles.previewBox}>
-                    <img
-                      src={imagePreview}
-                      alt="preview"
-                      className={styles.previewImg}
-                    />
+                    <img src={imagePreview} alt="preview" className={styles.previewImg} />
                     <button
                       type="button"
                       onClick={handleImageRemove}
                       className={styles.removeImageBtn}
                       aria-label="사진 삭제"
                     >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M15 5L5 15M5 5L15 15"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                       </svg>
                     </button>
                   </div>
@@ -610,7 +543,7 @@ export default function Write() {
                   <input
                     type="text"
                     value={recipientName}
-                    onChange={(e) => setRecipientName(e.target.value)}
+                    onChange={e => setRecipientName(e.target.value)}
                     placeholder="예) 사랑하는 어머니 (수신자명)"
                     className={styles.input}
                     required
@@ -625,18 +558,18 @@ export default function Write() {
                     <input
                       type="text"
                       value={emailLocalPart}
-                      onChange={(e) => setEmailLocalPart(e.target.value)}
+                      onChange={e => setEmailLocalPart(e.target.value)}
                       placeholder="이메일"
                       className={styles.emailInput}
                       required
                     />
                     <span className={styles.atSymbol}>@</span>
-                    {selectedDomain === "custom" ? (
+                    {selectedDomain === 'custom' ? (
                       <>
                         <input
                           type="text"
                           value={customDomain}
-                          onChange={(e) => setCustomDomain(e.target.value)}
+                          onChange={e => setCustomDomain(e.target.value)}
                           placeholder="example.com"
                           className={styles.emailInput}
                           required
@@ -644,8 +577,8 @@ export default function Write() {
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedDomain("");
-                            setCustomDomain("");
+                            setSelectedDomain('');
+                            setCustomDomain('');
                           }}
                           className={styles.cancelCustomBtn}
                           title="이메일 선택으로 돌아가기"
@@ -656,12 +589,12 @@ export default function Write() {
                     ) : (
                       <select
                         value={selectedDomain}
-                        onChange={(e) => setSelectedDomain(e.target.value)}
+                        onChange={e => setSelectedDomain(e.target.value)}
                         className={styles.emailDomainSelect}
                         required
                       >
                         <option value="">이메일</option>
-                        {emailDomains.map((domain) => (
+                        {emailDomains.map(domain => (
                           <option key={domain} value={domain}>
                             {domain}
                           </option>
@@ -682,7 +615,7 @@ export default function Write() {
                   <input
                     type="text"
                     value={senderName}
-                    onChange={(e) => setSenderName(e.target.value)}
+                    onChange={e => setSenderName(e.target.value)}
                     placeholder="예) 바당이 (발신자명)"
                     className={styles.input}
                   />
@@ -695,54 +628,42 @@ export default function Write() {
               <h3 className={styles.sectionTitle}>전달 시간</h3>
 
               <div className={styles.sendTypeOptions}>
-                <label
-                  className={`${styles.sendTypeOption} ${
-                    sendType === "immediate" ? styles.active : ""
-                  }`}
-                >
+                <label className={`${styles.sendTypeOption} ${sendType === 'immediate' ? styles.active : ''}`}>
                   <input
                     type="radio"
                     name="sendType"
                     value="immediate"
-                    checked={sendType === "immediate"}
-                    onChange={(e) => setSendType(e.target.value as "immediate")}
+                    checked={sendType === 'immediate'}
+                    onChange={e => setSendType(e.target.value as 'immediate')}
                     className={styles.radioInput}
                   />
                   <div className={styles.optionContent}>
                     <div className={styles.optionText}>
                       <div className={styles.optionTitle}>바로 전달</div>
-                      <div className={styles.optionDescription}>
-                        접수 즉시 전달
-                      </div>
+                      <div className={styles.optionDescription}>접수 즉시 전달</div>
                     </div>
                   </div>
                 </label>
 
-                <label
-                  className={`${styles.sendTypeOption} ${
-                    sendType === "scheduled" ? styles.active : ""
-                  }`}
-                >
+                <label className={`${styles.sendTypeOption} ${sendType === 'scheduled' ? styles.active : ''}`}>
                   <input
                     type="radio"
                     name="sendType"
                     value="scheduled"
-                    checked={sendType === "scheduled"}
-                    onChange={(e) => setSendType(e.target.value as "scheduled")}
+                    checked={sendType === 'scheduled'}
+                    onChange={e => setSendType(e.target.value as 'scheduled')}
                     className={styles.radioInput}
                   />
                   <div className={styles.optionContent}>
                     <div className={styles.optionText}>
                       <div className={styles.optionTitle}>예약 전달</div>
-                      <div className={styles.optionDescription}>
-                        날짜와 시간 선택
-                      </div>
+                      <div className={styles.optionDescription}>날짜와 시간 선택</div>
                     </div>
                   </div>
                 </label>
               </div>
 
-              {sendType === "scheduled" && (
+              {sendType === 'scheduled' && (
                 <div className={styles.scheduledDateWrapper}>
                   <label className={styles.dateInputLabel}>
                     <span className={styles.dateLabel}>발송 일시</span>
@@ -750,7 +671,7 @@ export default function Write() {
                       id="scheduled_at"
                       type="datetime-local"
                       value={scheduledAt}
-                      onChange={(e) => setScheduledAt(e.target.value)}
+                      onChange={e => setScheduledAt(e.target.value)}
                       className={styles.dateInput}
                       required
                     />
@@ -761,12 +682,7 @@ export default function Write() {
           </form>
 
           <div className={styles.buttonSection}>
-            <button
-              className={styles.sendBtn}
-              type="submit"
-              form="postcardForm"
-              disabled={loading || saving}
-            >
+            <button className={styles.sendBtn} type="submit" form="postcardForm" disabled={loading || saving}>
               {loading ? (
                 <>
                   <span className={styles.spinner}></span>

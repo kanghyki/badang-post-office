@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
@@ -47,7 +47,7 @@ button * {
 }
 
 /* iOS Safari 전화번호 자동 감지 방지 */
-a[href^="tel"] {
+a[href^='tel'] {
   color: inherit;
   text-decoration: none;
 }

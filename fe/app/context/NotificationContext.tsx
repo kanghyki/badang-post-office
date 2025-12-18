@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useCallback } from "react";
-import Toast from "@/app/components/Toast";
-import Modal from "@/app/components/Modal";
+import { createContext, useContext, useState, useCallback } from 'react';
+import Toast from '@/app/components/Toast';
+import Modal from '@/app/components/Modal';
 
 interface ToastOptions {
   message: string;
-  type?: "success" | "error" | "info";
+  type?: 'success' | 'error' | 'info';
   duration?: number;
 }
 
 interface ModalOptions {
   title: string;
   message: string;
-  type?: "confirm" | "alert";
+  type?: 'confirm' | 'alert';
   confirmText?: string;
   cancelText?: string;
 }
@@ -25,22 +25,16 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
 
-export function NotificationProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<ToastOptions | null>(null);
-  const [modal, setModal] = useState<
-    (ModalOptions & { resolve: (value: boolean) => void }) | null
-  >(null);
+  const [modal, setModal] = useState<(ModalOptions & { resolve: (value: boolean) => void }) | null>(null);
 
   const showToast = useCallback((options: ToastOptions) => {
     setToast(options);
   }, []);
 
   const showModal = useCallback((options: ModalOptions): Promise<boolean> => {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setModal({ ...options, resolve });
     });
   }, []);
@@ -63,12 +57,7 @@ export function NotificationProvider({
     <NotificationContext.Provider value={{ showToast, showModal }}>
       {children}
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => setToast(null)}
-        />
+        <Toast message={toast.message} type={toast.type} duration={toast.duration} onClose={() => setToast(null)} />
       )}
       {modal && (
         <Modal
@@ -78,7 +67,7 @@ export function NotificationProvider({
           confirmText={modal.confirmText}
           cancelText={modal.cancelText}
           onConfirm={handleModalConfirm}
-          onCancel={modal.type === "confirm" ? handleModalCancel : undefined}
+          onCancel={modal.type === 'confirm' ? handleModalCancel : undefined}
         />
       )}
     </NotificationContext.Provider>
@@ -88,7 +77,7 @@ export function NotificationProvider({
 export function useNotification() {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error("useNotification must be used within NotificationProvider");
+    throw new Error('useNotification must be used within NotificationProvider');
   }
   return context;
 }
