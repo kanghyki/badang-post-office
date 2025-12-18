@@ -100,6 +100,7 @@ jobs:
                 volumes:
                   - ./static:/app/static
                   - ./data:/app/data
+                  - ./logs:/app/logs
                 depends_on:
                   redis:
                     condition: service_healthy
