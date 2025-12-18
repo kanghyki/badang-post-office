@@ -6,7 +6,7 @@ import { ROUTES } from "@/lib/constants/urls";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [targetRoute, setTargetRoute] = useState(ROUTES.LOGIN);
+  const [targetRoute, setTargetRoute] = useState<string>(ROUTES.LOGIN);
 
   useEffect(() => {
     document.body.style.backgroundColor = "#FE6716"; // 시작화면 배경색
