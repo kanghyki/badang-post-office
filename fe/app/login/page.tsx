@@ -73,7 +73,7 @@ export default function Login() {
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="이메일을 입력하세요"
                   required
                 />
@@ -84,14 +84,18 @@ export default function Login() {
                 <input
                   type="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="비밀번호를 입력하세요"
                   required
                 />
               </label>
 
               <label className={styles.rememberEmail}>
-                <input type="checkbox" checked={rememberEmail} onChange={e => setRememberEmail(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={rememberEmail}
+                  onChange={(e) => setRememberEmail(e.target.checked)}
+                />
                 <span>이메일 기억하기</span>
               </label>
 

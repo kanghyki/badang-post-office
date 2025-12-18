@@ -4,7 +4,8 @@
  */
 
 // ==================== 환경 변수 ====================
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 // ==================== API 엔드포인트 ====================
 
@@ -71,7 +72,12 @@ export const ROUTES = {
 /**
  * 인증이 필요한 라우트 목록
  */
-export const PROTECTED_ROUTES = [ROUTES.LIST, ROUTES.WRITE, ROUTES.MAIN, ROUTES.PROFILE] as const;
+export const PROTECTED_ROUTES = [
+  ROUTES.LIST,
+  ROUTES.WRITE,
+  ROUTES.MAIN,
+  ROUTES.PROFILE,
+] as const;
 
 /**
  * 인증된 사용자가 접근할 수 없는 라우트 (로그인/회원가입 페이지)
@@ -104,7 +110,10 @@ export const POSTCARD_STATUS = {
 /**
  * API URL 생성 헬퍼
  */
-export const buildApiUrl = (endpoint: string, params?: Record<string, string>): string => {
+export const buildApiUrl = (
+  endpoint: string,
+  params?: Record<string, string>,
+): string => {
   const url = new URL(endpoint, API_BASE_URL);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
@@ -117,7 +126,10 @@ export const buildApiUrl = (endpoint: string, params?: Record<string, string>): 
 /**
  * 라우트 URL 생성 헬퍼
  */
-export const buildRoute = (path: string, params?: Record<string, string>): string => {
+export const buildRoute = (
+  path: string,
+  params?: Record<string, string>,
+): string => {
   const url = new URL(path, window.location.origin);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {

@@ -14,5 +14,9 @@ export default function Template({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, []);
 
-  return <div className={`${styles.template} ${isVisible ? styles.visible : ''}`}>{children}</div>;
+  return (
+    <div className={`${styles.template} ${isVisible ? styles.visible : ''}`}>
+      {children}
+    </div>
+  );
 }

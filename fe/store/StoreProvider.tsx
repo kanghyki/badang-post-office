@@ -11,5 +11,9 @@ export const useStore = () => {
 };
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
-  return <StoreContext.Provider value={{ postcardStore }}>{children}</StoreContext.Provider>;
+  return (
+    <StoreContext.Provider value={{ postcardStore }}>
+      {children}
+    </StoreContext.Provider>
+  );
 };

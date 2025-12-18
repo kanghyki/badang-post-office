@@ -50,9 +50,11 @@ class ApiClient {
         // detail이 객체인 경우 message 필드 추출
         let errorMessage: string;
         if (typeof errorData.detail === 'object' && errorData.detail !== null) {
-          errorMessage = errorData.detail.message || JSON.stringify(errorData.detail);
+          errorMessage =
+            errorData.detail.message || JSON.stringify(errorData.detail);
         } else {
-          errorMessage = errorData.detail || errorData.message || `HTTP ${response.status}`;
+          errorMessage =
+            errorData.detail || errorData.message || `HTTP ${response.status}`;
         }
 
         throw new Error(errorMessage);
@@ -82,7 +84,11 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'GET', requiresAuth });
   }
 
-  async post<T>(endpoint: string, data?: unknown, requiresAuth = false): Promise<T> {
+  async post<T>(
+    endpoint: string,
+    data?: unknown,
+    requiresAuth = false,
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
@@ -90,7 +96,11 @@ class ApiClient {
     });
   }
 
-  async patch<T>(endpoint: string, data?: unknown, requiresAuth = false): Promise<T> {
+  async patch<T>(
+    endpoint: string,
+    data?: unknown,
+    requiresAuth = false,
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,

@@ -48,7 +48,7 @@ export default function PostcardItem({
   // processing 상태인 엽서에 대해 SSE 연결
   const { sendingStatus } = usePostcardStream(
     data.status === 'processing' ? data.id : null,
-    data.status === 'processing'
+    data.status === 'processing',
   );
 
   // sendingStatus 변경 로깅
@@ -70,7 +70,10 @@ export default function PostcardItem({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -150,14 +153,20 @@ export default function PostcardItem({
         <div className={styles.postcardDate}>
           <div className={styles.statusBadgeWrapper}>
             <div className={styles.statusBadge} data-status={data.status}>
-              <span className={styles.statusLabel}>{STATUS_LABELS[data.status]}</span>
+              <span className={styles.statusLabel}>
+                {STATUS_LABELS[data.status]}
+              </span>
             </div>
             {data.status === 'processing' && (
-              <div className={styles.sendingStatus}>{sendingStatus && SENDING_STATUS_LABELS[sendingStatus]}</div>
+              <div className={styles.sendingStatus}>
+                {sendingStatus && SENDING_STATUS_LABELS[sendingStatus]}
+              </div>
             )}
           </div>
           <div className={styles.dateRight}>
-            <div className={styles.writeDate}>{relativeDate(data.created_at)}</div>
+            <div className={styles.writeDate}>
+              {relativeDate(data.created_at)}
+            </div>
             <div className={styles.menuWrapper} ref={dropdownRef}>
               <button onClick={handleMenuToggle} className={styles.menuBtn}>
                 <FaEllipsisV />
@@ -165,16 +174,25 @@ export default function PostcardItem({
               {isDropdownOpen && (
                 <div className={styles.dropdown}>
                   {(data.status === 'writing' || data.status === 'pending') && (
-                    <button onClick={handleEdit} className={styles.dropdownItem}>
+                    <button
+                      onClick={handleEdit}
+                      className={styles.dropdownItem}
+                    >
                       수정
                     </button>
                   )}
                   {data.status === 'pending' && (
-                    <button onClick={handleCancel} className={`${styles.dropdownItem} ${styles.warning}`}>
+                    <button
+                      onClick={handleCancel}
+                      className={`${styles.dropdownItem} ${styles.warning}`}
+                    >
                       예약 취소
                     </button>
                   )}
-                  <button onClick={handleDelete} className={`${styles.dropdownItem} ${styles.danger}`}>
+                  <button
+                    onClick={handleDelete}
+                    className={`${styles.dropdownItem} ${styles.danger}`}
+                  >
                     삭제
                   </button>
                 </div>
@@ -198,7 +216,9 @@ export default function PostcardItem({
         <div className={styles.content}>
           <div className={styles.title}>
             <span className={styles.label}>내용</span>
-            <span className={styles.value}>{data.original_text || '[내용 없음]'}</span>
+            <span className={styles.value}>
+              {data.original_text || '[내용 없음]'}
+            </span>
           </div>
         </div>
       </div>

@@ -104,8 +104,12 @@ export default function Onboarding() {
       )}
 
       {/* 가로 스크롤 컨테이너 */}
-      <div ref={scrollContainerRef} className={styles.scrollContainer} onScroll={handleScroll}>
-        {ONBOARDING_SLIDES.map(slide => (
+      <div
+        ref={scrollContainerRef}
+        className={styles.scrollContainer}
+        onScroll={handleScroll}
+      >
+        {ONBOARDING_SLIDES.map((slide) => (
           <div key={slide.id} className={styles.slideArea}>
             {/* 이미지 영역 */}
             <div className={styles.imageWrapper}>
@@ -116,7 +120,7 @@ export default function Onboarding() {
                   fill
                   style={{ objectFit: 'contain' }}
                   priority
-                  onError={e => {
+                  onError={(e) => {
                     // 이미지 로드 실패 시 플레이스홀더 표시
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';

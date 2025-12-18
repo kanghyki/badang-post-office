@@ -10,7 +10,11 @@ interface TemplateImageModalProps {
   templateImageUrl: string | null;
 }
 
-export default function TemplateImageModal({ isOpen, onClose, templateImageUrl }: TemplateImageModalProps) {
+export default function TemplateImageModal({
+  isOpen,
+  onClose,
+  templateImageUrl,
+}: TemplateImageModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -46,13 +50,20 @@ export default function TemplateImageModal({ isOpen, onClose, templateImageUrl }
               width={0}
               height={0}
               sizes="100vw"
-              style={{ width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: 'calc(90vh - 40px)' }}
+              style={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '100%',
+                maxHeight: 'calc(90vh - 40px)',
+              }}
               unoptimized
             />
           </div>
         ) : (
           <div className={styles.noImageContainer}>
-            <p className={styles.noImageText}>템플릿 이미지를 불러올 수 없습니다</p>
+            <p className={styles.noImageText}>
+              템플릿 이미지를 불러올 수 없습니다
+            </p>
           </div>
         )}
       </div>

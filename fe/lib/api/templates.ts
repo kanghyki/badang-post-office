@@ -66,6 +66,9 @@ export const templatesApi = {
   },
 
   getById: async (id: string): Promise<TemplateDetailResponse> => {
-    return apiClient.get<TemplateDetailResponse>(TEMPLATE_ENDPOINTS.DETAIL(id), true);
+    return apiClient.get<TemplateDetailResponse>(
+      TEMPLATE_ENDPOINTS.DETAIL(id),
+      true,
+    );
   },
 };

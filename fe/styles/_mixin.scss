@@ -3,7 +3,11 @@
 // ============================================
 $bg-gradient-start: #fff9f5; // 연한 피치/크림색
 $bg-gradient-end: #ffffff; // 흰색
-$bg-gradient: linear-gradient(180deg, $bg-gradient-start 0%, $bg-gradient-end 100%);
+$bg-gradient: linear-gradient(
+  180deg,
+  $bg-gradient-start 0%,
+  $bg-gradient-end 100%
+);
 
 // ============================================
 // Mixin

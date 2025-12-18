@@ -1,5 +1,9 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { postcardsApi, PostcardResponse, PostcardStatus } from '@/lib/api/postcards';
+import {
+  postcardsApi,
+  PostcardResponse,
+  PostcardStatus,
+} from '@/lib/api/postcards';
 
 class PostcardStore {
   postcards: PostcardResponse[] = [];
@@ -22,7 +26,10 @@ class PostcardStore {
       });
     } catch (error) {
       runInAction(() => {
-        this.error = error instanceof Error ? error.message : '엽서 목록을 불러오는데 실패했습니다.';
+        this.error =
+          error instanceof Error
+            ? error.message
+            : '엽서 목록을 불러오는데 실패했습니다.';
         this.isLoading = false;
       });
     }
@@ -41,7 +48,8 @@ class PostcardStore {
       return newPostcard;
     } catch (error) {
       runInAction(() => {
-        this.error = error instanceof Error ? error.message : '엽서 생성에 실패했습니다.';
+        this.error =
+          error instanceof Error ? error.message : '엽서 생성에 실패했습니다.';
         this.isLoading = false;
       });
       throw error;
@@ -55,12 +63,13 @@ class PostcardStore {
     try {
       await postcardsApi.delete(id);
       runInAction(() => {
-        this.postcards = this.postcards.filter(p => p.id !== id);
+        this.postcards = this.postcards.filter((p) => p.id !== id);
         this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
-        this.error = error instanceof Error ? error.message : '엽서 삭제에 실패했습니다.';
+        this.error =
+          error instanceof Error ? error.message : '엽서 삭제에 실패했습니다.';
         this.isLoading = false;
       });
       throw error;

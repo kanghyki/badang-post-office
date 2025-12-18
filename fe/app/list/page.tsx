@@ -6,7 +6,11 @@ import PostcardImageModal from '@/app/components/PostcardImageModal';
 import LoadingSkeleton from '@/app/components/LoadingSkeleton';
 import styles from './list.module.scss';
 import { useEffect, useState } from 'react';
-import { postcardsApi, PostcardResponse, PostcardStatus } from '@/lib/api/postcards';
+import {
+  postcardsApi,
+  PostcardResponse,
+  PostcardStatus,
+} from '@/lib/api/postcards';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotification } from '@/app/context/NotificationContext';
 import { ROUTES } from '@/lib/constants/urls';
@@ -36,7 +40,8 @@ export default function List() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [userName, setUserName] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPostcard, setSelectedPostcard] = useState<PostcardResponse | null>(null);
+  const [selectedPostcard, setSelectedPostcard] =
+    useState<PostcardResponse | null>(null);
 
   const fetchPostcards = async (status?: PostcardStatus, isInitial = false) => {
     try {
@@ -155,7 +160,8 @@ export default function List() {
   const handleCancel = async (id: string) => {
     const confirmed = await showModal({
       title: '예약 취소',
-      message: '예약된 발송을 취소하시겠습니까?\n취소된 엽서는 목록에서 확인할 수 있습니다.',
+      message:
+        '예약된 발송을 취소하시겠습니까?\n취소된 엽서는 목록에서 확인할 수 있습니다.',
       type: 'confirm',
       confirmText: '예약 취소',
       cancelText: '돌아가기',
@@ -318,7 +324,7 @@ export default function List() {
 
       <div className="container">
         <div className={styles.filterContainer}>
-          {(Object.keys(STATUS_LABELS) as FilterType[]).map(filter => (
+          {(Object.keys(STATUS_LABELS) as FilterType[]).map((filter) => (
             <button
               key={filter}
               className={`${styles.filterButton} ${activeFilter === filter ? styles.active : ''}`}
@@ -334,7 +340,9 @@ export default function List() {
               <LoadingSkeleton />
             ) : postcards.length === 0 ? (
               <div className={styles.emptyState}>
-                <div className={styles.emptyText}>아직 작성한 엽서가 없어요</div>
+                <div className={styles.emptyText}>
+                  아직 작성한 엽서가 없어요
+                </div>
               </div>
             ) : (
               postcards.map((item, index) => (

@@ -20,8 +20,13 @@ interface UsePostcardStreamResult {
  * @param enabled - SSE 연결 활성화 여부 (기본값: true)
  * @returns 발송 상태, 에러 메시지, 연결 상태
  */
-export function usePostcardStream(postcardId: string | null, enabled: boolean = true): UsePostcardStreamResult {
-  const [sendingStatus, setSendingStatus] = useState<SendingStatus | null>(null);
+export function usePostcardStream(
+  postcardId: string | null,
+  enabled: boolean = true,
+): UsePostcardStreamResult {
+  const [sendingStatus, setSendingStatus] = useState<SendingStatus | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -110,8 +115,13 @@ export function usePostcardStream(postcardId: string | null, enabled: boolean = 
                 console.log('🔔 SSE 메시지 수신:', data);
 
                 // 상태 업데이트 (즉시 실행)
-                setSendingStatus(prev => {
-                  console.log('📝 sendingStatus 업데이트:', prev, '→', data.status);
+                setSendingStatus((prev) => {
+                  console.log(
+                    '📝 sendingStatus 업데이트:',
+                    prev,
+                    '→',
+                    data.status,
+                  );
                   return data.status;
                 });
 
@@ -137,7 +147,10 @@ export function usePostcardStream(postcardId: string | null, enabled: boolean = 
           console.log('SSE 연결 취소됨:', postcardId);
         } else {
           console.error('SSE 연결 오류:', err);
-          const errorMessage = err instanceof Error ? err.message : '실시간 연결 중 오류가 발생했습니다.';
+          const errorMessage =
+            err instanceof Error
+              ? err.message
+              : '실시간 연결 중 오류가 발생했습니다.';
           setError(errorMessage);
         }
         setIsConnected(false);

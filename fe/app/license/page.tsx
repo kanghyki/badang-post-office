@@ -38,7 +38,12 @@ export default function LicensePage() {
             <span className={styles.badge}>상업용 무료</span>
           </div>
           <p className={styles.creator}>제작 (주)여기어때컴퍼니</p>
-          <a href="https://noonnu.cc/font_page/115" target="_blank" rel="noopener noreferrer" className={styles.link}>
+          <a
+            href="https://noonnu.cc/font_page/115"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.link}
+          >
             자세히 보기 →
           </a>
         </div>
@@ -49,7 +54,12 @@ export default function LicensePage() {
             <span className={styles.badge}>SIL OFL 1.1</span>
           </div>
           <p className={styles.creator}>제작 길형진 (orioncactus)</p>
-          <a href="https://noonnu.cc/font_page/694" target="_blank" rel="noopener noreferrer" className={styles.link}>
+          <a
+            href="https://noonnu.cc/font_page/694"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.link}
+          >
             자세히 보기 →
           </a>
         </div>
@@ -60,7 +70,12 @@ export default function LicensePage() {
             <span className={styles.badge}>네이버 나눔글꼴</span>
           </div>
           <p className={styles.creator}>제작 네이버</p>
-          <a href="https://noonnu.cc/font_page/565" target="_blank" rel="noopener noreferrer" className={styles.link}>
+          <a
+            href="https://noonnu.cc/font_page/565"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.link}
+          >
             자세히 보기 →
           </a>
         </div>

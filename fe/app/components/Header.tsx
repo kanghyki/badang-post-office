@@ -11,14 +11,22 @@ interface LoginProps {
   onLogout?: () => void;
   onDeleteAccount?: () => void;
 }
-export default function Header({ showUserMenu, userName, onLogout, onDeleteAccount }: LoginProps) {
+export default function Header({
+  showUserMenu,
+  userName,
+  onLogout,
+  onDeleteAccount,
+}: LoginProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -68,7 +76,10 @@ export default function Header({ showUserMenu, userName, onLogout, onDeleteAccou
       </button>
       {showUserMenu && (
         <div className={styles.userMenuWrapper} ref={dropdownRef}>
-          <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className={styles.userMenuBtn}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className={styles.userMenuBtn}
+          >
             {userName && <span className={styles.userName}>{userName}</span>}
             <div className={styles.profileImageWrapper}>
               <Image
@@ -86,13 +97,22 @@ export default function Header({ showUserMenu, userName, onLogout, onDeleteAccou
           </button>
           {isDropdownOpen && (
             <div className={styles.dropdown}>
-              <button onClick={handleProfileClick} className={styles.dropdownItem}>
+              <button
+                onClick={handleProfileClick}
+                className={styles.dropdownItem}
+              >
                 내 정보
               </button>
-              <button onClick={handleLogoutClick} className={styles.dropdownItem}>
+              <button
+                onClick={handleLogoutClick}
+                className={styles.dropdownItem}
+              >
                 로그아웃
               </button>
-              <button onClick={handleDeleteClick} className={`${styles.dropdownItem} ${styles.danger}`}>
+              <button
+                onClick={handleDeleteClick}
+                className={`${styles.dropdownItem} ${styles.danger}`}
+              >
                 회원탈퇴
               </button>
             </div>

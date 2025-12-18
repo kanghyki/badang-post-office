@@ -37,7 +37,8 @@ export default function Signup() {
       console.log('회원가입 성공:', response);
 
       showToast({
-        message: '회원가입이 완료되었습니다! 이메일을 확인해서 인증을 완료해주세요.',
+        message:
+          '회원가입이 완료되었습니다! 이메일을 확인해서 인증을 완료해주세요.',
         type: 'success',
       });
 
@@ -70,7 +71,7 @@ export default function Signup() {
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="이메일을 입력하세요"
                   required
                 />
@@ -81,7 +82,7 @@ export default function Signup() {
                 <input
                   type="text"
                   value={name}
-                  onChange={e => setName(e.target.value)}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="닉네임을 입력하세요"
                   required
                 />
@@ -92,7 +93,7 @@ export default function Signup() {
                 <input
                   type="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="비밀번호를 입력하세요"
                   required
                 />

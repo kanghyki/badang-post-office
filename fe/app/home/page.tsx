@@ -92,7 +92,10 @@ const User = observer(() => {
       <div className={styles.homeContainer}>
         <main className={styles.userMain}>
           <div className={styles.inputBox}>
-            <button className={styles.menuItem} onClick={() => router.push(ROUTES.LIST)}>
+            <button
+              className={styles.menuItem}
+              onClick={() => router.push(ROUTES.LIST)}
+            >
               <span className={styles.boxTxt}>
                 <b>엽서목록보기</b>
               </span>
@@ -102,7 +105,10 @@ const User = observer(() => {
               </span>
             </button>
 
-            <button className={styles.menuItem} onClick={() => router.push(ROUTES.WRITE)}>
+            <button
+              className={styles.menuItem}
+              onClick={() => router.push(ROUTES.WRITE)}
+            >
               <span className={styles.boxTxt}>
                 <b>엽서작성하기</b>
               </span>

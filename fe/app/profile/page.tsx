@@ -122,8 +122,8 @@ export default function Profile() {
     } catch (error) {
       const errorMessage =
         error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail ||
-            '프로필 업데이트 중 오류가 발생했습니다.'
+          ? (error as { response?: { data?: { detail?: string } } }).response
+              ?.data?.detail || '프로필 업데이트 중 오류가 발생했습니다.'
           : '프로필 업데이트 중 오류가 발생했습니다.';
       showToast({ message: errorMessage, type: 'error' });
     }
@@ -149,8 +149,8 @@ export default function Profile() {
     } catch (error) {
       const errorMessage =
         error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail ||
-            '인증 메일 재발송 중 오류가 발생했습니다.'
+          ? (error as { response?: { data?: { detail?: string } } }).response
+              ?.data?.detail || '인증 메일 재발송 중 오류가 발생했습니다.'
           : '인증 메일 재발송 중 오류가 발생했습니다.';
       showToast({ message: errorMessage, type: 'error' });
     } finally {
@@ -238,7 +238,9 @@ export default function Profile() {
             <div className={styles.infoItem}>
               <span className={styles.label}>가입일</span>
               <span className={styles.value}>
-                {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('ko-KR') : ''}
+                {profile?.created_at
+                  ? new Date(profile.created_at).toLocaleDateString('ko-KR')
+                  : ''}
               </span>
             </div>
           </div>
@@ -249,7 +251,7 @@ export default function Profile() {
               <input
                 type="text"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 disabled={!isEditing}
                 placeholder="이름을 입력하세요"
               />
@@ -262,7 +264,7 @@ export default function Profile() {
                   <input
                     type="password"
                     value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
+                    onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="변경할 경우만 입력"
                   />
                 </div>
@@ -272,7 +274,7 @@ export default function Profile() {
                   <input
                     type="password"
                     value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="비밀번호 재입력"
                   />
                 </div>
@@ -281,15 +283,24 @@ export default function Profile() {
 
             <div className={styles.buttonGroup}>
               {!isEditing ? (
-                <button onClick={() => setIsEditing(true)} className={styles.editBtn}>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className={styles.editBtn}
+                >
                   정보 수정
                 </button>
               ) : (
                 <>
-                  <button onClick={handleCancelEdit} className={styles.cancelBtn}>
+                  <button
+                    onClick={handleCancelEdit}
+                    className={styles.cancelBtn}
+                  >
                     취소
                   </button>
-                  <button onClick={handleUpdateProfile} className={styles.saveBtn}>
+                  <button
+                    onClick={handleUpdateProfile}
+                    className={styles.saveBtn}
+                  >
                     저장
                   </button>
                 </>

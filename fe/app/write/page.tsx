@@ -6,7 +6,11 @@ import Image from 'next/image';
 import styles from './write.module.scss';
 import Header from '@/app/components/Header';
 import { postcardsApi } from '@/lib/api/postcards';
-import { templatesApi, TemplateResponse, TemplateDetailResponse } from '@/lib/api/templates';
+import {
+  templatesApi,
+  TemplateResponse,
+  TemplateDetailResponse,
+} from '@/lib/api/templates';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotification } from '@/app/context/NotificationContext';
 import { ROUTES, API_BASE_URL } from '@/lib/constants/urls';
@@ -36,20 +40,28 @@ export default function Write() {
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     return now.toISOString().slice(0, 16);
   });
-  const [sendType, setSendType] = useState<'immediate' | 'scheduled'>('immediate');
+  const [sendType, setSendType] = useState<'immediate' | 'scheduled'>(
+    'immediate',
+  );
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [templates, setTemplates] = useState<TemplateResponse[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [loadingTemplates, setLoadingTemplates] = useState(true);
-  const [templateImageUrls, setTemplateImageUrls] = useState<Record<string, string>>({});
-  const [, setSelectedTemplateDetail] = useState<TemplateDetailResponse | null>(null);
+  const [templateImageUrls, setTemplateImageUrls] = useState<
+    Record<string, string>
+  >({});
+  const [, setSelectedTemplateDetail] = useState<TemplateDetailResponse | null>(
+    null,
+  );
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 템플릿 확대 모달
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [selectedTemplateImageUrl, setSelectedTemplateImageUrl] = useState<string | null>(null);
+  const [selectedTemplateImageUrl, setSelectedTemplateImageUrl] = useState<
+    string | null
+  >(null);
 
   // 템플릿 목록 불러오기
   useEffect(() => {
@@ -67,7 +79,7 @@ export default function Write() {
         // 각 템플릿의 이미지를 인증과 함께 불러오기
         const imageUrls: Record<string, string> = {};
         await Promise.all(
-          response.templates.map(async template => {
+          response.templates.map(async (template) => {
             try {
               const imageUrl = `${API_BASE_URL}${template.template_image_path}`;
               const blobUrl = await fetchImageWithAuth(imageUrl);
@@ -75,7 +87,7 @@ export default function Write() {
             } catch (error) {
               console.error(`템플릿 ${template.id} 이미지 로드 실패:`, error);
             }
-          })
+          }),
         );
         setTemplateImageUrls(imageUrls);
       } catch (error) {
@@ -93,7 +105,7 @@ export default function Write() {
 
     // cleanup: blob URL 해제
     return () => {
-      Object.values(templateImageUrls).forEach(url => {
+      Object.values(templateImageUrls).forEach((url) => {
         if (url) {
           URL.revokeObjectURL(url);
         }
@@ -134,10 +146,26 @@ export default function Write() {
 
   // 입력값 변경 감지
   useEffect(() => {
-    if (text || recipientName || emailLocalPart || emailDomain || senderName || scheduledAt || image) {
+    if (
+      text ||
+      recipientName ||
+      emailLocalPart ||
+      emailDomain ||
+      senderName ||
+      scheduledAt ||
+      image
+    ) {
       setHasUnsavedChanges(true);
     }
-  }, [text, recipientName, emailLocalPart, emailDomain, senderName, scheduledAt, image]);
+  }, [
+    text,
+    recipientName,
+    emailLocalPart,
+    emailDomain,
+    senderName,
+    scheduledAt,
+    image,
+  ]);
 
   // 뒤로가기 시 경고
   useEffect(() => {
@@ -219,7 +247,10 @@ export default function Write() {
         }
 
         // 이메일 주소 조합
-        const recipientEmail = emailLocalPart && emailDomain ? `${emailLocalPart}@${emailDomain}` : undefined;
+        const recipientEmail =
+          emailLocalPart && emailDomain
+            ? `${emailLocalPart}@${emailDomain}`
+            : undefined;
 
         // 엽서 내용 업데이트
         const updatedPostcard = await postcardsApi.update(currentPostcardId, {
@@ -228,7 +259,10 @@ export default function Write() {
           recipient_email: recipientEmail,
           recipient_name: recipientName,
           sender_name: senderName,
-          scheduled_at: sendType === 'scheduled' && scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+          scheduled_at:
+            sendType === 'scheduled' && scheduledAt
+              ? new Date(scheduledAt).toISOString()
+              : undefined,
           image: image || undefined,
         });
 
@@ -287,7 +321,7 @@ export default function Write() {
       image,
       imagePreview,
       showToast,
-    ]
+    ],
   );
 
   // 디바운싱을 적용한 자동 저장
@@ -381,7 +415,10 @@ export default function Write() {
         recipient_email: recipientEmail,
         recipient_name: recipientName,
         sender_name: senderName,
-        scheduled_at: sendType === 'scheduled' && scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        scheduled_at:
+          sendType === 'scheduled' && scheduledAt
+            ? new Date(scheduledAt).toISOString()
+            : undefined,
         image: image || undefined,
       });
 
@@ -426,10 +463,12 @@ export default function Write() {
                   <span>템플릿을 불러오는 중...</span>
                 </div>
               ) : templates.length === 0 ? (
-                <div className={styles.templateEmpty}>사용 가능한 템플릿이 없습니다.</div>
+                <div className={styles.templateEmpty}>
+                  사용 가능한 템플릿이 없습니다.
+                </div>
               ) : (
                 <div className={styles.templateGrid}>
-                  {templates.map(template => (
+                  {templates.map((template) => (
                     <label
                       key={template.id}
                       className={`${styles.templateCard} ${selectedTemplateId === template.id ? styles.selected : ''}`}
@@ -439,7 +478,7 @@ export default function Write() {
                         name="template"
                         value={template.id}
                         checked={selectedTemplateId === template.id}
-                        onChange={e => setSelectedTemplateId(e.target.value)}
+                        onChange={(e) => setSelectedTemplateId(e.target.value)}
                         className={styles.templateRadio}
                       />
                       <div className={styles.templateImageWrapper}>
@@ -452,16 +491,22 @@ export default function Write() {
                               width={0}
                               height={0}
                               sizes="100vw"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
                               unoptimized
                             />
                             <button
                               type="button"
                               className={styles.expandButton}
-                              onClick={e => {
+                              onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setSelectedTemplateImageUrl(templateImageUrls[template.id]);
+                                setSelectedTemplateImageUrl(
+                                  templateImageUrls[template.id],
+                                );
                                 setIsTemplateModalOpen(true);
                               }}
                               aria-label="템플릿 확대"
@@ -476,9 +521,13 @@ export default function Write() {
                         )}
                       </div>
                       <div className={styles.templateInfo}>
-                        <div className={styles.templateName}>{template.name}</div>
+                        <div className={styles.templateName}>
+                          {template.name}
+                        </div>
                         {template.description && (
-                          <div className={styles.templateDescription}>{template.description}</div>
+                          <div className={styles.templateDescription}>
+                            {template.description}
+                          </div>
                         )}
                       </div>
                     </label>
@@ -494,7 +543,7 @@ export default function Write() {
                 <div className={styles.textareaWrapper}>
                   <textarea
                     value={text}
-                    onChange={e => setText(e.target.value)}
+                    onChange={(e) => setText(e.target.value)}
                     placeholder="내용을 작성해주세요."
                     maxLength={120}
                     className={styles.textarea}
@@ -518,8 +567,12 @@ export default function Write() {
                     id="imageInput"
                   />
                   <label htmlFor="imageInput" className={styles.fileLabel}>
-                    <span className={styles.uploadText}>사진을 선택해주세요</span>
-                    <span className={styles.uploadHint}>클릭하여 사진 업로드</span>
+                    <span className={styles.uploadText}>
+                      사진을 선택해주세요
+                    </span>
+                    <span className={styles.uploadHint}>
+                      클릭하여 사진 업로드
+                    </span>
                   </label>
                 </div>
               ) : (
@@ -532,7 +585,11 @@ export default function Write() {
                       width={0}
                       height={0}
                       sizes="100vw"
-                      style={{ width: '100%', height: 'auto', maxHeight: '25rem' }}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        maxHeight: '25rem',
+                      }}
                       unoptimized
                     />
                     <button
@@ -541,8 +598,19 @@ export default function Write() {
                       className={styles.removeImageBtn}
                       aria-label="사진 삭제"
                     >
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M15 5L5 15M5 5L15 15"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -560,7 +628,7 @@ export default function Write() {
                   <input
                     type="text"
                     value={recipientName}
-                    onChange={e => setRecipientName(e.target.value)}
+                    onChange={(e) => setRecipientName(e.target.value)}
                     placeholder="예) 사랑하는 어머니 (수신자명)"
                     className={styles.input}
                     required
@@ -575,7 +643,7 @@ export default function Write() {
                     <input
                       type="text"
                       value={emailLocalPart}
-                      onChange={e => setEmailLocalPart(e.target.value)}
+                      onChange={(e) => setEmailLocalPart(e.target.value)}
                       placeholder="이메일"
                       className={styles.emailInput}
                       required
@@ -586,7 +654,7 @@ export default function Write() {
                         <input
                           type="text"
                           value={customDomain}
-                          onChange={e => setCustomDomain(e.target.value)}
+                          onChange={(e) => setCustomDomain(e.target.value)}
                           placeholder="example.com"
                           className={styles.emailInput}
                           required
@@ -606,12 +674,12 @@ export default function Write() {
                     ) : (
                       <select
                         value={selectedDomain}
-                        onChange={e => setSelectedDomain(e.target.value)}
+                        onChange={(e) => setSelectedDomain(e.target.value)}
                         className={styles.emailDomainSelect}
                         required
                       >
                         <option value="">이메일</option>
-                        {emailDomains.map(domain => (
+                        {emailDomains.map((domain) => (
                           <option key={domain} value={domain}>
                             {domain}
                           </option>
@@ -632,7 +700,7 @@ export default function Write() {
                   <input
                     type="text"
                     value={senderName}
-                    onChange={e => setSenderName(e.target.value)}
+                    onChange={(e) => setSenderName(e.target.value)}
                     placeholder="예) 바당이 (발신자명)"
                     className={styles.input}
                   />
@@ -645,36 +713,44 @@ export default function Write() {
               <h3 className={styles.sectionTitle}>전달 시간</h3>
 
               <div className={styles.sendTypeOptions}>
-                <label className={`${styles.sendTypeOption} ${sendType === 'immediate' ? styles.active : ''}`}>
+                <label
+                  className={`${styles.sendTypeOption} ${sendType === 'immediate' ? styles.active : ''}`}
+                >
                   <input
                     type="radio"
                     name="sendType"
                     value="immediate"
                     checked={sendType === 'immediate'}
-                    onChange={e => setSendType(e.target.value as 'immediate')}
+                    onChange={(e) => setSendType(e.target.value as 'immediate')}
                     className={styles.radioInput}
                   />
                   <div className={styles.optionContent}>
                     <div className={styles.optionText}>
                       <div className={styles.optionTitle}>바로 전달</div>
-                      <div className={styles.optionDescription}>접수 즉시 전달</div>
+                      <div className={styles.optionDescription}>
+                        접수 즉시 전달
+                      </div>
                     </div>
                   </div>
                 </label>
 
-                <label className={`${styles.sendTypeOption} ${sendType === 'scheduled' ? styles.active : ''}`}>
+                <label
+                  className={`${styles.sendTypeOption} ${sendType === 'scheduled' ? styles.active : ''}`}
+                >
                   <input
                     type="radio"
                     name="sendType"
                     value="scheduled"
                     checked={sendType === 'scheduled'}
-                    onChange={e => setSendType(e.target.value as 'scheduled')}
+                    onChange={(e) => setSendType(e.target.value as 'scheduled')}
                     className={styles.radioInput}
                   />
                   <div className={styles.optionContent}>
                     <div className={styles.optionText}>
                       <div className={styles.optionTitle}>예약 전달</div>
-                      <div className={styles.optionDescription}>날짜와 시간 선택</div>
+                      <div className={styles.optionDescription}>
+                        날짜와 시간 선택
+                      </div>
                     </div>
                   </div>
                 </label>
@@ -688,7 +764,7 @@ export default function Write() {
                       id="scheduled_at"
                       type="datetime-local"
                       value={scheduledAt}
-                      onChange={e => setScheduledAt(e.target.value)}
+                      onChange={(e) => setScheduledAt(e.target.value)}
                       className={styles.dateInput}
                       required
                     />
@@ -699,7 +775,12 @@ export default function Write() {
           </form>
 
           <div className={styles.buttonSection}>
-            <button className={styles.sendBtn} type="submit" form="postcardForm" disabled={loading || saving}>
+            <button
+              className={styles.sendBtn}
+              type="submit"
+              form="postcardForm"
+              disabled={loading || saving}
+            >
               {loading ? (
                 <>
                   <span className={styles.spinner}></span>

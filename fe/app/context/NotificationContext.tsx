@@ -25,16 +25,22 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
 
-export function NotificationProvider({ children }: { children: React.ReactNode }) {
+export function NotificationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [toast, setToast] = useState<ToastOptions | null>(null);
-  const [modal, setModal] = useState<(ModalOptions & { resolve: (value: boolean) => void }) | null>(null);
+  const [modal, setModal] = useState<
+    (ModalOptions & { resolve: (value: boolean) => void }) | null
+  >(null);
 
   const showToast = useCallback((options: ToastOptions) => {
     setToast(options);
   }, []);
 
   const showModal = useCallback((options: ModalOptions): Promise<boolean> => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setModal({ ...options, resolve });
     });
   }, []);
@@ -57,7 +63,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     <NotificationContext.Provider value={{ showToast, showModal }}>
       {children}
       {toast && (
-        <Toast message={toast.message} type={toast.type} duration={toast.duration} onClose={() => setToast(null)} />
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => setToast(null)}
+        />
       )}
       {modal && (
         <Modal
