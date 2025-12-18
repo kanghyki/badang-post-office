@@ -1,7 +1,6 @@
-import Link from 'next/link';
-import { FaEdit, FaTrashAlt, FaEllipsisV } from 'react-icons/fa';
+import { FaEllipsisV } from 'react-icons/fa';
 import styles from './PostcardItem.module.scss';
-import { PostcardResponse, SendingStatus } from '@/lib/api/postcards';
+import { PostcardResponse } from '@/lib/api/postcards';
 import { ROUTES } from '@/lib/constants/urls';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -39,7 +38,6 @@ export default function PostcardItem({
   index,
   onCancel,
   onDelete,
-  onRetry,
   onClick,
   onStatusUpdate,
 }: PostcardItemProps) {
@@ -48,7 +46,7 @@ export default function PostcardItem({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // processing 상태인 엽서에 대해 SSE 연결
-  const { sendingStatus, error: sseError } = usePostcardStream(
+  const { sendingStatus } = usePostcardStream(
     data.status === 'processing' ? data.id : null,
     data.status === 'processing'
   );
@@ -100,13 +98,6 @@ export default function PostcardItem({
     onDelete?.(data.id);
   };
 
-  const handleRetry = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDropdownOpen(false);
-    onRetry?.(data.id);
-  };
-
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -123,20 +114,6 @@ export default function PostcardItem({
     onClick?.(data);
   };
 
-  const formatDate = (isoDate: string) => {
-    const date = new Date(isoDate);
-    return date.toISOString().split('T')[0].replace(/-/g, '.');
-  };
-
-  const getScheduledDateText = () => {
-    if (data.scheduled_at) {
-      return formatDate(data.scheduled_at);
-    }
-    if (data.status === 'sent' && data.sent_at) {
-      return formatDate(data.sent_at);
-    }
-    return '바로 전달';
-  };
   const relativeDate = (isoDate: string) => {
     // UTC 시간을 한국 시간(KST)으로 변환
     const date = new Date(isoDate);

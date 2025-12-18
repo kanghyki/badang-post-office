@@ -3,10 +3,10 @@ import styles from './logoBox.module.scss';
 
 interface LogoBoxProps {
   c_value: string;
-  bg_value: string;
+  bg_value?: string;
 }
 
-export default function LogoBox({ c_value, bg_value }: LogoBoxProps) {
+export default function LogoBox({ c_value }: LogoBoxProps) {
   return (
     <>
       <div className={styles.logoBox}>

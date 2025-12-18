@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import styles from '../write/write.module.scss';
 import Header from '@/app/components/Header';
 import TemplateImageModal from '@/app/components/TemplateImageModal';
@@ -23,7 +24,7 @@ function ModifyContent() {
   const [saving, setSaving] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [text, setText] = useState('');
-  const [translatedText, setTranslatedText] = useState('');
+  const [, setTranslatedText] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [emailLocalPart, setEmailLocalPart] = useState('');
   const [emailDomain, setEmailDomain] = useState('');
@@ -42,7 +43,7 @@ function ModifyContent() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [templateImageUrls, setTemplateImageUrls] = useState<Record<string, string>>({});
-  const [selectedTemplateDetail, setSelectedTemplateDetail] = useState<TemplateDetailResponse | null>(null);
+  const [, setSelectedTemplateDetail] = useState<TemplateDetailResponse | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 템플릿 확대 모달 상태
@@ -121,6 +122,7 @@ function ModifyContent() {
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showToast]);
 
   // 선택된 템플릿의 상세 정보 가져오기
@@ -242,6 +244,7 @@ function ModifyContent() {
     };
 
     loadPostcard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postcardId, router]);
 
   // 이미지 파일 선택
@@ -534,10 +537,15 @@ function ModifyContent() {
                       <div className={styles.templateImageWrapper}>
                         {templateImageUrls[template.id] ? (
                           <>
-                            <img
+                            <Image
                               src={templateImageUrls[template.id]}
                               alt={template.name}
                               className={styles.templateImage}
+                              width={0}
+                              height={0}
+                              sizes="100vw"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              unoptimized
                             />
                             <button
                               type="button"
@@ -609,7 +617,16 @@ function ModifyContent() {
               ) : (
                 <div className={styles.imagePreviewContainer}>
                   <div className={styles.previewBox}>
-                    <img src={imagePreview} alt="preview" className={styles.previewImg} />
+                    <Image
+                      src={imagePreview}
+                      alt="preview"
+                      className={styles.previewImg}
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      style={{ width: '100%', height: 'auto', maxHeight: '25rem' }}
+                      unoptimized
+                    />
                     <button
                       type="button"
                       onClick={handleImageRemove}

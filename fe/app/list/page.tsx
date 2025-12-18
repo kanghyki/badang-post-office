@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import Header from '@/app/components/Header';
 import PostcardItem from '@/app/components/PostcardItem';
 import PostcardImageModal from '@/app/components/PostcardImageModal';
@@ -74,6 +73,7 @@ export default function List() {
     if (isInitial) {
       loadUserProfile();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilter]);
 
   const loadUserProfile = async () => {
@@ -143,7 +143,7 @@ export default function List() {
     setSelectedPostcard(null);
   };
 
-  const handleStatusUpdate = async (id: string) => {
+  const handleStatusUpdate = async () => {
     // 발송 완료 시 목록 새로고침
     if (activeFilter === 'all') {
       fetchPostcards();

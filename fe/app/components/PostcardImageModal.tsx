@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import styles from './PostcardImageModal.module.scss';
 import { API_BASE_URL } from '@/lib/constants/urls';
 
@@ -68,6 +69,7 @@ export default function PostcardImageModal({ isOpen, onClose, postcardPath }: Po
         URL.revokeObjectURL(imageUrl);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, postcardPath]);
 
   if (!isOpen) return null;
@@ -122,7 +124,16 @@ export default function PostcardImageModal({ isOpen, onClose, postcardPath }: Po
           </div>
         ) : postcardPath && imageUrl ? (
           <div className={styles.imageContainer}>
-            <img src={imageUrl} alt="엽서" className={styles.postcardImage} />
+            <Image
+              src={imageUrl}
+              alt="엽서"
+              className={styles.postcardImage}
+              width={0}
+              height={0}
+              sizes="100vw"
+              style={{ width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: 'calc(90vh - 40px)' }}
+              unoptimized
+            />
           </div>
         ) : (
           <div className={styles.noImageContainer}>

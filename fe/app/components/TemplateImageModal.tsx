@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Image from 'next/image';
 import styles from './PostcardImageModal.module.scss';
 
 interface TemplateImageModalProps {
@@ -38,7 +39,16 @@ export default function TemplateImageModal({ isOpen, onClose, templateImageUrl }
         </button>
         {templateImageUrl ? (
           <div className={styles.imageContainer}>
-            <img src={templateImageUrl} alt="템플릿" className={styles.postcardImage} />
+            <Image
+              src={templateImageUrl}
+              alt="템플릿"
+              className={styles.postcardImage}
+              width={0}
+              height={0}
+              sizes="100vw"
+              style={{ width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: 'calc(90vh - 40px)' }}
+              unoptimized
+            />
           </div>
         ) : (
           <div className={styles.noImageContainer}>

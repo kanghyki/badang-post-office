@@ -6,16 +6,14 @@ import { ROUTES } from '@/lib/constants/urls';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const [targetRoute, setTargetRoute] = useState<string>(ROUTES.LOGIN);
+  const [targetRoute] = useState<string>(() => {
+    // 온보딩을 본 적이 없으면 온보딩으로, 봤으면 로그인으로
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    return hasSeenOnboarding ? ROUTES.LOGIN : ROUTES.ONBOARDING;
+  });
 
   useEffect(() => {
     document.body.style.backgroundColor = '#FE6716'; // 시작화면 배경색
-
-    // 온보딩을 본 적이 없으면 온보딩으로, 봤으면 로그인으로
-    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    if (!hasSeenOnboarding) {
-      setTargetRoute(ROUTES.ONBOARDING);
-    }
 
     return () => {
       document.body.style.backgroundColor = ''; // 나갈 때 초기화

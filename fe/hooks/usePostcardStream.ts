@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { API_BASE_URL, POSTCARD_ENDPOINTS } from '@/lib/constants/urls';
 import { SendingStatus } from '@/lib/api/postcards';
 
@@ -132,12 +132,13 @@ export function usePostcardStream(postcardId: string | null, enabled: boolean = 
             }
           }
         }
-      } catch (err: any) {
-        if (err.name === 'AbortError') {
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') {
           console.log('SSE 연결 취소됨:', postcardId);
         } else {
           console.error('SSE 연결 오류:', err);
-          setError(err.message || '실시간 연결 중 오류가 발생했습니다.');
+          const errorMessage = err instanceof Error ? err.message : '실시간 연결 중 오류가 발생했습니다.';
+          setError(errorMessage);
         }
         setIsConnected(false);
       }
@@ -151,6 +152,7 @@ export function usePostcardStream(postcardId: string | null, enabled: boolean = 
       abortController.abort();
       setIsConnected(false);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postcardId, enabled]); // sendingStatus 제거 - 상태 변경 시 재연결 방지
 
   return {

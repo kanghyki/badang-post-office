@@ -1,19 +1,17 @@
 'use client';
 import styles from './header.module.scss';
-import { IoPersonCircle } from 'react-icons/io5';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { ROUTES } from '@/lib/constants/urls';
 import Image from 'next/image';
 
 interface LoginProps {
-  title: string;
   showUserMenu?: boolean;
   userName?: string;
   onLogout?: () => void;
   onDeleteAccount?: () => void;
 }
-export default function Header({ title, showUserMenu, userName, onLogout, onDeleteAccount }: LoginProps) {
+export default function Header({ showUserMenu, userName, onLogout, onDeleteAccount }: LoginProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
