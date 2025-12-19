@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import styles from './signup.module.scss';
-import Logo from '@/app/components/LogoBox';
+import LoginLogo from '@/app/components/LoginLogo';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
@@ -62,7 +62,7 @@ export default function Signup() {
     <>
       <div className="container">
         <main className={styles.signupMain}>
-          <Logo c_value="#f61" bg_value="#fff" />
+          <LoginLogo />
 
           <div className={styles.signupBox}>
             <form onSubmit={handleSubmit}>
