@@ -13,24 +13,6 @@ export default function LicensePage() {
         <h1>License</h1>
       </header>
       <main className={styles.content}>
-        <h1>모델</h1>
-        <div className={styles.fontCard}>
-          <div className={styles.fontHeader}>
-            <h3>JEJUMA-002</h3>
-            <span className={styles.badge}>MIT</span>
-          </div>
-          <p className={styles.creator}>제작 JEJUMA</p>
-          <a
-            href="https://huggingface.co/JEJUMA/JEJUMA-002"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.link}
-          >
-            자세히 보기 →
-          </a>
-        </div>
-      </main>
-      <main className={styles.content}>
         <h1>폰트</h1>
         <div className={styles.fontCard}>
           <div className={styles.fontHeader}>
