@@ -1,23 +1,22 @@
 import Image from 'next/image';
-import styles from './logoBox.module.scss';
+import styles from './loginLogo.module.scss';
 
-export default function LogoBox() {
+export default function LoginLogo() {
   return (
     <>
       <div className={styles.logoBox}>
-        <div className={styles.logoImage} style={{ backgroundColor: '#fff9f5' }}>
+        <div className={styles.logoImage} style={{ backgroundColor: 'transparent' }}>
           <Image
-            src="/images/logoImg2.png"
+            src="/images/logoImg3.png"
             alt="바당우체국 로고"
             fill
             style={{
               objectFit: 'contain',
-              padding: '2rem',
             }}
             unoptimized
           />
         </div>
-        <h1 className={styles.logoTitle} style={{ color: '#fff9f5' }}>
+        <h1 className={styles.logoTitle} style={{ color: '#f61' }}>
           바당우체국
         </h1>
       </div>

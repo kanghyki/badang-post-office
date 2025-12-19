@@ -26,7 +26,7 @@ export default function Home() {
   return (
     <>
       <main className={styles.homeMain}>
-        <Logo c_value="#FFF" bg_value="#fff" />
+        <Logo />
         <p className={styles.headCopy}>
           시간을 담아 보내는
           <br />

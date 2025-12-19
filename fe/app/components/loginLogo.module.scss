@@ -3,19 +3,19 @@
   display: flex;
   align-items: center;
   flex-direction: column;
+  margin-top: 0.5rem;
 
   .logoImage {
     position: relative;
-    width: 12rem;
-    height: 12rem;
+    width: 11rem;
+    height: 11rem;
     border-radius: 3.5rem;
   }
   h1 {
     font-family: 'YeogiOttaeJalnan', sans-serif;
-    font-size: 2rem;
+    font-size: 1.9rem;
     line-height: 2.5rem;
     text-align: center;
-    margin-top: 1.5rem;
     font-weight: normal;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

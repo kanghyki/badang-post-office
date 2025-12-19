@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import styles from './login.module.scss';
-import Logo from '@/app/components/LogoBox';
+import LoginLogo from '@/app/components/LoginLogo';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
@@ -70,7 +70,7 @@ export default function Login() {
     <>
       <div className="container">
         <main className={styles.loginMain}>
-          <Logo c_value="#f61" bg_value="#fff" />
+          <LoginLogo />
 
           <div className={styles.loginBox}>
             <form onSubmit={handleLogin}>
