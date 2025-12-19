@@ -31,19 +31,27 @@ class Settings(BaseSettings):
     smtp_from_email: str = ""
     smtp_from_name: str = "제주 엽서"
 
-    # Translation Model (Jeju Dialect)
-    translation_model_path: str = "static/models/jeju-dialect-model.gguf"
-    translation_n_ctx: int = 2048
-    translation_n_gpu_layers: int = 0
-    translation_temperature: float = 0.7
-    translation_top_p: float = 0.9
-    translation_top_k: int = 40
-
     # Redis (SSE용)
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
     redis_password: str = ""
+
+    # RAG Settings
+    rag_enabled: bool = True
+    rag_top_k: int = 5
+    rag_similarity_threshold: float = 1.5
+
+    # LLM Translation
+    translation_model: str = ""
+    translation_max_completion_tokens: int = 2000
+
+    # Embedding Model
+    embedding_model: str = "text-embedding-3-small"
+
+    # Data Paths
+    jeju_dictionary_path: str = "data/jeju_dictionary.json"
+    jeju_chroma_path: str = "data/jeju_chroma"
 
     @property
     def origins_list(self) -> List[str]:
