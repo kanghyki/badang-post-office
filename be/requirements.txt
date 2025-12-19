@@ -17,9 +17,6 @@ greenlet>=3.0.0
 # File upload
 python-multipart
 
-# Translator model
-llama-cpp-python>=0.2.0
-
 # OpenAI
 openai>=1.0.0
 
