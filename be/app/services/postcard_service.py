@@ -382,7 +382,7 @@ class PostcardService:
         stmt = select(Postcard).where(Postcard.user_id == user_id)
 
         if status_filter:
-            valid_statuses = ["writing", "pending", "sent", "failed"]
+            valid_statuses = ["writing", "pending", "processing", "sent", "failed"]
             if status_filter not in valid_statuses:
                 raise ValueError(f"status는 {', '.join(valid_statuses)} 중 하나여야 합니다.")
             stmt = stmt.where(Postcard.status == status_filter)
