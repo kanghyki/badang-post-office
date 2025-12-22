@@ -43,11 +43,11 @@ export default function Onboarding() {
       return;
     }
 
-    // 이미 온보딩을 본 사용자는 로그인 페이지로
-    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    if (hasSeenOnboarding) {
-      router.replace(ROUTES.LOGIN);
-    }
+//    // 이미 온보딩을 본 사용자는 로그인 페이지로
+//    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+//    if (hasSeenOnboarding) {
+//      router.replace(ROUTES.LOGIN);
+//    }
   }, [router]);
 
   // 스크롤 이벤트 핸들러 - 현재 슬라이드 인덱스 업데이트
