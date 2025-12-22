@@ -37,6 +37,7 @@ aiosmtplib>=3.0.0
 # Task scheduling
 apscheduler>=3.10.0
 pytz>=2023.3
+celery>=5.3.0
 
 # Redis (SSE)
 redis>=5.0.0

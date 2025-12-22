@@ -111,6 +111,32 @@ jobs:
                   retries: 3
                   start_period: 40s
 
+              badang-celery-worker:
+                container_name: badang-celery-worker
+                image: ${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:${{ vars.DOCKER_HUB_BE_TAGNAME }}
+                command: celery -A app.worker.celery_app worker --loglevel=info
+                restart: unless-stopped
+                env_file:
+                  - .env
+                environment:
+                  - REDIS_HOST=redis
+                  - REDIS_PORT=6379
+                  - REDIS_DB=0
+                networks:
+                  - jeju-network
+                volumes:
+                  - ./static:/app/static
+                  - ./data:/app/data
+                  - ./logs:/app/logs
+                depends_on:
+                  redis:
+                    condition: service_healthy
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+
             volumes:
               redis-data:
                 driver: local

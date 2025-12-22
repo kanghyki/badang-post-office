@@ -10,7 +10,7 @@ import io
 import time
 import logging
 from typing import Optional
-from openai import OpenAI
+from openai import AsyncOpenAI
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class JejuImageService:
         if not settings.openai_api_key:
             raise ValueError("OpenAI API 키가 필요합니다.")
 
-        self.client = OpenAI(api_key=settings.openai_api_key)
+        self.client = AsyncOpenAI(api_key=settings.openai_api_key)
         self.image_model = "gpt-image-1"
 
     def _create_jeju_style_prompt(self, custom_prompt: str = "") -> str:
@@ -83,7 +83,7 @@ STRICT RULES:
 
         try:
             # gpt-image-1 images.edit() API - 이미지 직접 입력!
-            response = self.client.images.edit(
+            response = await self.client.images.edit(
                 model=self.image_model,
                 image=("image.png", image_file, "image/png"),  # 🖼️ tuple 형태로 전달
                 prompt=prompt,

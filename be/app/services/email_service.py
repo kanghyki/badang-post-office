@@ -8,6 +8,7 @@ import aiosmtplib
 import logging
 import random
 import socket
+import asyncio
 from typing import Optional
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -97,8 +98,11 @@ class EmailService:
             if not path.exists():
                 raise FileNotFoundError(f"이미지를 찾을 수 없습니다: {image_path}")
 
-            with open(path, 'rb') as f:
-                image_data = f.read()
+            def _read_image():
+                with open(path, 'rb') as f:
+                    return f.read()
+            
+            image_data = await asyncio.to_thread(_read_image)
 
             # 인라인 이미지 추가 (HTML에서 cid:postcard_image로 참조)
             image = MIMEImage(image_data)

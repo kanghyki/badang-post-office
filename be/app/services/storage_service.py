@@ -6,6 +6,7 @@
 
 import os
 import uuid
+import asyncio
 from datetime import datetime
 from PIL import Image
 
@@ -50,8 +51,11 @@ class LocalStorageService:
         file_id = str(uuid.uuid4())
         file_path = f"{dir_path}/{file_id}.{file_extension}"
 
-        with open(file_path, "wb") as f:
-            f.write(file_bytes)
+        def _write():
+            with open(file_path, "wb") as f:
+                f.write(file_bytes)
+        
+        await asyncio.to_thread(_write)
 
         return file_path
 
@@ -77,8 +81,11 @@ class LocalStorageService:
         file_id = str(uuid.uuid4())
         file_path = f"{dir_path}/{file_id}.{file_extension}"
 
-        with open(file_path, "wb") as f:
-            f.write(file_bytes)
+        def _write():
+            with open(file_path, "wb") as f:
+                f.write(file_bytes)
+        
+        await asyncio.to_thread(_write)
 
         return file_path
 
@@ -103,7 +110,10 @@ class LocalStorageService:
         file_id = str(uuid.uuid4())
         file_path = f"{dir_path}/{file_id}.png"
 
-        image.save(file_path, format='PNG', quality=95)
+        def _save():
+            image.save(file_path, format='PNG', quality=95)
+        
+        await asyncio.to_thread(_save)
 
         return file_path
 
@@ -139,8 +149,11 @@ class LocalStorageService:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"파일을 찾을 수 없습니다: {file_path}")
 
-        with open(file_path, "rb") as f:
-            return f.read()
+        def _read():
+            with open(file_path, "rb") as f:
+                return f.read()
+        
+        return await asyncio.to_thread(_read)
 
     async def delete_file(self, file_path: str) -> bool:
         """
@@ -156,10 +169,13 @@ class LocalStorageService:
             success = await storage.delete_file("static/uploads/2025/12/08/uuid.jpg")
         """
         try:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                return True
-            return False
+            def _delete():
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    return True
+                return False
+
+            return await asyncio.to_thread(_delete)
         except Exception as e:
             # 삭제 실패를 로깅 (디버깅 및 모니터링용)
             import logging

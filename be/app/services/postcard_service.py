@@ -1160,16 +1160,13 @@ class PostcardService:
             await self.db.commit()
             await self.db.refresh(postcard)
 
-            # 백그라운드 작업 시작
-            if background_tasks:
-                background_tasks.add_task(
-                    self._send_postcard_background,
-                    postcard_id=postcard_id,
-                    user_id=user_id
-                )
-                logger.info(f"🚀 편지 발송 백그라운드 작업 시작: {postcard_id}")
-            else:
-                raise ValueError("백그라운드 작업이 필요합니다.")
+            # 백그라운드 작업 시작 (Celery 워커 사용)
+            from app.worker import celery_app
+            celery_app.send_task(
+                "process_postcard_send",
+                args=[postcard_id, user_id]
+            )
+            logger.info(f"🚀 편지 발송 작업을 Celery 큐에 추가: {postcard_id}")
 
         # 예약 발송 (scheduled_at이 설정된 경우)
         else:

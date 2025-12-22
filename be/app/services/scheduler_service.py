@@ -242,11 +242,14 @@ class SchedulerService:
                 await db.execute(stmt)
                 await db.commit()
 
-                # PostcardService의 즉시 발송 로직 재사용
-                postcard_service = PostcardService(db)
-                await postcard_service._send_postcard_background(scheduled_id, scheduled.user_id)
+                # Celery 작업으로 위임
+                from app.worker import celery_app
+                celery_app.send_task(
+                    "process_postcard_send",
+                    args=[scheduled_id, scheduled.user_id]
+                )
 
-                logger.info(f"✅ [예약발송] 발송 완료: {scheduled_id}")
+                logger.info(f"✅ [예약발송] 발송 작업을 Celery 큐에 추가: {scheduled_id}")
 
             except Exception as e:
                 logger.error(f"❌ [예약발송] 발송 실패: {scheduled_id}: {str(e)}")
