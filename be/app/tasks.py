@@ -16,10 +16,18 @@ def process_postcard_send_task(postcard_id: str, user_id: str):
     logger.info(f"Task started: process_postcard_send for postcard_id={postcard_id}")
     
     async def _run():
-        async with get_db_session() as db:
-            service = PostcardService(db)
-            # 기존에 정의된 비동기 비즈니스 로직 호출
-            await service._send_postcard_background(postcard_id, user_id)
+        from app.services.redis_service import redis_service
+        
+        # 워커 프로세스 내에서 Redis 연결 초기화
+        await redis_service.connect()
+        try:
+            async with get_db_session() as db:
+                service = PostcardService(db)
+                # 기존에 정의된 비동기 비즈니스 로직 호출
+                await service._send_postcard_background(postcard_id, user_id)
+        finally:
+            # 작업 완료 후 Redis 연결 종료
+            await redis_service.close()
             
     try:
         # 비동기 루프 실행
