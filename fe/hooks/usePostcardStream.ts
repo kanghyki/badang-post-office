@@ -14,9 +14,9 @@ interface UsePostcardStreamResult {
 }
 
 /**
- * 엽서 발송 프로세스 상태를 SSE로 실시간 수신하는 훅
+ * 편지 발송 프로세스 상태를 SSE로 실시간 수신하는 훅
  *
- * @param postcardId - 엽서 ID
+ * @param postcardId - 편지 ID
  * @param enabled - SSE 연결 활성화 여부 (기본값: true)
  * @returns 발송 상태, 에러 메시지, 연결 상태
  */

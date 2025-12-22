@@ -243,7 +243,7 @@ export default function Write() {
           const newPostcard = await postcardsApi.create(selectedTemplateId);
           currentPostcardId = newPostcard.id;
           setPostcardId(currentPostcardId);
-          console.log('엽서 생성 완료:', currentPostcardId);
+          console.log('편지 생성 완료:', currentPostcardId);
         }
 
         // 이메일 주소 조합
@@ -252,7 +252,7 @@ export default function Write() {
             ? `${emailLocalPart}@${emailDomain}`
             : undefined;
 
-        // 엽서 내용 업데이트
+        // 편지 내용 업데이트
         const updatedPostcard = await postcardsApi.update(currentPostcardId, {
           template_id: selectedTemplateId,
           text,
@@ -402,13 +402,13 @@ export default function Write() {
         const newPostcard = await postcardsApi.create(selectedTemplateId);
         currentPostcardId = newPostcard.id;
         setPostcardId(currentPostcardId);
-        console.log('엽서 생성 완료:', currentPostcardId);
+        console.log('편지 생성 완료:', currentPostcardId);
       }
 
       // 이메일 주소 조합
       const recipientEmail = `${emailLocalPart}@${emailDomain}`;
 
-      // 1. 엽서 내용 업데이트
+      // 1. 편지 내용 업데이트
       await postcardsApi.update(currentPostcardId, {
         template_id: selectedTemplateId,
         text,
@@ -422,13 +422,13 @@ export default function Write() {
         image: image || undefined,
       });
 
-      // 2. 엽서 발송
+      // 2. 편지 발송
       await postcardsApi.send(currentPostcardId);
 
       setHasUnsavedChanges(false);
       router.push(ROUTES.LIST);
     } catch (error) {
-      console.error('엽서 전송 실패:', error);
+      console.error('편지 전송 실패:', error);
       if (error instanceof Error) {
         showToast({
           message: `전송 실패: ${error.message}`,
@@ -536,9 +536,9 @@ export default function Write() {
               )}
             </div>
 
-            {/* 엽서 내용 섹션 */}
+            {/* 편지 내용 섹션 */}
             <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>*엽서 내용</h3>
+              <h3 className={styles.sectionTitle}>*편지 내용</h3>
               <div className={styles.textBox}>
                 <div className={styles.textareaWrapper}>
                   <textarea

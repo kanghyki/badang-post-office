@@ -174,12 +174,12 @@ function ModifyContent() {
     fetchTemplateDetail();
   }, [selectedTemplateId, showToast]);
 
-  // 기존 엽서 데이터 로드
+  // 기존 편지 데이터 로드
   useEffect(() => {
     if (!postcardId) {
       showModal({
         title: '오류',
-        message: '엽서 ID가 없습니다.',
+        message: '편지 ID가 없습니다.',
         type: 'alert',
       }).then(() => {
         router.push(ROUTES.LIST);
@@ -199,7 +199,7 @@ function ModifyContent() {
         if (postcard.status !== 'writing' && postcard.status !== 'pending') {
           await showModal({
             title: '수정 불가',
-            message: '이미 발송되었거나 발송 중인 엽서는 수정할 수 없습니다.',
+            message: '이미 발송되었거나 발송 중인 편지는 수정할 수 없습니다.',
             type: 'alert',
           });
           router.push(ROUTES.LIST);
@@ -263,10 +263,10 @@ function ModifyContent() {
           }
         }
       } catch (error) {
-        console.error('엽서 로드 실패:', error);
+        console.error('편지 로드 실패:', error);
         await showModal({
           title: '오류',
-          message: '엽서를 불러올 수 없습니다.',
+          message: '편지를 불러올 수 없습니다.',
           type: 'alert',
         });
         router.push(ROUTES.LIST);
@@ -310,7 +310,7 @@ function ModifyContent() {
       if (!postcardId) {
         await showModal({
           title: '오류',
-          message: '엽서 ID가 없습니다.',
+          message: '편지 ID가 없습니다.',
           type: 'alert',
         });
         return;
@@ -452,7 +452,7 @@ function ModifyContent() {
     if (!postcardId) {
       await showModal({
         title: '오류',
-        message: '엽서 ID가 없습니다.',
+        message: '편지 ID가 없습니다.',
         type: 'alert',
       });
       return;
@@ -493,7 +493,7 @@ function ModifyContent() {
       // 이메일 주소 조합
       const recipientEmail = `${emailLocalPart}@${emailDomain}`;
 
-      // 1. 엽서 내용 업데이트
+      // 1. 편지 내용 업데이트
       await postcardsApi.update(postcardId, {
         template_id: selectedTemplateId,
         text,
@@ -507,13 +507,13 @@ function ModifyContent() {
         image: image || undefined,
       });
 
-      // 2. 엽서 발송
+      // 2. 편지 발송
       await postcardsApi.send(postcardId);
 
       setHasUnsavedChanges(false);
       router.push(ROUTES.LIST);
     } catch (error) {
-      console.error('엽서 전송 실패:', error);
+      console.error('편지 전송 실패:', error);
       if (error instanceof Error) {
         showToast({
           message: `전송 실패: ${error.message}`,
@@ -632,9 +632,9 @@ function ModifyContent() {
               )}
             </div>
 
-            {/* 엽서 내용 섹션 */}
+            {/* 편지 내용 섹션 */}
             <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>*엽서 내용</h3>
+              <h3 className={styles.sectionTitle}>*편지 내용</h3>
               <div className={styles.textBox}>
                 <div className={styles.textareaWrapper}>
                   <textarea

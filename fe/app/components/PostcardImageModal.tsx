@@ -119,7 +119,7 @@ export default function PostcardImageModal({
           <button
             className={styles.downloadButton}
             onClick={handleDownload}
-            aria-label="엽서 사진 저장"
+            aria-label="편지 사진 저장"
           >
             ⬇ 저장
           </button>
@@ -138,7 +138,7 @@ export default function PostcardImageModal({
           <div className={styles.imageContainer}>
             <Image
               src={imageUrl}
-              alt="엽서"
+              alt="편지"
               className={styles.postcardImage}
               width={0}
               height={0}
@@ -155,7 +155,7 @@ export default function PostcardImageModal({
         ) : (
           <div className={styles.noImageContainer}>
             <p className={styles.noImageText}>
-              엽서는 접수 후에 만들어져요! 🍊
+              편지는 접수 후에 만들어져요! 🍊
             </p>
           </div>
         )}

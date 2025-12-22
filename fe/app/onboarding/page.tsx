@@ -14,8 +14,8 @@ const ONBOARDING_SLIDES = [
   {
     id: 1,
     image: '/images/onboarding/slide1.png',
-    title: '제주의 감성을 담은 엽서',
-    description: '바당우체국 입장해서 엽서 작성!',
+    title: '제주의 감성을 담은 편지',
+    description: '바당우체국 입장해서 편지 작성!',
   },
   {
     id: 2,
@@ -27,7 +27,7 @@ const ONBOARDING_SLIDES = [
     id: 3,
     image: '/images/onboarding/slide3.png',
     title: '사진을 제주 스타일로',
-    description: '제주빛으로 엽서 꾸미고 바당우체부가 배달!',
+    description: '제주빛으로 편지 꾸미고 바당우체부가 배달!',
   },
 ];
 

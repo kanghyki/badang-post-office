@@ -21,14 +21,14 @@ export const metadata: Metadata = {
     template: '%s | 바당우체국',
   },
   description:
-    '제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스. 제주의 정취를 담아 소중한 사람에게 엽서를 보내보세요.',
+    '제주 방언으로 따뜻한 마음을 전하는 디지털 편지 서비스. 제주의 정취를 담아 소중한 사람에게 편지를 보내보세요.',
   keywords: [
     '제주',
-    '엽서',
+    '편지',
     '우체국',
     '바당',
     '제주 방언',
-    '디지털 엽서',
+    '디지털 편지',
     '추억',
     '감성',
     '제주어',
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: '바당우체국',
-    description: '제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스',
+    description: '제주 방언으로 따뜻한 마음을 전하는 디지털 편지 서비스',
     url: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
     siteName: '바당우체국',
     locale: 'ko_KR',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
         url: '/opengraph-image.png',
         width: 1200,
         height: 630,
-        alt: '바당우체국 - 제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스',
+        alt: '바당우체국 - 제주 방언으로 따뜻한 마음을 전하는 디지털 편지 서비스',
       },
     ],
   },
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: '바당우체국',
-    description: '제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스',
+    description: '제주 방언으로 따뜻한 마음을 전하는 디지털 편지 서비스',
     images: ['/opengraph-image.png'],
   },
 

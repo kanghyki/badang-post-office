@@ -29,7 +29,7 @@ const SENDING_STATUS_LABELS: Record<string, string> = {
   converting: '사진에 귤빛 입히는 중...',
   generating: '사진을 꼼꼼히 붙이는 중...',
   sending: '알약우체부가 배달 중...',
-  completed: '우체통에 엽서 쏙! 배달 완료!',
+  completed: '우체통에 편지 쏙! 배달 완료!',
   failed: '알약우체부가 길을 헤매고 있는 중...',
 };
 
@@ -45,7 +45,7 @@ export default function PostcardItem({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // processing 상태인 엽서에 대해 SSE 연결
+  // processing 상태인 편지에 대해 SSE 연결
   const { sendingStatus } = usePostcardStream(
     data.status === 'processing' ? data.id : null,
     data.status === 'processing',

@@ -53,11 +53,11 @@ export default function List() {
       const data = await postcardsApi.getList(status);
       setPostcards(data);
     } catch (err) {
-      console.error('엽서 목록 조회 실패:', err);
+      console.error('편지 목록 조회 실패:', err);
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('엽서 목록을 불러올 수 없습니다.');
+        setError('편지 목록을 불러올 수 없습니다.');
       }
     } finally {
       if (isInitial) {
@@ -161,7 +161,7 @@ export default function List() {
     const confirmed = await showModal({
       title: '예약 취소',
       message:
-        '예약된 발송을 취소하시겠습니까?\n취소된 엽서는 목록에서 확인할 수 있습니다.',
+        '예약된 발송을 취소하시겠습니까?\n취소된 편지는 목록에서 확인할 수 있습니다.',
       type: 'confirm',
       confirmText: '예약 취소',
       cancelText: '돌아가기',
@@ -196,8 +196,8 @@ export default function List() {
 
   const handleDelete = async (id: string) => {
     const confirmed = await showModal({
-      title: '엽서 삭제',
-      message: '이 엽서를 삭제하시겠습니까?\n삭제된 엽서는 복구할 수 없습니다.',
+      title: '편지 삭제',
+      message: '이 편지를 삭제하시겠습니까?\n삭제된 편지는 복구할 수 없습니다.',
       type: 'confirm',
       confirmText: '삭제',
       cancelText: '취소',
@@ -213,7 +213,7 @@ export default function List() {
       } else {
         fetchPostcards(activeFilter);
       }
-      showToast({ message: '엽서가 삭제되었습니다.', type: 'success' });
+      showToast({ message: '편지가 삭제되었습니다.', type: 'success' });
     } catch (error) {
       console.error('삭제 실패:', error);
       if (error instanceof Error) {
@@ -232,8 +232,8 @@ export default function List() {
 
   const handleRetry = async (id: string) => {
     const confirmed = await showModal({
-      title: '엽서 재발송',
-      message: '이 엽서를 다시 발송하시겠습니까?',
+      title: '편지 재발송',
+      message: '이 편지를 다시 발송하시겠습니까?',
       type: 'confirm',
       confirmText: '재발송',
       cancelText: '취소',
@@ -249,7 +249,7 @@ export default function List() {
       } else {
         fetchPostcards(activeFilter);
       }
-      showToast({ message: '엽서 재발송이 시작되었습니다.', type: 'success' });
+      showToast({ message: '편지 재발송이 시작되었습니다.', type: 'success' });
     } catch (error) {
       console.error('재발송 실패:', error);
       if (error instanceof Error) {
@@ -338,7 +338,7 @@ export default function List() {
             ) : postcards.length === 0 ? (
               <div className={styles.emptyState}>
                 <div className={styles.emptyText}>
-                  아직 작성한 엽서가 없어요
+                  아직 작성한 편지가 없어요
                 </div>
               </div>
             ) : (

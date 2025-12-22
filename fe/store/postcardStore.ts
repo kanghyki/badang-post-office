@@ -29,7 +29,7 @@ class PostcardStore {
         this.error =
           error instanceof Error
             ? error.message
-            : '엽서 목록을 불러오는데 실패했습니다.';
+            : '편지 목록을 불러오는데 실패했습니다.';
         this.isLoading = false;
       });
     }
@@ -49,7 +49,7 @@ class PostcardStore {
     } catch (error) {
       runInAction(() => {
         this.error =
-          error instanceof Error ? error.message : '엽서 생성에 실패했습니다.';
+          error instanceof Error ? error.message : '편지 생성에 실패했습니다.';
         this.isLoading = false;
       });
       throw error;
@@ -69,7 +69,7 @@ class PostcardStore {
     } catch (error) {
       runInAction(() => {
         this.error =
-          error instanceof Error ? error.message : '엽서 삭제에 실패했습니다.';
+          error instanceof Error ? error.message : '편지 삭제에 실패했습니다.';
         this.isLoading = false;
       });
       throw error;

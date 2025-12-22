@@ -96,7 +96,7 @@ const User = observer(() => {
               onClick={() => router.push(ROUTES.LIST)}
             >
               <span className={styles.boxTxt}>
-                <b>엽서목록보기</b>
+                <b>편지목록보기</b>
               </span>
               <span>
                 <b>{postcardStore.postcardsCount}</b>
@@ -109,7 +109,7 @@ const User = observer(() => {
               onClick={() => router.push(ROUTES.WRITE)}
             >
               <span className={styles.boxTxt}>
-                <b>엽서작성하기</b>
+                <b>편지작성하기</b>
               </span>
               <span className={styles.boxCnt}>
                 <TbEdit />

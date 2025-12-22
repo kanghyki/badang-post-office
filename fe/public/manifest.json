@@ -1,7 +1,7 @@
 {
   "name": "바당우체국",
   "short_name": "바당우체국",
-  "description": "제주 방언으로 따뜻한 마음을 전하는 디지털 엽서 서비스",
+  "description": "제주 방언으로 따뜻한 마음을 전하는 디지털 편지 서비스",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffefef",

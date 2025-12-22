@@ -23,7 +23,7 @@ export const AUTH_ENDPOINTS = {
 } as const;
 
 /**
- * 엽서 관련 API 엔드포인트
+ * 편지 관련 API 엔드포인트
  */
 export const POSTCARD_ENDPOINTS = {
   LIST: '/v1/postcards',
@@ -96,7 +96,7 @@ export const QUERY_PARAMS = {
 } as const;
 
 /**
- * 엽서 상태 값
+ * 편지 상태 값
  */
 export const POSTCARD_STATUS = {
   WRITING: 'writing',
