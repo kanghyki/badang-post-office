@@ -562,14 +562,28 @@ class PostcardService:
                     logger.info(f"Updated user photo: photo_id={target_photo_id}, saved_path={saved_path}")
         
         # 예약 시간 처리
-        if scheduled_at:
-            try:
-                new_scheduled_at = from_isoformat(scheduled_at)
-                # 검증
-                update_data = PostcardUpdateRequest(scheduled_at=new_scheduled_at)
-                update_values["scheduled_at"] = update_data.scheduled_at
-            except ValueError as e:
-                raise ValueError(f"scheduled_at 처리 실패: {str(e)}")
+        scheduled_at_changed = False
+        old_scheduled_at = postcard.scheduled_at
+        new_scheduled_at_value = None
+
+        if scheduled_at is not None:  # None이 아니면 처리 (빈 문자열 포함)
+            if scheduled_at == "":
+                # 빈 문자열: 예약 해제 (즉시 발송으로 변경)
+                update_values["scheduled_at"] = None
+                scheduled_at_changed = True
+                logger.info(f"예약 해제: {postcard_id}")
+            else:
+                # ISO 8601 문자열: 예약 시간 설정/변경
+                try:
+                    new_scheduled_at = from_isoformat(scheduled_at)
+                    # 검증
+                    update_data = PostcardUpdateRequest(scheduled_at=new_scheduled_at)
+                    update_values["scheduled_at"] = update_data.scheduled_at
+                    new_scheduled_at_value = update_data.scheduled_at
+                    scheduled_at_changed = True
+                    logger.info(f"예약 시간 설정: {postcard_id} -> {new_scheduled_at_value}")
+                except ValueError as e:
+                    raise ValueError(f"scheduled_at 처리 실패: {str(e)}")
         
         # 텍스트 수정 시 원본만 저장 (번역은 send 시점에 수행)
         if text:
@@ -622,15 +636,29 @@ class PostcardService:
         )
         await self.db.execute(stmt)
         await self.db.commit()
-        
-        # 스케줄러 업데이트 (예약 시간 변경 시)
-        if scheduled_at and postcard.scheduled_at:
+
+        # 스케줄러 동기화 (예약 시간 변경 시)
+        if scheduled_at_changed:
             from app.scheduler_instance import get_scheduler
             scheduler = get_scheduler()
-            scheduler.reschedule_postcard(
-                postcard_id,
-                update_values["scheduled_at"]
-            )
+
+            if old_scheduled_at and new_scheduled_at_value is None:
+                # 예약 해제: 스케줄러에서 제거
+                scheduler.cancel_schedule(postcard_id)
+                logger.info(f"스케줄러에서 제거: {postcard_id}")
+            elif old_scheduled_at is None and new_scheduled_at_value:
+                # 예약 추가: 스케줄러에 등록
+                from app.utils.timezone_utils import ensure_utc
+                scheduled_time = ensure_utc(new_scheduled_at_value)
+                success = scheduler.schedule_postcard(postcard_id, scheduled_time)
+                if not success:
+                    logger.error(f"스케줄러 등록 실패: {postcard_id}")
+                else:
+                    logger.info(f"스케줄러에 등록: {postcard_id} at {scheduled_time}")
+            elif old_scheduled_at and new_scheduled_at_value:
+                # 예약 변경: 스케줄러 재스케줄
+                scheduler.reschedule_postcard(postcard_id, new_scheduled_at_value)
+                logger.info(f"스케줄러 재스케줄: {postcard_id} -> {new_scheduled_at_value}")
         
         # 업데이트된 데이터 조회
         await self.db.refresh(postcard)
