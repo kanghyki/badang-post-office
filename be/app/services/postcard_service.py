@@ -1,7 +1,7 @@
 """
-엽서 생성 서비스
+편지 생성 서비스
 
-템플릿, 사진, 텍스트를 조합하여 엽서를 생성하고 로컬에 저장하는 핵심 비즈니스 로직을 제공합니다.
+템플릿, 사진, 텍스트를 조합하여 편지를 생성하고 로컬에 저장하는 핵심 비즈니스 로직을 제공합니다.
 """
 
 import os
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class PostcardService:
-    """엽서 생성 및 관리 서비스"""
+    """편지 생성 및 관리 서비스"""
 
     def __init__(self, db: AsyncSession):
         """
@@ -207,7 +207,7 @@ class PostcardService:
         recipient_email: Optional[str] = None,  # 수신자 이메일 (새 스키마용)
     ) -> PostcardResponse:
         """
-        다중 텍스트/이미지를 지원하는 엽서 생성
+        다중 텍스트/이미지를 지원하는 편지 생성
         """
         # 1. 템플릿 조회 (메모리에서)
         template = template_service.get_template_by_id(template_id)
@@ -310,7 +310,7 @@ class PostcardService:
                 )
                 y_offset += actual_line_height
 
-        # 7. 엽서 저장
+        # 7. 편지 저장
         postcard_image = maker.get_canvas()
         postcard_path = await self.storage.save_generated_postcard(postcard_image)
 
@@ -370,14 +370,14 @@ class PostcardService:
         status_filter: Optional[str] = None
     ) -> List[PostcardResponse]:
         """
-        사용자의 엽서 목록 조회
+        사용자의 편지 목록 조회
         
         Args:
             user_id: 사용자 ID
             status_filter: 상태 필터 (writing, pending, sent, failed)
 
         Returns:
-            엽서 목록
+            편지 목록
         """
         stmt = select(Postcard).where(Postcard.user_id == user_id)
 
@@ -427,14 +427,14 @@ class PostcardService:
         user_id: str
     ) -> Optional[PostcardResponse]:
         """
-        엽서 상세 조회 (권한 체크 포함)
+        편지 상세 조회 (권한 체크 포함)
         
         Args:
-            postcard_id: 엽서 ID
+            postcard_id: 편지 ID
             user_id: 사용자 ID (권한 체크용)
             
         Returns:
-            엽서 정보 또는 None (없거나 권한 없음)
+            편지 정보 또는 None (없거나 권한 없음)
         """
         stmt = select(Postcard).where(
             and_(
@@ -487,10 +487,10 @@ class PostcardService:
         background_tasks = None
     ) -> PostcardResponse:
         """
-        엽서 수정 (writing 또는 pending 상태만 가능)
+        편지 수정 (writing 또는 pending 상태만 가능)
 
         Args:
-            postcard_id: 엽서 ID
+            postcard_id: 편지 ID
             user_id: 사용자 ID (권한 체크용)
             text: 새로운 텍스트
             image_bytes: 새로운 이미지 바이트
@@ -501,15 +501,15 @@ class PostcardService:
             scheduled_at: 발송 예정 시간 (ISO 8601 형식)
 
         Returns:
-            수정된 엽서 정보
+            수정된 편지 정보
 
         Raises:
-            ValueError: 엽서를 찾을 수 없거나 수정 불가능한 상태인 경우
+            ValueError: 편지를 찾을 수 없거나 수정 불가능한 상태인 경우
         """
         from datetime import datetime
         from app.models.postcard import PostcardUpdateRequest
         
-        # 엽서 조회 및 권한 체크
+        # 편지 조회 및 권한 체크
         stmt = select(Postcard).where(
             and_(
                 Postcard.id == postcard_id,
@@ -520,10 +520,10 @@ class PostcardService:
         postcard = result.scalar_one_or_none()
         
         if not postcard:
-            raise ValueError("엽서를 찾을 수 없습니다.")
+            raise ValueError("편지를 찾을 수 없습니다.")
 
         if postcard.status not in ["writing", "pending"]:
-            raise ValueError(f"writing 또는 pending 상태의 엽서만 수정 가능합니다. (현재 상태: {postcard.status})")
+            raise ValueError(f"writing 또는 pending 상태의 편지만 수정 가능합니다. (현재 상태: {postcard.status})")
         
         # 업데이트할 필드
         from sqlalchemy import update as sql_update
@@ -670,24 +670,24 @@ class PostcardService:
 
     async def delete_postcard(self, postcard_id: str, user_id: str) -> None:
         """
-        엽서 삭제 (DB에서 완전히 제거)
+        편지 삭제 (DB에서 완전히 제거)
 
         관련된 모든 리소스를 삭제합니다:
         - 스케줄러에서 제거 (예약된 경우)
         - 사용자 업로드 사진 파일 삭제
-        - 생성된 엽서 이미지 파일 삭제
+        - 생성된 편지 이미지 파일 삭제
         - DB 레코드 삭제
 
         Args:
-            postcard_id: 엽서 ID
+            postcard_id: 편지 ID
             user_id: 사용자 ID (권한 체크용)
 
         Raises:
-            ValueError: 엽서를 찾을 수 없는 경우
+            ValueError: 편지를 찾을 수 없는 경우
         """
         from sqlalchemy import delete as sql_delete
 
-        # 엽서 조회 및 권한 체크
+        # 편지 조회 및 권한 체크
         stmt = select(Postcard).where(
             and_(
                 Postcard.id == postcard_id,
@@ -698,7 +698,7 @@ class PostcardService:
         postcard = result.scalar_one_or_none()
 
         if not postcard:
-            raise ValueError("엽서를 찾을 수 없습니다.")
+            raise ValueError("편지를 찾을 수 없습니다.")
 
         # 1. 스케줄러에서 제거 (예약된 경우)
         if postcard.scheduled_at and postcard.status == "pending":
@@ -716,7 +716,7 @@ class PostcardService:
                 else:
                     logger.warning(f"Failed to delete user photo or file not found: {photo_path}")
 
-        # 3. 생성된 엽서 이미지 삭제
+        # 3. 생성된 편지 이미지 삭제
         if postcard.postcard_image_path:
             deleted = await self.storage.delete_file(postcard.postcard_image_path)
             if deleted:
@@ -736,22 +736,22 @@ class PostcardService:
 
     async def cancel_postcard(self, postcard_id: str, user_id: str) -> None:
         """
-        예약된 엽서 취소 (pending 상태만 가능)
+        예약된 편지 취소 (pending 상태만 가능)
 
         예약을 취소하면 상태가 writing으로 되돌아가며,
         사용자가 다시 수정하고 재발송할 수 있습니다.
 
         Args:
-            postcard_id: 엽서 ID
+            postcard_id: 편지 ID
             user_id: 사용자 ID (권한 체크용)
 
         Raises:
-            ValueError: 엽서를 찾을 수 없거나 취소 불가능한 상태인 경우
+            ValueError: 편지를 찾을 수 없거나 취소 불가능한 상태인 경우
         """
         from datetime import datetime
         from sqlalchemy import update as sql_update
 
-        # 엽서 조회 및 권한 체크
+        # 편지 조회 및 권한 체크
         stmt = select(Postcard).where(
             and_(
                 Postcard.id == postcard_id,
@@ -762,10 +762,10 @@ class PostcardService:
         postcard = result.scalar_one_or_none()
 
         if not postcard:
-            raise ValueError("엽서를 찾을 수 없습니다.")
+            raise ValueError("편지를 찾을 수 없습니다.")
 
         if postcard.status != "pending":
-            raise ValueError(f"pending 상태의 예약된 엽서만 취소 가능합니다. (현재 상태: {postcard.status})")
+            raise ValueError(f"pending 상태의 예약된 편지만 취소 가능합니다. (현재 상태: {postcard.status})")
 
         # 스케줄러에서 제거
         if postcard.scheduled_at:
@@ -790,12 +790,12 @@ class PostcardService:
 
     async def _send_postcard_background(self, postcard_id: str, user_id: str):
         """
-        엽서 발송 백그라운드 작업
+        편지 발송 백그라운드 작업
 
         각 단계마다 Redis로 진행 상태를 발행합니다:
         - translating: 제주어 번역 중
         - converting: 이미지 변환 중
-        - generating: 엽서 생성 중
+        - generating: 편지 생성 중
         - sending: 이메일 발송 중
         - completed: 완료
         - failed: 실패
@@ -811,7 +811,7 @@ class PostcardService:
         import json
 
         try:
-            # 엽서 조회
+            # 편지 조회
             stmt = select(Postcard).where(Postcard.id == postcard_id)
             result = await self.db.execute(stmt)
             postcard = result.scalar_one_or_none()
@@ -819,13 +819,13 @@ class PostcardService:
             if not postcard:
                 await redis_service.publish(
                     f"postcard:{postcard_id}",
-                    json.dumps({"status": "failed", "error": "엽서를 찾을 수 없습니다."})
+                    json.dumps({"status": "failed", "error": "편지를 찾을 수 없습니다."})
                 )
                 return
 
-            # 이미 엽서 이미지가 생성되어 있으면 이메일만 재전송 (재발송 최적화)
+            # 이미 편지 이미지가 생성되어 있으면 이메일만 재전송 (재발송 최적화)
             if postcard.postcard_image_path:
-                logger.info(f"🔄 [재발송] 이미 생성된 엽서 이미지 발견, 이메일만 재전송: {postcard_id}")
+                logger.info(f"🔄 [재발송] 이미 생성된 편지 이미지 발견, 이메일만 재전송: {postcard_id}")
                 
                 await PostcardEventService.publish_and_save(
                     self.db,
@@ -974,13 +974,13 @@ class PostcardService:
                     logger.error(f"❌ 제주 스타일 변환 실패 (원본 사용): {postcard_id} - {str(e)}")
                     await self.db.refresh(postcard)
 
-            # 3. 엽서 이미지 생성
+            # 3. 편지 이미지 생성
             await PostcardEventService.publish_and_save(
                 self.db,
                 postcard_id,
                 "generating"
             )
-            logger.info(f"🖼️ 엽서 이미지 생성 시작: {postcard_id}")
+            logger.info(f"🖼️ 편지 이미지 생성 시작: {postcard_id}")
 
             # 사진 준비 (제주 스타일 우선, 없으면 원본)
             photos = {}
@@ -1019,7 +1019,7 @@ class PostcardService:
                 await self.db.delete(temp_postcard)
                 await self.db.commit()
 
-            logger.info(f"✅ 엽서 이미지 생성 완료: {postcard_id}")
+            logger.info(f"✅ 편지 이미지 생성 완료: {postcard_id}")
 
             # 4. 이메일 발송
             await PostcardEventService.publish_and_save(
@@ -1058,7 +1058,7 @@ class PostcardService:
 
         except Exception as e:
             # 실패 처리
-            logger.error(f"❌ 엽서 발송 실패: {postcard_id} - {str(e)}")
+            logger.error(f"❌ 편지 발송 실패: {postcard_id} - {str(e)}")
 
             stmt = (
                 sql_update(Postcard)
@@ -1077,27 +1077,27 @@ class PostcardService:
 
     async def send_postcard(self, postcard_id: str, user_id: str, background_tasks=None) -> PostcardResponse:
         """
-        엽서 발송 (즉시 또는 예약)
+        편지 발송 (즉시 또는 예약)
 
         즉시 발송: 백그라운드에서 비동기 처리 (202 Accepted)
         예약 발송: 스케줄러에 등록
 
         Args:
-            postcard_id: 엽서 ID
+            postcard_id: 편지 ID
             user_id: 사용자 ID (권한 체크용)
             background_tasks: FastAPI BackgroundTasks (즉시 발송 시 필요)
 
         Returns:
-            발송/예약된 엽서 정보
+            발송/예약된 편지 정보
 
         Raises:
-            ValueError: 엽서를 찾을 수 없거나 발송 불가능한 경우
+            ValueError: 편지를 찾을 수 없거나 발송 불가능한 경우
         """
         from datetime import datetime
         from sqlalchemy import update as sql_update
         from app.scheduler_instance import get_scheduler
         
-        # 엽서 조회 및 권한 체크
+        # 편지 조회 및 권한 체크
         stmt = select(Postcard).where(
             and_(
                 Postcard.id == postcard_id,
@@ -1108,17 +1108,17 @@ class PostcardService:
         postcard = result.scalar_one_or_none()
 
         if not postcard:
-            raise ValueError("엽서를 찾을 수 없습니다.")
+            raise ValueError("편지를 찾을 수 없습니다.")
 
         if postcard.status not in ["writing", "pending"]:
-            raise ValueError(f"writing 또는 pending 상태의 엽서만 발송 가능합니다. (현재 상태: {postcard.status})")
+            raise ValueError(f"writing 또는 pending 상태의 편지만 발송 가능합니다. (현재 상태: {postcard.status})")
 
         if not postcard.recipient_email:
             raise ValueError("수신자 이메일이 설정되지 않았습니다.")
 
         # 텍스트 필수 확인
         if not postcard.original_text_contents:
-            raise ValueError("텍스트를 입력해야 엽서를 발송할 수 있습니다.")
+            raise ValueError("텍스트를 입력해야 편지를 발송할 수 있습니다.")
 
         # 즉시 발송 (scheduled_at이 없는 경우)
         if not postcard.scheduled_at:
@@ -1139,7 +1139,7 @@ class PostcardService:
                     postcard_id=postcard_id,
                     user_id=user_id
                 )
-                logger.info(f"🚀 엽서 발송 백그라운드 작업 시작: {postcard_id}")
+                logger.info(f"🚀 편지 발송 백그라운드 작업 시작: {postcard_id}")
             else:
                 raise ValueError("백그라운드 작업이 필요합니다.")
 
@@ -1200,13 +1200,13 @@ class PostcardService:
 
     async def create_empty_postcard(self, user_id: str) -> PostcardResponse:
         """
-        빈 엽서 생성 (writing 상태)
+        빈 편지 생성 (writing 상태)
         
         Args:
             user_id: 사용자 ID
             
         Returns:
-            생성된 엽서 정보
+            생성된 편지 정보
             
         Raises:
             ValueError: 사용 가능한 템플릿이 없는 경우
@@ -1219,7 +1219,7 @@ class PostcardService:
         template_id = available_templates[0].id
         logger.info(f"Auto-selected template: {template_id}")
 
-        # 빈 엽서 레코드 생성
+        # 빈 편지 레코드 생성
         postcard = Postcard(
             user_id=user_id,
             template_id=template_id,

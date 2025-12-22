@@ -1,7 +1,7 @@
 """
-엽서 API 라우터
+편지 API 라우터
 
-엽서 생성 및 예약 발송 엔드포인트를 제공합니다.
+편지 생성 및 예약 발송 엔드포인트를 제공합니다.
 """
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Query, BackgroundTasks
@@ -25,10 +25,10 @@ async def create_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    빈 엽서 생성
+    빈 편지 생성
 
-    "엽서 작성" 버튼 클릭 시 호출됩니다.
-    템플릿이 자동으로 선택되며, 빈 엽서가 writing 상태로 생성됩니다.
+    "편지 작성" 버튼 클릭 시 호출됩니다.
+    템플릿이 자동으로 선택되며, 빈 편지가 writing 상태로 생성됩니다.
     PATCH /v1/postcards/{id}로 내용을 입력하고,
     POST /v1/postcards/{id}/send로 발송할 수 있습니다.
 
@@ -38,7 +38,7 @@ async def create_postcard(
     if not current_user.is_email_verified:
         raise HTTPException(
             status_code=403,
-            detail="엽서를 작성하려면 이메일 인증이 필요합니다. 프로필 페이지에서 인증 메일을 받을 수 있습니다."
+            detail="편지를 작성하려면 이메일 인증이 필요합니다. 프로필 페이지에서 인증 메일을 받을 수 있습니다."
         )
 
     try:
@@ -50,7 +50,7 @@ async def create_postcard(
         logger.error(f"Failed to create postcard: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail="엽서 생성 중 오류가 발생했습니다."
+            detail="편지 생성 중 오류가 발생했습니다."
         )
 
 
@@ -61,9 +61,9 @@ async def list_postcards(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 목록 조회
+    편지 목록 조회
     
-    사용자가 보낸/예약한 엽서 목록을 조회합니다. 상태별로 필터링 가능합니다.
+    사용자가 보낸/예약한 편지 목록을 조회합니다. 상태별로 필터링 가능합니다.
     """
     try:
         service = PostcardService(db)
@@ -77,7 +77,7 @@ async def list_postcards(
         logger.error(f"Failed to list postcards: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail="엽서 목록 조회 중 오류가 발생했습니다."
+            detail="편지 목록 조회 중 오류가 발생했습니다."
         )
 
 
@@ -87,7 +87,7 @@ async def get_postcard(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """엽서 상세 조회"""
+    """편지 상세 조회"""
     try:
         service = PostcardService(db)
         postcard = await service.get_postcard_by_id(
@@ -96,7 +96,7 @@ async def get_postcard(
         )
         
         if not postcard:
-            raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
+            raise HTTPException(status_code=404, detail="편지를 찾을 수 없습니다.")
         
         return postcard
         
@@ -106,7 +106,7 @@ async def get_postcard(
         logger.error(f"Failed to get postcard: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail="엽서 조회 중 오류가 발생했습니다."
+            detail="편지 조회 중 오류가 발생했습니다."
         )
 
 
@@ -128,7 +128,7 @@ async def update_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 수정 (writing 또는 pending 상태만 가능)
+    편지 수정 (writing 또는 pending 상태만 가능)
 
     텍스트는 원본으로 저장되며, 제주어 번역은 발송 시점에 수행됩니다.
     """
@@ -173,7 +173,7 @@ async def update_postcard(
         logger.error(f"Failed to update postcard: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail="엽서 수정 중 오류가 발생했습니다."
+            detail="편지 수정 중 오류가 발생했습니다."
         )
 
 
@@ -184,7 +184,7 @@ async def delete_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 삭제 (DB에서 완전히 제거)
+    편지 삭제 (DB에서 완전히 제거)
     """
     try:
         service = PostcardService(db)
@@ -200,7 +200,7 @@ async def delete_postcard(
         logger.error(f"Failed to delete postcard {postcard_id}: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail="엽서 삭제 중 오류가 발생했습니다."
+            detail="편지 삭제 중 오류가 발생했습니다."
         )
 
 
@@ -211,7 +211,7 @@ async def cancel_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    예약된 엽서 취소 (pending 상태만 가능)
+    예약된 편지 취소 (pending 상태만 가능)
 
     예약을 취소하면 상태가 writing으로 되돌아가며,
     예약 시간이 제거되고 스케줄러에서 제거됩니다.
@@ -231,7 +231,7 @@ async def cancel_postcard(
         logger.error(f"Failed to cancel postcard {postcard_id}: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail="엽서 취소 중 오류가 발생했습니다."
+            detail="편지 취소 중 오류가 발생했습니다."
         )
 
 
@@ -243,9 +243,9 @@ async def send_postcard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 발송 (writing 또는 pending 상태의 엽서만 가능)
+    편지 발송 (writing 또는 pending 상태의 편지만 가능)
 
-    엽서 이미지가 자동으로 생성되고 발송됩니다.
+    편지 이미지가 자동으로 생성되고 발송됩니다.
     - scheduled_at이 없으면: 백그라운드에서 비동기 발송 (processing → sent 상태)
       * 진행 상태는 SSE 엔드포인트 (/stream)로 실시간 확인 가능
     - scheduled_at이 설정되어 있으면: pending 상태로 변경 → 스케줄러 등록
@@ -256,7 +256,7 @@ async def send_postcard(
     if not current_user.is_email_verified:
         raise HTTPException(
             status_code=403,
-            detail="엽서를 발송하려면 이메일 인증이 필요합니다. 프로필 페이지에서 인증 메일을 다시 받을 수 있습니다."
+            detail="편지를 발송하려면 이메일 인증이 필요합니다. 프로필 페이지에서 인증 메일을 다시 받을 수 있습니다."
         )
 
     try:
@@ -289,7 +289,7 @@ async def send_postcard(
         logger.error(f"Failed to send postcard: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail="엽서 발송 중 오류가 발생했습니다."
+            detail="편지 발송 중 오류가 발생했습니다."
         )
 
 
@@ -300,7 +300,7 @@ async def stream_postcard_status(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    엽서 변환 상태를 SSE로 실시간 스트리밍 (과거 이벤트 재생 지원)
+    편지 변환 상태를 SSE로 실시간 스트리밍 (과거 이벤트 재생 지원)
 
     클라이언트는 EventSource로 연결하여 변환 상태를 실시간으로 받습니다.
     """
@@ -309,7 +309,7 @@ async def stream_postcard_status(
     from app.services.postcard_event_service import PostcardEventService
     import json
 
-    # 엽서 소유권 확인
+    # 편지 소유권 확인
     service = PostcardService(db)
     stmt = select(Postcard).where(
         and_(
@@ -321,12 +321,12 @@ async def stream_postcard_status(
     postcard = result.scalar_one_or_none()
 
     if not postcard:
-        raise HTTPException(status_code=404, detail="엽서를 찾을 수 없습니다.")
+        raise HTTPException(status_code=404, detail="편지를 찾을 수 없습니다.")
 
     async def event_generator():
         """SSE 이벤트 제너레이터 (과거 이벤트 재생 포함)"""
         try:
-            # 현재 엽서 발송 상태
+            # 현재 편지 발송 상태
             current_status = postcard.status
 
             # 1. 과거 이벤트 재생 (processing 또는 빠르게 완료/실패한 경우)

@@ -1,7 +1,7 @@
 """
 예약 발송 스케줄러 서비스
 
-APScheduler를 사용하여 예약된 엽서 발송을 관리합니다.
+APScheduler를 사용하여 예약된 편지 발송을 관리합니다.
 """
 
 import logging
@@ -63,7 +63,7 @@ class SchedulerService:
         async with get_db_session() as db:
             now = now_utc()
             
-            # pending 상태이고 scheduled_at이 있는 모든 엽서 조회
+            # pending 상태이고 scheduled_at이 있는 모든 편지 조회
             stmt = select(Postcard).where(
                 Postcard.status == "pending",
                 Postcard.scheduled_at != None
@@ -167,7 +167,7 @@ class SchedulerService:
         특정 사용자의 모든 예약 취소
 
         Args:
-            postcard_ids: 취소할 엽서 ID 목록
+            postcard_ids: 취소할 편지 ID 목록
 
         Returns:
             취소된 스케줄 개수
@@ -211,7 +211,7 @@ class SchedulerService:
 
     async def _send_scheduled_postcard(self, scheduled_id: str):
         """
-        예약된 엽서 발송 (스케줄러에서 호출)
+        예약된 편지 발송 (스케줄러에서 호출)
 
         Args:
             scheduled_id: Postcard ID

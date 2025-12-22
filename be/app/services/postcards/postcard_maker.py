@@ -1,7 +1,7 @@
 """
-엽서 제작 모듈
+편지 제작 모듈
 
-사진, 텍스트, 테두리를 조합하여 엽서를 만드는 PostcardMaker 클래스를 제공합니다.
+사진, 텍스트, 테두리를 조합하여 편지를 만드는 PostcardMaker 클래스를 제공합니다.
 """
 
 import logging
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class PostcardMaker:
-    """한글 텍스트를 지원하는 Pillow 엽서 제작 클래스"""
+    """한글 텍스트를 지원하는 Pillow 편지 제작 클래스"""
 
     def __init__(
         self,
@@ -46,7 +46,7 @@ class PostcardMaker:
         effects: Optional[Dict[str, Any]] = None
     ) -> 'PostcardMaker':
         """
-        사진을 엽서에 추가합니다 (contain 방식으로 리사이징하고 중앙 정렬).
+        사진을 편지에 추가합니다 (contain 방식으로 리사이징하고 중앙 정렬).
 
         Args:
             image_path: 이미지 파일 경로
@@ -130,7 +130,7 @@ class PostcardMaker:
         max_height: Optional[int] = None
     ) -> 'PostcardMaker':
         """
-        한글 텍스트를 엽서에 추가합니다.
+        한글 텍스트를 편지에 추가합니다.
         max_width, max_height가 지정되면 박스 안에 텍스트를 제약합니다.
 
         Args:
@@ -188,7 +188,7 @@ class PostcardMaker:
         padding: int = 10
     ) -> 'PostcardMaker':
         """
-        엽서에 테두리를 추가합니다.
+        편지에 테두리를 추가합니다.
 
         Args:
             thickness: 테두리 두께 (픽셀), 기본값 3
@@ -270,7 +270,7 @@ class PostcardMaker:
         quality: int = 95
     ) -> None:
         """
-        엽서를 이미지 파일로 저장합니다.
+        편지를 이미지 파일로 저장합니다.
 
         Args:
             output_path: 저장할 파일 경로

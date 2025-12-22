@@ -1,7 +1,7 @@
 """
 Postcard Helper Functions
 
-엽서 관련 공통 유틸리티 함수들
+편지 관련 공통 유틸리티 함수들
 """
 
 from typing import Optional, Dict

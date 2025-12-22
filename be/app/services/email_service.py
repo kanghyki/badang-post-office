@@ -138,7 +138,7 @@ class EmailService:
             raise
 
     def _get_postcard_email_html(self, greeting: str, subtitle_message: str) -> str:
-        """엽서 이메일 HTML 템플릿 생성"""
+        """편지 이메일 HTML 템플릿 생성"""
         import html
 
         # XSS 방지를 위한 HTML 이스케이프
@@ -167,22 +167,22 @@ class EmailService:
             <!-- 우편함 배경 효과 -->
             <div style="max-width: 700px; margin: 0 auto; perspective: 1000px;">
 
-                <!-- 실제 엽서 카드 -->
+                <!-- 실제 편지 카드 -->
                 <div style="background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1); position: relative; animation: fadeIn 0.8s ease-out; transform: rotate(-0.5deg);">
 
-                    <!-- 수신자 정보 (엽서 상단) -->
+                    <!-- 수신자 정보 (편지 상단) -->
                     <div style="padding: 30px 40px 20px; background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%);">
                         <h2 style="margin: 10px 0 5px; color: #2d3748; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">{safe_greeting}</h2>
                         <p style="margin: 0; color: #718096; font-size: 14px; font-style: italic;">{safe_subtitle}</p>
                     </div>
 
-                    <!-- 엽서 이미지 (메인 컨텐츠) -->
+                    <!-- 편지 이미지 (메인 컨텐츠) -->
                     <div style="padding: 20px 40px 30px;">
                         <div style="position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.6); background: white;">
                             <!-- 종이 텍스처 효과 -->
                             <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px); pointer-events: none; z-index: 1;"></div>
                             
-                            <img src="cid:postcard_image" alt="제주에서 온 엽서" style="width: 100%; height: auto; display: block; position: relative; z-index: 0; border-radius: 12px;">
+                            <img src="cid:postcard_image" alt="제주에서 온 편지" style="width: 100%; height: auto; display: block; position: relative; z-index: 0; border-radius: 12px;">
                             
                             <!-- 사진 테두리 효과 -->
                             <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; pointer-events: none; z-index: 2;"></div>
@@ -190,7 +190,7 @@ class EmailService:
                         
                     </div>
 
-                    <!-- 점선 (엽서 하단 구분선) -->
+                    <!-- 점선 (편지 하단 구분선) -->
                     <div style="margin: 0 40px; border-top: 2px dashed rgba(0,0,0,0.1);"></div>
 
                     <!-- 푸터 -->
@@ -222,14 +222,14 @@ class EmailService:
         custom_message: Optional[str] = None
     ) -> bool:
         """
-        엽서 이메일 발송 (래퍼 메서드)
+        편지 이메일 발송 (래퍼 메서드)
         
         Args:
             to_email: 수신자 이메일
             to_name: 수신자 이름
-            postcard_image_path: 엽서 이미지 경로
+            postcard_image_path: 편지 이미지 경로
             sender_name: 발신자 이름
-            subject: 이메일 제목 (기본값: "제주에서 온 엽서")
+            subject: 이메일 제목 (기본값: "제주에서 온 편지")
             custom_message: 사용자 정의 메시지
         
         Returns:
@@ -238,7 +238,7 @@ class EmailService:
         # 랜덤 제목 리스트
         random_subjects = [
             "혼저 옵서예, 제주에서 카드 하나 보냅니다게!",
-            "제주 바람이 살랑살랑~ 그 바람에 실려서 엽서 하나 날아갑주게!",
+            "제주 바람이 살랑살랑~ 그 바람에 실려서 편지 하나 날아갑주게!",
             "오늘도 촘 이쁘게 지내라예? 제주서 정든 마음 보내봅디다~",
             "하영 보고싶수다! 제주 하늘빛이랑 같이 보냅니다게.",
             "귤향 폴폴~ 제주서 달큰한 소식 하나 들려줍써!"
@@ -373,7 +373,7 @@ class EmailService:
             text_content = f"""
 안녕하세요, {name}님!
 
-제주 엽서에 가입해주셔서 감사합니다.
+제주 편지에 가입해주셔서 감사합니다.
 
 아래 링크를 클릭하여 이메일 인증을 완료해주세요:
 {verification_url}
@@ -381,7 +381,7 @@ class EmailService:
 이 링크는 24시간 동안 유효합니다.
 
 본 메일은 발신 전용입니다.
-© 2025 제주 엽서. All rights reserved.
+© 2025 제주 편지. All rights reserved.
             """
 
             # 이메일 메시지 생성

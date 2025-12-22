@@ -1,7 +1,7 @@
 """
-엽서 관련 Pydantic 모델
+편지 관련 Pydantic 모델
 
-엽서 생성 요청 및 응답의 구조를 정의합니다.
+편지 생성 요청 및 응답의 구조를 정의합니다.
 """
 
 from pydantic import BaseModel, field_validator, Field, ConfigDict
@@ -13,7 +13,7 @@ from app.utils.timezone import to_utc, validate_schedule_time
 
 class PostcardCreateRequest(BaseModel):
     """
-    엽서 생성/발송 요청
+    편지 생성/발송 요청
     
     scheduled_at이 없으면 즉시 발송, 있으면 예약 발송
     """
@@ -58,21 +58,21 @@ class PostcardCreateRequest(BaseModel):
 
 class PostcardResponse(BaseModel):
     """
-    엽서 응답
+    편지 응답
 
-    생성된 엽서의 정보를 반환합니다.
+    생성된 편지의 정보를 반환합니다.
     """
     id: str
     template_id: str
-    text: Optional[str] = None  # 제주어 번역본 (빈 엽서 시 None)
+    text: Optional[str] = None  # 제주어 번역본 (빈 편지 시 None)
     original_text: Optional[str] = None  # 원본 (표준어)
-    recipient_email: Optional[str] = None  # 빈 엽서 시 None
+    recipient_email: Optional[str] = None  # 빈 편지 시 None
     recipient_name: Optional[str] = None
     sender_name: Optional[str] = None
     status: Literal["writing", "pending", "processing", "sent", "failed"]
     scheduled_at: Optional[datetime] = None  # NULL이면 즉시 발송
     sent_at: Optional[datetime] = None
-    postcard_path: Optional[str] = None  # 생성된 엽서 이미지 경로
+    postcard_path: Optional[str] = None  # 생성된 편지 이미지 경로
     user_photo_url: Optional[str] = None  # 사용자 업로드 사진 URL (첫 번째 사진)
     jeju_photo_url: Optional[str] = None  # 제주 스타일 변환 이미지 URL
     error_message: Optional[str] = None
@@ -83,7 +83,7 @@ class PostcardResponse(BaseModel):
 
 
 class PostcardUpdateRequest(BaseModel):
-    """엽서 수정 요청 (pending 상태만 가능)"""
+    """편지 수정 요청 (pending 상태만 가능)"""
     scheduled_at: Optional[datetime] = Field(None, description="새로운 발송 예정 시간")
     text: Optional[str] = Field(None, description="새로운 텍스트")
     recipient_email: Optional[str] = None
@@ -119,7 +119,7 @@ class PostcardUpdateRequest(BaseModel):
 
 class PostcardDB(BaseModel):
     """
-    DB에 저장된 엽서 (전체 필드)
+    DB에 저장된 편지 (전체 필드)
 
     SQLite postcards 테이블의 레코드를 표현합니다.
     """

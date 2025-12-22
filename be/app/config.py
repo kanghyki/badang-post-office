@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     smtp_username: str = ""
     smtp_password: str = ""
     smtp_from_email: str = ""
-    smtp_from_name: str = "제주 엽서"
+    smtp_from_name: str = "제주 편지"
 
     # Redis (SSE용)
     redis_host: str = "localhost"

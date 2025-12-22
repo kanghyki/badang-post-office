@@ -1,7 +1,7 @@
 """
 SQLAlchemy 데이터베이스 모델
 
-템플릿과 엽서 데이터를 저장하는 테이블 정의
+템플릿과 편지 데이터를 저장하는 테이블 정의
 """
 
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, JSON, ForeignKey
@@ -36,7 +36,7 @@ class EmailVerificationToken(Base):
 
 
 class Postcard(Base):
-    """엽서 테이블 (즉시 발송 및 예약 발송 통합)"""
+    """편지 테이블 (즉시 발송 및 예약 발송 통합)"""
     __tablename__ = "postcards"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -49,7 +49,7 @@ class Postcard(Base):
     user_photo_paths = Column(JSON)  # {"photo_config_id": "path", ...}
 
     # 암호화된 문자열 필드들 (개인정보)
-    recipient_email = Column(String)  # 빈 엽서 생성 시 nullable
+    recipient_email = Column(String)  # 빈 편지 생성 시 nullable
     recipient_name = Column(String)
     sender_name = Column(String)
 
@@ -58,7 +58,7 @@ class Postcard(Base):
     scheduled_at = Column(DateTime)  # 발송 예정 시간 (NULL이면 즉시 발송)
     sent_at = Column(DateTime)  # 실제 발송 시간
 
-    # 생성된 엽서 이미지
+    # 생성된 편지 이미지
     postcard_image_path = Column(String)  # NULL이면 아직 생성 안됨
     error_message = Column(Text)  # 실패 시 오류 메시지
 
@@ -70,7 +70,7 @@ class Postcard(Base):
 
 
 class PostcardEvent(Base):
-    """엽서 발송 이벤트 테이블 (SSE 재생용)"""
+    """편지 발송 이벤트 테이블 (SSE 재생용)"""
     __tablename__ = "postcard_events"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))

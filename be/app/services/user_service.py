@@ -161,8 +161,8 @@ class UserService:
         """
         사용자 계정 삭제
 
-        - 스케줄러에서 예약된 엽서 작업 취소
-        - 사용자의 모든 엽서 데이터 삭제
+        - 스케줄러에서 예약된 편지 작업 취소
+        - 사용자의 모든 편지 데이터 삭제
         - 사용자 계정 삭제
 
         Args:
@@ -177,7 +177,7 @@ class UserService:
         if not user:
             return False
 
-        # 1. 사용자의 예약된 엽서 조회 (pending 상태)
+        # 1. 사용자의 예약된 편지 조회 (pending 상태)
         result = await db.execute(
             select(Postcard.id).where(
                 Postcard.user_id == user_id,
@@ -196,7 +196,7 @@ class UserService:
             except Exception as e:
                 logger.warning(f"Failed to cancel schedules for user {user_id}: {str(e)}")
 
-        # 3. 사용자의 모든 엽서 삭제
+        # 3. 사용자의 모든 편지 삭제
         await db.execute(
             delete(Postcard).where(Postcard.user_id == user_id)
         )

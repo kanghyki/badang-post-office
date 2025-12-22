@@ -97,7 +97,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Jeju Postcard API",
-    description="제주 엽서 생성 API",
+    description="제주 편지 생성 API",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -116,7 +116,7 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(files.router)  # 보안 파일 접근
 app.include_router(auth.router)  # 인증 (회원가입/로그인)
-app.include_router(postcards.router)  # 엽서 발송 (즉시/예약 통합)
+app.include_router(postcards.router)  # 편지 발송 (즉시/예약 통합)
 
 # 개발/운영용 관리 API (env=dev일 때만 활성화)
 if settings.env == "dev":
@@ -127,7 +127,7 @@ if settings.env == "dev":
     # templates_dev를 templates_public보다 먼저 등록 (개발 환경에서 우선)
     app.include_router(templates_dev.router)  # 개발: 템플릿 생성/수정/삭제
     app.include_router(fonts.router)
-    app.include_router(postcards_dev.router)  # 개발: 엽서 스케줄러 모니터링
+    app.include_router(postcards_dev.router)  # 개발: 편지 스케줄러 모니터링
     logger.info("Development/Admin APIs, Static Files enabled")
 
 # 프로덕션 템플릿 API (인증 필요)

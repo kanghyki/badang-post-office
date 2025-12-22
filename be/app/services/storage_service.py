@@ -84,7 +84,7 @@ class LocalStorageService:
 
     async def save_generated_postcard(self, image: Image.Image) -> str:
         """
-        생성된 엽서를 PNG로 로컬에 저장합니다.
+        생성된 편지를 PNG로 로컬에 저장합니다.
 
         Args:
             image: PIL Image 객체

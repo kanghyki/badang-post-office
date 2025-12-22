@@ -1,5 +1,5 @@
 """
-엽서 이벤트 관리 서비스
+편지 이벤트 관리 서비스
 
 SSE 이벤트를 DB에 저장하고 재생하는 기능을 제공합니다.
 """
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class PostcardEventService:
-    """엽서 이벤트 서비스"""
+    """편지 이벤트 서비스"""
 
     @staticmethod
     async def publish_and_save(
@@ -30,7 +30,7 @@ class PostcardEventService:
 
         Args:
             db: AsyncSession
-            postcard_id: 엽서 ID
+            postcard_id: 편지 ID
             event_type: 이벤트 타입 (translating, converting, etc.)
             event_data: 이벤트 메타데이터 (에러 메시지 등)
         """
@@ -61,11 +61,11 @@ class PostcardEventService:
         postcard_id: str
     ) -> List[Dict[str, Any]]:
         """
-        엽서의 모든 이벤트 조회 (시간순)
+        편지의 모든 이벤트 조회 (시간순)
 
         Args:
             db: AsyncSession
-            postcard_id: 엽서 ID
+            postcard_id: 편지 ID
 
         Returns:
             이벤트 목록 [{'status': 'translating', ...}, ...]
