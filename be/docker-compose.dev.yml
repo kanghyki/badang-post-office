@@ -16,43 +16,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: jeju-api-dev
-    ports:
-      - "8000:8000"
-    environment:
-      - REDIS_HOST=redis
-    env_file:
-      - .env
-    depends_on:
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./app:/app/app
-      - ./data:/app/data
-    restart: unless-stopped
-
-  celery-worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: jeju-celery-worker-dev
-    command: celery -A app.worker.celery_app worker --loglevel=info
-    environment:
-      - REDIS_HOST=redis
-    env_file:
-      - .env
-    depends_on:
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./app:/app/app
-      - ./data:/app/data
-    restart: unless-stopped
-
 volumes:
   redis-data:
     driver: local
