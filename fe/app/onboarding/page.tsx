@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import styles from './onboarding.module.scss';
-import { authUtils } from '@/lib/utils/auth';
 import { ROUTES } from '@/lib/constants/urls';
 
 // ============================================
@@ -35,20 +34,6 @@ export default function Onboarding() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // 이미 로그인되어 있으면 메인으로 리다이렉트
-  useEffect(() => {
-    if (authUtils.getToken()) {
-      router.replace(ROUTES.MAIN);
-      return;
-    }
-
-//    // 이미 온보딩을 본 사용자는 로그인 페이지로
-//    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-//    if (hasSeenOnboarding) {
-//      router.replace(ROUTES.LOGIN);
-//    }
-  }, [router]);
 
   // 스크롤 이벤트 핸들러 - 현재 슬라이드 인덱스 업데이트
   const handleScroll = () => {

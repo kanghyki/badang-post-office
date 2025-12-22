@@ -4,16 +4,21 @@ import Link from 'next/link';
 import Logo from '@/app/components/LogoBox';
 import { ROUTES } from '@/lib/constants/urls';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { authUtils } from '@/lib/utils/auth';
 
 export default function Home() {
-  const [targetRoute] = useState<string>(() => {
-    // 온보딩을 본 적이 없으면 온보딩으로, 봤으면 로그인으로
-    if (typeof window !== 'undefined') {
-      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-      return hasSeenOnboarding ? ROUTES.LOGIN : ROUTES.ONBOARDING;
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // 로그인 상태면 메인으로 리다이렉트
+    if (authUtils.getToken()) {
+      router.replace(ROUTES.MAIN);
+      return;
     }
-    return ROUTES.ONBOARDING;
-  });
+    setIsLoading(false);
+  }, [router]);
 
   useEffect(() => {
     document.body.style.backgroundColor = '#FE6716'; // 시작화면 배경색
@@ -22,6 +27,10 @@ export default function Home() {
       document.body.style.backgroundColor = ''; // 나갈 때 초기화
     };
   }, []);
+
+  if (isLoading) {
+    return null; // 로딩 중에는 아무것도 표시하지 않음
+  }
 
   return (
     <>
@@ -35,11 +44,7 @@ export default function Home() {
           미래에 도착해서 만나.
         </p>
         <div className={styles.buttonSection}>
-          <Link
-            href={targetRoute}
-            className={styles.moveBtn}
-            suppressHydrationWarning
-          >
+          <Link href={ROUTES.ONBOARDING} className={styles.moveBtn}>
             문 열고 들어가기
           </Link>
         </div>
