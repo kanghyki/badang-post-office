@@ -323,20 +323,25 @@ async def stream_postcard_status(
     if not postcard:
         raise HTTPException(status_code=404, detail="편지를 찾을 수 없습니다.")
 
+    # 제너레이터 시작 전에 DB 쿼리 미리 실행 (세션 관리 문제 방지)
+    current_status = postcard.status
+    past_events_cache = None
+    error_message = postcard.error_message
+
+    if current_status in ["processing", "sent", "failed"]:
+        # DB에서 과거 이벤트 조회 (제너레이터 밖에서 실행)
+        past_events_cache = await PostcardEventService.get_events(db, postcard_id)
+        logger.info(f"📼 과거 이벤트 재생: {postcard_id} - {len(past_events_cache)}개")
+
     async def event_generator():
         """SSE 이벤트 제너레이터 (과거 이벤트 재생 포함)"""
         try:
-            # 현재 편지 발송 상태
-            current_status = postcard.status
-
             # 1. 과거 이벤트 재생 (processing 또는 빠르게 완료/실패한 경우)
             if current_status == "processing":
-                # DB에서 과거 이벤트 조회
-                past_events = await PostcardEventService.get_events(db, postcard_id)
-
-                logger.info(f"📼 과거 이벤트 재생: {postcard_id} - {len(past_events)}개")
-                for event in past_events:
-                    yield f"data: {json.dumps(event)}\n\n"
+                # 캐시된 과거 이벤트 재생
+                if past_events_cache:
+                    for event in past_events_cache:
+                        yield f"data: {json.dumps(event)}\n\n"
 
                 # 2. Redis Pub/Sub 구독하여 실시간 상태 수신
                 async for message in redis_service.subscribe(f"postcard:{postcard_id}"):
@@ -349,18 +354,16 @@ async def stream_postcard_status(
 
             # 이미 완료/실패한 경우: 과거 이벤트 전체 재생
             elif current_status in ["sent", "failed"]:
-                # DB에서 과거 이벤트 조회
-                past_events = await PostcardEventService.get_events(db, postcard_id)
-
-                logger.info(f"📼 완료된 작업 이벤트 재생: {postcard_id} - {len(past_events)}개")
-                for event in past_events:
-                    yield f"data: {json.dumps(event)}\n\n"
+                # 캐시된 과거 이벤트 재생
+                if past_events_cache:
+                    for event in past_events_cache:
+                        yield f"data: {json.dumps(event)}\n\n"
 
                 # 최종 상태 전송
                 if current_status == "sent":
                     yield f"data: {json.dumps({'status': 'completed'})}\n\n"
                 elif current_status == "failed":
-                    yield f"data: {json.dumps({'status': 'failed', 'error': postcard.error_message or '발송 실패'})}\n\n"
+                    yield f"data: {json.dumps({'status': 'failed', 'error': error_message or '발송 실패'})}\n\n"
 
             # 기타 상태 (writing, pending 등): 아무것도 전송하지 않음
             else:
