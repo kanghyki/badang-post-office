@@ -58,7 +58,9 @@ export default function PostcardItem({
 
   // 발송 완료 시 목록 새로고침 (완료 메시지를 보여준 후)
   useEffect(() => {
-    if (sendingStatus === 'completed' && onStatusUpdate) {
+    if (!sendingStatus || !onStatusUpdate) return;
+
+    if (sendingStatus in ['completed', 'failed']) {
       // 완료 메시지를 3초간 보여준 후 상태 업데이트
       const timer = setTimeout(() => {
         onStatusUpdate(data.id);
