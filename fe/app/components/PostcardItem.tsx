@@ -60,7 +60,7 @@ export default function PostcardItem({
   useEffect(() => {
     if (!sendingStatus || !onStatusUpdate) return;
 
-    if (sendingStatus in ['completed', 'failed']) {
+    if (['completed', 'failed'].includes(sendingStatus)) {
       // 완료 메시지를 3초간 보여준 후 상태 업데이트
       const timer = setTimeout(() => {
         onStatusUpdate(data.id);
