@@ -1,6 +1,8 @@
 # 제주바당우체국 - Frontend
 
-제주바당우체국의 프론트엔드 서비스입니다. Next.js 16 (App Router)를 사용하여 구축되었습니다.
+제주바당우체국의 프론트엔드 서비스입니다.
+
+Next.js 16 (App Router)를 사용하여 구축되었습니다.
 
 ## 🛠 기술 스택
 
@@ -13,16 +15,19 @@
 ## 🚀 시작하기 (Getting Started)
 
 ### 사전 요구사항 (Prerequisites)
+
 - Node.js 18 이상
 
 ### 설정 및 실행
 
 1. **디렉토리 이동**
+
    ```bash
    cd fe
    ```
 
 2. **패키지 설치**
+
    ```bash
    npm install
    ```
